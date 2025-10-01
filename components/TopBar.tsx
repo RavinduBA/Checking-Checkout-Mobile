@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -12,6 +11,8 @@ interface TopBarProps {
   onSettingsPress?: () => void;
   onUserManagementPress?: () => void;
   onLogout?: () => void;
+  onNavigateToSettings?: () => void;
+  onNavigateToUsers?: () => void;
 }
 
 export default function TopBar({
@@ -23,8 +24,9 @@ export default function TopBar({
   onSettingsPress,
   onUserManagementPress,
   onLogout,
+  onNavigateToSettings,
+  onNavigateToUsers,
 }: TopBarProps) {
-  const navigation = useNavigation();
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -163,6 +165,7 @@ export default function TopBar({
             <TouchableOpacity
               onPress={() => {
                 setShowUserDropdown(false);
+                onNavigateToSettings?.();
                 onSettingsPress?.();
               }}
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
@@ -174,6 +177,7 @@ export default function TopBar({
             <TouchableOpacity
               onPress={() => {
                 setShowUserDropdown(false);
+                onNavigateToUsers?.();
                 onUserManagementPress?.();
               }}
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
