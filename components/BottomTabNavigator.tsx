@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import { View } from "react-native";
 import TopBar from "./TopBar";
@@ -19,13 +20,18 @@ import SettingsScreen from "./screens/SettingsScreen";
 import UsersScreen from "./screens/UsersScreen";
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 // Wrapper component that adds TopBar to each screen
-function ScreenWithTopBar({ component: Component }: { component: React.ComponentType }) {
-  const navigation = useNavigation();
-  
+function ScreenWithTopBar({
+  component: Component,
+}: {
+  component: React.ComponentType<any>;
+}) {
+  const navigation = useNavigation<any>();
+
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-100">
       <View className="mt-20">
         <TopBar
           selectedLocation="Downtown Hotel"
@@ -38,16 +44,17 @@ function ScreenWithTopBar({ component: Component }: { component: React.Component
           onSettingsPress={() => console.log("Settings pressed")}
           onUserManagementPress={() => console.log("User management pressed")}
           onLogout={() => console.log("Logout pressed")}
-          onNavigateToSettings={() => navigation.navigate('Settings' as never)}
-          onNavigateToUsers={() => navigation.navigate('Users' as never)}
+          onNavigateToSettings={() => navigation.navigate("Settings")}
+          onNavigateToUsers={() => navigation.navigate("Users")}
+          onNavigateToBilling={() => navigation.navigate("Billing")}
         />
       </View>
-      <Component />
+      <Component navigation={navigation} />
     </View>
   );
 }
 
-export default function BottomTabNavigator() {
+function MainTabs() {
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
@@ -57,26 +64,35 @@ export default function BottomTabNavigator() {
           backgroundColor: "#ffffff",
           borderTopWidth: 1,
           borderTopColor: "#e5e7eb",
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 65,
+          paddingBottom: 10,
+          paddingTop: 3,
+          height: 80,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          position: "absolute",
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
         tabBarActiveTintColor: "#3b82f6",
         tabBarInactiveTintColor: "#6b7280",
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: "500",
+          marginBottom: 2,
         },
         tabBarIconStyle: {
-          marginBottom: -3,
+          marginBottom: 0,
         },
       }}
     >
       <Tab.Screen
         name="Dashboard"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={20} color={color} />
           ),
         }}
       >
@@ -85,8 +101,8 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Calendar"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="calendar" size={20} color={color} />
           ),
         }}
       >
@@ -95,8 +111,8 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Reservations"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bed" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="bed" size={20} color={color} />
           ),
         }}
       >
@@ -105,8 +121,8 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Expenses"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="attach-money" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="attach-money" size={20} color={color} />
           ),
         }}
       >
@@ -115,8 +131,8 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Accounts"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="account-balance" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="account-balance" size={20} color={color} />
           ),
         }}
       >
@@ -125,8 +141,8 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Booking Channels"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="globe" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="globe" size={20} color={color} />
           ),
         }}
       >
@@ -135,8 +151,8 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Master Files"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="folder" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="folder" size={20} color={color} />
           ),
         }}
       >
@@ -145,45 +161,24 @@ export default function BottomTabNavigator() {
       <Tab.Screen
         name="Reports"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="bar-chart" size={20} color={color} />
           ),
         }}
       >
         {() => <ScreenWithTopBar component={ReportsScreen} />}
       </Tab.Screen>
-      <Tab.Screen
-        name="Users"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={UsersScreen} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Settings"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={SettingsScreen} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Billing"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="credit-card" size={size} color={color} />
-          ),
-          tabBarLabel: "Billing & Subscriptions",
-        }}
-      >
-        {() => <ScreenWithTopBar component={BillingSubscriptionsScreen} />}
-      </Tab.Screen>
     </Tab.Navigator>
   );
 }
-      
+
+export default function RootNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="Users" component={UsersScreen} />
+      <Stack.Screen name="Billing" component={BillingSubscriptionsScreen} />
+    </Stack.Navigator>
+  );
+}

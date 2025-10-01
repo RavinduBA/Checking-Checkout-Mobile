@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
+import Svg, { Path, Rect } from "react-native-svg";
 
 interface TopBarProps {
   selectedLocation?: string;
@@ -13,6 +14,7 @@ interface TopBarProps {
   onLogout?: () => void;
   onNavigateToSettings?: () => void;
   onNavigateToUsers?: () => void;
+  onNavigateToBilling?: () => void;
 }
 
 export default function TopBar({
@@ -26,6 +28,7 @@ export default function TopBar({
   onLogout,
   onNavigateToSettings,
   onNavigateToUsers,
+  onNavigateToBilling,
 }: TopBarProps) {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -52,35 +55,36 @@ export default function TopBar({
   return (
     <View className="bg-white border-b border-gray-200 px-4 py-3">
       <View className="flex-row items-center justify-between">
-        {/* Location Selector */}
-        <TouchableOpacity
-          onPress={() => setShowLocationDropdown(true)}
-          className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
-        >
-          <Ionicons name="location" size={16} color="#6b7280" />
-          <Text className="ml-2 text-sm font-medium text-gray-700">
-            {selectedLocation}
-          </Text>
-          <Ionicons
-            name="chevron-down"
-            size={16}
-            color="#6b7280"
-            className="ml-1"
-          />
-        </TouchableOpacity>
-
-        {/* Search Bar */}
-        <View className="flex-1 mx-4">
-          <View className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg">
-            <Ionicons name="search" size={16} color="#6b7280" />
-            <TextInput
-              placeholder="Search..."
-              value={searchQuery}
-              onChangeText={handleSearch}
-              className="flex-1 ml-2 text-sm text-gray-700"
-              placeholderTextColor="#9ca3af"
-            />
+        {/* Left side with Logo and Location Selector */}
+        <View className="flex-row items-center">
+          {/* Logo */}
+          <View className="w-8 h-8 mr-3">
+            <Svg width="32" height="32" viewBox="0 0 100 100">
+              <Rect width="100" height="100" fill="#1f2937" rx="12" />
+              <Path d="M 75 35 L 25 65 L 40 35 L 25 20 Z" fill="#ffffff" />
+              <Path
+                d="M 25 35 L 45 45 L 75 20 L 45 55 L 25 65 Z"
+                fill="#ffffff"
+              />
+            </Svg>
           </View>
+
+          {/* Location Selector */}
+          <TouchableOpacity
+            onPress={() => setShowLocationDropdown(true)}
+            className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+          >
+            <Ionicons name="location" size={16} color="#6b7280" />
+            <Text className="ml-2 text-sm font-medium text-gray-700">
+              {selectedLocation}
+            </Text>
+            <Ionicons
+              name="chevron-down"
+              size={16}
+              color="#6b7280"
+              className="ml-1"
+            />
+          </TouchableOpacity>
         </View>
 
         {/* User Menu */}
@@ -185,6 +189,19 @@ export default function TopBar({
               <Ionicons name="people-outline" size={16} color="#6b7280" />
               <Text className="ml-3 text-sm text-gray-700">
                 User Management
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setShowUserDropdown(false);
+                onNavigateToBilling?.();
+              }}
+              className="flex-row items-center px-4 py-3 border-b border-gray-100"
+            >
+              <Ionicons name="card-outline" size={16} color="#6b7280" />
+              <Text className="ml-3 text-sm text-gray-700">
+                Billing & Subscriptions
               </Text>
             </TouchableOpacity>
 
