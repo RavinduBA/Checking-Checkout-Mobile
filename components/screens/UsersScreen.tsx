@@ -1,7 +1,7 @@
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 export default function UsersScreen() {
   const navigation = useNavigation<any>();
@@ -11,7 +11,9 @@ export default function UsersScreen() {
       {/* Back button header */}
       <View className="flex-row items-center p-4 bg-white border-b border-gray-200 mt-20">
         <TouchableOpacity
-          onPress={() => navigation.navigate("MainTabs", { screen: "Dashboard" })}
+          onPress={() =>
+            navigation.navigate("MainTabs", { screen: "Dashboard" })
+          }
           className="flex-row items-center"
         >
           <Ionicons name="arrow-back" size={24} color="#374151" />
@@ -37,7 +39,8 @@ export default function UsersScreen() {
             User Administration
           </Text>
           <Text className="text-gray-600">
-            Create, edit, and manage user accounts, roles, and permissions for the hotel management system.
+            Create, edit, and manage user accounts, roles, and permissions for
+            the hotel management system.
           </Text>
         </View>
       </View>
