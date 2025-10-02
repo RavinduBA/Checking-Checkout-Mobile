@@ -3,7 +3,9 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { View } from "react-native";
+import { Alert, View } from "react-native";
+import { useAuthContext } from "../contexts/AuthContext";
+import { signOut } from "../lib/auth";
 import TopBar from "./TopBar";
 
 // Import screen components
@@ -29,21 +31,39 @@ function ScreenWithTopBar({
   component: React.ComponentType<any>;
 }) {
   const navigation = useNavigation<any>();
+  const { user } = useAuthContext();
+
+  const handleLogout = async () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          // Navigation will be handled automatically by auth state change
+        },
+      },
+    ]);
+  };
 
   return (
     <View className="flex-1 bg-gray-100">
       <View className="mt-20">
         <TopBar
           selectedLocation="Downtown Hotel"
-          userName="John Doe"
-          userEmail="john.doe@hotel.com"
+          userName={user?.user_metadata?.full_name || user?.email || "User"}
+          userEmail={user?.email || ""}
           onLocationChange={(location: string) =>
             console.log("Location changed to:", location)
           }
           onSearch={(query: string) => console.log("Search query:", query)}
           onSettingsPress={() => console.log("Settings pressed")}
           onUserManagementPress={() => console.log("User management pressed")}
-          onLogout={() => console.log("Logout pressed")}
+          onLogout={handleLogout}
           onNavigateToSettings={() => navigation.navigate("Settings")}
           onNavigateToUsers={() => navigation.navigate("Users")}
           onNavigateToBilling={() => navigation.navigate("Billing")}
