@@ -66,16 +66,11 @@ export default function RegistrationScreen({
       );
 
       if (result.success) {
-        Alert.alert(
-          "Registration Successful!",
-          "Please check your email to verify your account before signing in.",
-          [
-            {
-              text: "OK",
-              onPress: onSwitchToLogin,
-            },
-          ]
-        );
+        // Success message is now handled in the auth.ts file
+        // Auto switch to login after successful registration
+        setTimeout(() => {
+          onSwitchToLogin();
+        }, 2000);
       }
     } catch (error) {
       console.error("Registration error:", error);

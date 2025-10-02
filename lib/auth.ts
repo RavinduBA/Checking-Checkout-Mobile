@@ -28,6 +28,25 @@ export const signUp = async (email: string, password: string, fullName?: string)
       return { success: false, error };
     }
 
+    // Check if user was successfully created
+    if (data?.user) {
+      if (data?.session) {
+        // User is immediately logged in (email confirmation disabled)
+        Alert.alert(
+          'Registration Successful!',
+          'Your account has been created and you are now signed in. Welcome!',
+          [{ text: 'OK' }]
+        );
+      } else {
+        // Email confirmation is required (but may have redirect issue)
+        Alert.alert(
+          'Registration Successful!',
+          'Your account has been created! You can now sign in with your credentials.',
+          [{ text: 'OK' }]
+        );
+      }
+    }
+
     return { success: true, data };
   } catch (error) {
     Alert.alert('Sign Up Error', 'An unexpected error occurred');
