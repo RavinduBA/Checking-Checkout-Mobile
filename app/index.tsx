@@ -8,10 +8,18 @@ import "./global.css";
 
 // Inner component that uses the auth context
 function AppContent() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('AppContent Debug:', {
+      isAuthenticated,
+      authLoading,
+    });
+  }, [isAuthenticated, authLoading]);
 
   // Show loading spinner while checking authentication
-  if (loading) {
+  if (authLoading) {
     return <LoadingScreen />;
   }
 
@@ -21,6 +29,7 @@ function AppContent() {
   }
 
   // Show main app if authenticated
+  console.log('Showing main app - user is authenticated');
   return <BottomTabNavigator />;
 }
 

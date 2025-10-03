@@ -1,0 +1,36 @@
+
+- Take not for production we have disabled email confrimation when regsitering user in supabase settings
+
+
+contexts needed
+
+- Theme context (dark , light , system)
+- Selected location 
+- Authentication
+
+Hooks Analysis & Mobile Compatibility
+
+Directly Reusable Hooks (Copy & Paste with minor tweaks)
+These hooks are business logic focused and can be directly copied:
+
+useIncomeData.tsx - ✅ Pure data fetching logic
+useExpenseData.tsx - ✅ Pure data fetching logic
+useCalendarData.tsx - ✅ Pure data fetching logic
+usePermissions.tsx - ✅ Permission checking logic
+useProfile.tsx - ✅ Simple profile wrapper
+useTenant.tsx - ✅ Tenant management logic
+useUserPermissions.tsx - ✅ User permission logic
+useUsersData.tsx - ✅ User data fetching
+useRoomAvailability.tsx - ✅ Room availability logic
+useFormFieldPreferences.tsx - ✅ Form preferences logic
+
+
+
+Database tables
+
+location - 4 co
+
+
+
+
+look dont use css in files in onbaridng folder and onboading screen use tailwind css for wstyling in everywhere. 

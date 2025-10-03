@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Modal,
@@ -9,83 +9,159 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useUserProfile } from "../../hooks/useUserProfile";
+import {
+  createLocation,
+  deleteLocation,
+  getLocations,
+  updateLocation,
+  type Location,
+} from "../../lib/database/locations";
 
-interface Location {
+interface LocationDisplay {
   id: string;
   name: string;
   status: "Active" | "Inactive";
   createdDate: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  property_type?: string;
 }
 
 export default function HotelLocationsScreen() {
-  const [locations, setLocations] = useState<Location[]>([
-    {
-      id: "1",
-      name: "Ocean View",
-      status: "Active",
-      createdDate: "9/30/2025",
-    },
-    {
-      id: "2",
-      name: "Garden Villa",
-      status: "Active",
-      createdDate: "9/29/2025",
-    },
-    {
-      id: "3",
-      name: "Pool Side",
-      status: "Inactive",
-      createdDate: "9/28/2025",
-    },
-  ]);
-
+  // Temporarily disable profile loading for simplified flow
+  // const { profile, tenantId, loading: profileLoading } = useUserProfile();
+  const profile = null;
+  const tenantId = null;
+  const profileLoading = false;
+  
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [newLocationName, setNewLocationName] = useState("");
+  const [newLocationAddress, setNewLocationAddress] = useState("");
+  const [newLocationPhone, setNewLocationPhone] = useState("");
+  const [newLocationEmail, setNewLocationEmail] = useState("");
+  const [newLocationPropertyType, setNewLocationPropertyType] = useState("");
   const [newLocationStatus, setNewLocationStatus] = useState<
     "Active" | "Inactive"
   >("Active");
 
-  const handleAddLocation = () => {
-    if (newLocationName.trim()) {
-      const newLocation: Location = {
-        id: Date.now().toString(),
+  // Load locations when component mounts
+  useEffect(() => {
+    if (tenantId) {
+      loadLocations();
+    }
+  }, [tenantId]);
+
+  const loadLocations = async () => {
+    if (!tenantId) return;
+
+    setLoading(true);
+    try {
+      const result = await getLocations(tenantId);
+      if (result.success) {
+        setLocations(result.data);
+      } else {
+        Alert.alert("Error", result.error || "Failed to load locations");
+      }
+    } catch (error) {
+      console.error("Error loading locations:", error);
+      Alert.alert("Error", "An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddLocation = async () => {
+    if (!newLocationName.trim() || !tenantId) return;
+
+    try {
+      const locationData = {
         name: newLocationName.trim(),
-        status: newLocationStatus,
-        createdDate: new Date().toLocaleDateString(),
+        is_active: newLocationStatus === "Active",
+        tenant_id: tenantId,
+        address: newLocationAddress.trim() || undefined,
+        phone: newLocationPhone.trim() || undefined,
+        email: newLocationEmail.trim() || undefined,
+        property_type: newLocationPropertyType.trim() || undefined,
       };
-      setLocations([...locations, newLocation]);
-      setNewLocationName("");
-      setNewLocationStatus("Active");
-      setShowAddModal(false);
+
+      const result = await createLocation(locationData);
+
+      if (result.success) {
+        // Refresh the locations list
+        await loadLocations();
+
+        // Reset form
+        setNewLocationName("");
+        setNewLocationAddress("");
+        setNewLocationPhone("");
+        setNewLocationEmail("");
+        setNewLocationPropertyType("");
+        setNewLocationStatus("Active");
+        setShowAddModal(false);
+
+        Alert.alert("Success", "Location added successfully!");
+      } else {
+        Alert.alert("Error", result.error || "Failed to add location");
+      }
+    } catch (error) {
+      console.error("Error adding location:", error);
+      Alert.alert("Error", "An unexpected error occurred");
     }
   };
 
   const handleEditLocation = (location: Location) => {
     setEditingLocation(location);
     setNewLocationName(location.name);
-    setNewLocationStatus(location.status);
+    setNewLocationAddress(location.address || "");
+    setNewLocationPhone(location.phone || "");
+    setNewLocationEmail(location.email || "");
+    setNewLocationPropertyType(location.property_type || "");
+    setNewLocationStatus(location.is_active ? "Active" : "Inactive");
     setShowEditModal(true);
   };
 
-  const handleUpdateLocation = () => {
-    if (editingLocation && newLocationName.trim()) {
-      setLocations(
-        locations.map((loc) =>
-          loc.id === editingLocation.id
-            ? {
-                ...loc,
-                name: newLocationName.trim(),
-                status: newLocationStatus,
-              }
-            : loc
-        )
-      );
-      setShowEditModal(false);
-      setEditingLocation(null);
-      setNewLocationName("");
-      setNewLocationStatus("Active");
+  const handleUpdateLocation = async () => {
+    if (!editingLocation || !newLocationName.trim()) return;
+
+    try {
+      const updateData = {
+        name: newLocationName.trim(),
+        is_active: newLocationStatus === "Active",
+        address: newLocationAddress.trim() || undefined,
+        phone: newLocationPhone.trim() || undefined,
+        email: newLocationEmail.trim() || undefined,
+        property_type: newLocationPropertyType.trim() || undefined,
+      };
+
+      const result = await updateLocation(editingLocation.id, updateData);
+
+      if (result.success) {
+        // Refresh the locations list
+        await loadLocations();
+
+        // Reset form
+        setShowEditModal(false);
+        setEditingLocation(null);
+        setNewLocationName("");
+        setNewLocationAddress("");
+        setNewLocationPhone("");
+        setNewLocationEmail("");
+        setNewLocationPropertyType("");
+        setNewLocationStatus("Active");
+
+        Alert.alert("Success", "Location updated successfully!");
+      } else {
+        Alert.alert("Error", result.error || "Failed to update location");
+      }
+    } catch (error) {
+      console.error("Error updating location:", error);
+      Alert.alert("Error", "An unexpected error occurred");
     }
   };
 
@@ -98,8 +174,23 @@ export default function HotelLocationsScreen() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () =>
-            setLocations(locations.filter((loc) => loc.id !== locationId)),
+          onPress: async () => {
+            try {
+              const result = await deleteLocation(locationId);
+              if (result.success) {
+                await loadLocations();
+                Alert.alert("Success", "Location deleted successfully!");
+              } else {
+                Alert.alert(
+                  "Error",
+                  result.error || "Failed to delete location"
+                );
+              }
+            } catch (error) {
+              console.error("Error deleting location:", error);
+              Alert.alert("Error", "An unexpected error occurred");
+            }
+          },
         },
       ]
     );
@@ -125,62 +216,121 @@ export default function HotelLocationsScreen() {
               : "Enter the details for the new hotel location."}
           </Text>
 
-          <View className="mb-4">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Location Name
-            </Text>
-            <TextInput
-              value={newLocationName}
-              onChangeText={setNewLocationName}
-              placeholder="e.g., Main Building, Annex, Pool Villa"
-              className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
-              style={{ fontSize: 16 }}
-            />
-          </View>
+          <ScrollView className="max-h-96">
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Location Name*
+              </Text>
+              <TextInput
+                value={newLocationName}
+                onChangeText={setNewLocationName}
+                placeholder="e.g., Main Building, Annex, Pool Villa"
+                className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
+                style={{ fontSize: 16 }}
+              />
+            </View>
 
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Status
-            </Text>
-            <View className="flex-row">
-              <TouchableOpacity
-                onPress={() => setNewLocationStatus("Active")}
-                className={
-                  newLocationStatus === "Active"
-                    ? "flex-1 py-3 px-4 rounded-l-lg border bg-green-100 border-green-300"
-                    : "flex-1 py-3 px-4 rounded-l-lg border bg-gray-100 border-gray-300"
-                }
-              >
-                <Text
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Property Type
+              </Text>
+              <TextInput
+                value={newLocationPropertyType}
+                onChangeText={setNewLocationPropertyType}
+                placeholder="e.g., Hotel, Villa, Resort"
+                className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
+                style={{ fontSize: 16 }}
+              />
+            </View>
+
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Address
+              </Text>
+              <TextInput
+                value={newLocationAddress}
+                onChangeText={setNewLocationAddress}
+                placeholder="Enter location address"
+                className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
+                style={{ fontSize: 16 }}
+                multiline
+                numberOfLines={2}
+              />
+            </View>
+
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Phone
+              </Text>
+              <TextInput
+                value={newLocationPhone}
+                onChangeText={setNewLocationPhone}
+                placeholder="Enter phone number"
+                className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
+                style={{ fontSize: 16 }}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Email
+              </Text>
+              <TextInput
+                value={newLocationEmail}
+                onChangeText={setNewLocationEmail}
+                placeholder="Enter email address"
+                className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
+                style={{ fontSize: 16 }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View className="mb-6">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Status
+              </Text>
+              <View className="flex-row">
+                <TouchableOpacity
+                  onPress={() => setNewLocationStatus("Active")}
                   className={
                     newLocationStatus === "Active"
-                      ? "text-center font-medium text-green-700"
-                      : "text-center font-medium text-gray-600"
+                      ? "flex-1 py-3 px-4 rounded-l-lg border bg-green-100 border-green-300"
+                      : "flex-1 py-3 px-4 rounded-l-lg border bg-gray-100 border-gray-300"
                   }
                 >
-                  Active
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewLocationStatus("Inactive")}
-                className={
-                  newLocationStatus === "Inactive"
-                    ? "flex-1 py-3 px-4 rounded-r-lg border bg-red-100 border-red-300"
-                    : "flex-1 py-3 px-4 rounded-r-lg border bg-gray-100 border-gray-300"
-                }
-              >
-                <Text
+                  <Text
+                    className={
+                      newLocationStatus === "Active"
+                        ? "text-center font-medium text-green-700"
+                        : "text-center font-medium text-gray-600"
+                    }
+                  >
+                    Active
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setNewLocationStatus("Inactive")}
                   className={
                     newLocationStatus === "Inactive"
-                      ? "text-center font-medium text-red-700"
-                      : "text-center font-medium text-gray-600"
+                      ? "flex-1 py-3 px-4 rounded-r-lg border bg-red-100 border-red-300"
+                      : "flex-1 py-3 px-4 rounded-r-lg border bg-gray-100 border-gray-300"
                   }
                 >
-                  Inactive
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    className={
+                      newLocationStatus === "Inactive"
+                        ? "text-center font-medium text-red-700"
+                        : "text-center font-medium text-gray-600"
+                    }
+                  >
+                    Inactive
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </ScrollView>
 
           <View className="flex-row" style={{ gap: 12 }}>
             <TouchableOpacity
@@ -192,6 +342,10 @@ export default function HotelLocationsScreen() {
                   setShowAddModal(false);
                 }
                 setNewLocationName("");
+                setNewLocationAddress("");
+                setNewLocationPhone("");
+                setNewLocationEmail("");
+                setNewLocationPropertyType("");
                 setNewLocationStatus("Active");
               }}
               className="flex-1 py-3 bg-gray-100 rounded-lg"
@@ -272,24 +426,24 @@ export default function HotelLocationsScreen() {
                 <View className="w-20 items-center">
                   <View
                     className={
-                      location.status === "Active"
+                      location.is_active
                         ? "px-2 py-1 rounded-full bg-green-100"
                         : "px-2 py-1 rounded-full bg-red-100"
                     }
                   >
                     <Text
                       className={
-                        location.status === "Active"
+                        location.is_active
                           ? "text-xs font-medium text-green-700"
                           : "text-xs font-medium text-red-700"
                       }
                     >
-                      {location.status}
+                      {location.is_active ? "Active" : "Inactive"}
                     </Text>
                   </View>
                 </View>
                 <Text className="w-24 text-sm text-gray-600 text-center">
-                  {location.createdDate}
+                  {new Date(location.created_at).toLocaleDateString()}
                 </Text>
                 <View
                   className="w-20 flex-row justify-center"

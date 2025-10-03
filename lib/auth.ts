@@ -28,23 +28,35 @@ export const signUp = async (email: string, password: string, fullName?: string)
       return { success: false, error };
     }
 
-    // Check if user was successfully created
-    if (data?.user) {
-      if (data?.session) {
-        // User is immediately logged in (email confirmation disabled)
-        Alert.alert(
-          'Registration Successful!',
-          'Your account has been created and you are now signed in. Welcome!',
-          [{ text: 'OK' }]
-        );
-      } else {
-        // Email confirmation is required (but may have redirect issue)
-        Alert.alert(
-          'Registration Successful!',
-          'Your account has been created! You can now sign in with your credentials.',
-          [{ text: 'OK' }]
-        );
+    // Since email confirmation is disabled, user is immediately logged in
+    if (data?.user && data?.session) {
+      // Create profile record for the new user
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email!,
+            name: fullName || data.user.email!.split('@')[0],
+            tenant_role: 'tenant_admin',
+            is_tenant_admin: false, // Will be set to true during onboarding
+            first_login_completed: false, // Will be set to true during onboarding
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          // Don't fail the registration if profile creation fails
+          // The onboarding flow will handle missing profiles
+        }
+      } catch (profileError) {
+        console.error('Unexpected error creating profile:', profileError);
       }
+
+      Alert.alert(
+        'Registration Successful!',
+        'Your account has been created and you are now signed in. Welcome!',
+        [{ text: 'OK' }]
+      );
     }
 
     return { success: true, data };

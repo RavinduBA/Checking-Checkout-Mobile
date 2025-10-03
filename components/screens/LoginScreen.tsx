@@ -71,8 +71,8 @@ export default function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="flex-1 justify-center p-6">
+    <ScrollView className="flex-1 bg-gray-50 ">
+      <View className="flex-1 justify-center p-6 mt-44">
         <View className="bg-white rounded-xl p-6 shadow-sm">
           {/* Header */}
           <View className="items-center mb-6">
@@ -80,7 +80,7 @@ export default function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
               <Ionicons name="log-in" size={32} color="#2563eb" />
             </View>
             <Text className="text-2xl font-bold text-gray-800 mb-2">
-              Welcome Back
+              CheckingCheckout
             </Text>
             <Text className="text-gray-600 text-center">
               Sign in to access your hotel management dashboard

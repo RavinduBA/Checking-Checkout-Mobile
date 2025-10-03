@@ -75,6 +75,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   is_tenant_admin boolean DEFAULT false,
   first_login_completed boolean NOT NULL DEFAULT false,
   phone character varying,
+  is_phone_verified boolean NOT NULL DEFAULT false,
+  verification_code character varying DEFAULT NULL::character varying,
+  verification_code_expires timestamp with time zone,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id),
   CONSTRAINT profiles_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id)
@@ -294,6 +297,7 @@ CREATE TABLE IF NOT EXISTS public.reservations (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   tenant_id uuid,
+  guest_passport_number text,
   CONSTRAINT reservations_pkey PRIMARY KEY (id),
   CONSTRAINT reservations_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id),
   CONSTRAINT reservations_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id),
@@ -331,9 +335,24 @@ CREATE TABLE IF NOT EXISTS public.additional_services (
   notes text,
   created_by uuid,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  tenant_id uuid,
   CONSTRAINT additional_services_pkey PRIMARY KEY (id),
   CONSTRAINT additional_services_reservation_id_fkey FOREIGN KEY (reservation_id) REFERENCES public.reservations(id),
-  CONSTRAINT additional_services_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id)
+  CONSTRAINT additional_services_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id),
+  CONSTRAINT additional_services_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id)
+);
+
+CREATE TABLE IF NOT EXISTS public.channel_property_mappings (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id uuid NOT NULL,
+  channel_property_name text NOT NULL,
+  channel_type text NOT NULL DEFAULT 'generic'::text,
+  mapping_type text NOT NULL DEFAULT 'property'::text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT channel_property_mappings_pkey PRIMARY KEY (id),
+  CONSTRAINT channel_property_mappings_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
 );
 
 CREATE TABLE IF NOT EXISTS public.beds24_property_mappings (
@@ -437,6 +456,41 @@ CREATE TABLE IF NOT EXISTS public.external_bookings (
   CONSTRAINT external_bookings_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
 );
 
+CREATE TABLE IF NOT EXISTS public.form_field_preferences (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL UNIQUE,
+  show_guest_email boolean DEFAULT true,
+  show_guest_phone boolean DEFAULT true,
+  show_guest_address boolean DEFAULT true,
+  show_guest_nationality boolean DEFAULT true,
+  show_guest_passport_number boolean DEFAULT true,
+  show_guest_id_number boolean DEFAULT false,
+  show_adults boolean DEFAULT true,
+  show_children boolean DEFAULT true,
+  show_arrival_time boolean DEFAULT false,
+  show_special_requests boolean DEFAULT true,
+  show_advance_amount boolean DEFAULT true,
+  show_paid_amount boolean DEFAULT true,
+  show_guide boolean DEFAULT true,
+  show_agent boolean DEFAULT true,
+  show_booking_source boolean DEFAULT false,
+  show_id_photos boolean DEFAULT false,
+  show_guest_signature boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT form_field_preferences_pkey PRIMARY KEY (id),
+  CONSTRAINT form_field_preferences_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id)
+);
+
+CREATE TABLE IF NOT EXISTS public.income_types (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  type_name text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  tenant_id uuid,
+  CONSTRAINT income_types_pkey PRIMARY KEY (id),
+  CONSTRAINT income_types_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id)
+);
+
 CREATE TABLE IF NOT EXISTS public.income (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   location_id uuid NOT NULL,
@@ -446,24 +500,23 @@ CREATE TABLE IF NOT EXISTS public.income (
   currency currency_type NOT NULL DEFAULT 'LKR'::currency_type,
   is_advance boolean NOT NULL DEFAULT false,
   payment_method text NOT NULL,
-  account_id uuid NOT NULL,
+  account_id uuid,
   note text,
   date date NOT NULL DEFAULT CURRENT_DATE,
   booking_source text CHECK ((booking_source = ANY (ARRAY['direct'::text, 'airbnb'::text, 'booking_com'::text, 'expedia'::text, 'agoda'::text, 'beds24'::text, 'manual'::text, 'online'::text, 'phone'::text, 'email'::text, 'walk_in'::text, 'ical'::text])) OR booking_source IS NULL),
   check_in_date date,
   check_out_date date,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  tenant_id uuid,
+  additional_service_id uuid,
+  income_type_id uuid,
   CONSTRAINT income_pkey PRIMARY KEY (id),
   CONSTRAINT income_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id),
-  CONSTRAINT income_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(id),
-  CONSTRAINT income_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id)
-);
-
-CREATE TABLE IF NOT EXISTS public.income_types (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  type_name text NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT income_types_pkey PRIMARY KEY (id)
+  CONSTRAINT income_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id),
+  CONSTRAINT income_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id),
+  CONSTRAINT income_additional_service_id_fkey FOREIGN KEY (additional_service_id) REFERENCES public.additional_services(id),
+  CONSTRAINT income_income_type_id_fkey FOREIGN KEY (income_type_id) REFERENCES public.income_types(id),
+  CONSTRAINT income_reservation_id_fkey FOREIGN KEY (booking_id) REFERENCES public.reservations(id)
 );
 
 CREATE TABLE IF NOT EXISTS public.monthly_rent_payments (
@@ -586,7 +639,9 @@ ALTER TABLE public.additional_services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.beds24_property_mappings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.booking_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.booking_sync_urls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.channel_property_mappings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.currency_rates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.form_field_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expense_types ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.external_bookings ENABLE ROW LEVEL SECURITY;
@@ -603,8 +658,37 @@ ALTER TABLE public.user_permissions ENABLE ROW LEVEL SECURITY;
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- You'll need to create more specific policies for each table based on your business logic
 -- This is just a starting point
 
-SELECT 'Database schema created successfully!' as message;
+-- ========================================
+-- AUTOMATIC PROFILE CREATION TRIGGER
+-- ========================================
+
+-- Function to handle new user registration
+-- This automatically creates a profile record when a user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, name, tenant_role, is_tenant_admin, first_login_completed)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+    'tenant_admin',
+    false, -- Will be set to true during onboarding
+    false  -- Will be set to true during onboarding
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger that fires after a new user is inserted in auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+SELECT 'Database schema with profile trigger created successfully!' as message;

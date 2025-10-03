@@ -66,11 +66,9 @@ export default function RegistrationScreen({
       );
 
       if (result.success) {
-        // Success message is now handled in the auth.ts file
-        // Auto switch to login after successful registration
-        setTimeout(() => {
-          onSwitchToLogin();
-        }, 2000);
+        // Success message is handled in auth.ts
+        // Since email confirmation is disabled, user is immediately logged in
+        // AuthContext will automatically redirect to main app
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -82,7 +80,7 @@ export default function RegistrationScreen({
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
-      <View className="flex-1 justify-center p-6">
+      <View className="flex-1 justify-center p-6 mt-16"> 
         <View className="bg-white rounded-xl p-6 shadow-sm">
           {/* Header */}
           <View className="items-center mb-6">
