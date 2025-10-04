@@ -60,44 +60,63 @@ export default function MasterFilesScreen({
 
   // Render the main Master Files grid
   const renderMainScreen = () => (
-    <View className="flex-1 bg-gray-50 p-4">
-      <View className="mb-6">
-        <Text className="text-2xl font-bold text-gray-800 mb-2">
-          Master Files
-        </Text>
-        <Text className="text-gray-600">
-          Manage master data and configuration settings
-        </Text>
+    <View className="flex-1 bg-gray-50">
+      {/* Back button header */}
+      <View className="flex-row items-center p-4 bg-white border-b mt-20 border-gray-200">
+        <TouchableOpacity
+          onPress={() => navigation?.goBack()}
+          className="flex-row items-center"
+        >
+          <Ionicons name="arrow-back" size={24} color="#374151" />
+          <Text className="ml-2 text-lg font-semibold text-gray-700">
+            Back to Dashboard
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      <View className="flex-1">
-        <View className="flex-row flex-wrap justify-between">
-          {masterFileOptions.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={option.onPress}
-              className="w-[48%] bg-white rounded-xl p-6 mb-4 shadow-sm"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 3,
-              }}
-            >
-              <View className="items-center">
-                <View
-                  className="w-16 h-16 rounded-full items-center justify-center mb-4"
-                  style={{ backgroundColor: `${option.color}20` }}
-                >
-                  <Ionicons name={option.icon} size={32} color={option.color} />
+      <View className="flex-1 p-4">
+        <View className="mb-6">
+          <Text className="text-2xl font-bold text-gray-800 mb-2">
+            Master Files
+          </Text>
+          <Text className="text-gray-600">
+            Manage master data and configuration settings
+          </Text>
+        </View>
+
+        <View className="flex-1">
+          <View className="flex-row flex-wrap justify-between">
+            {masterFileOptions.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={option.onPress}
+                className="w-[48%] bg-white rounded-xl p-6 mb-4 shadow-sm"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 3,
+                  elevation: 3,
+                }}
+              >
+                <View className="items-center">
+                  <View
+                    className="w-16 h-16 rounded-full items-center justify-center mb-4"
+                    style={{ backgroundColor: `${option.color}20` }}
+                  >
+                    <Ionicons
+                      name={option.icon}
+                      size={32}
+                      color={option.color}
+                    />
+                  </View>
+                  <Text className="text-base font-semibold text-gray-800 text-center">
+                    {option.title}
+                  </Text>
                 </View>
-                <Text className="text-base font-semibold text-gray-800 text-center">
-                  {option.title}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
     </View>

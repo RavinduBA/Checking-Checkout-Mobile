@@ -2,12 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
+import { useLocationContext } from "../contexts/LocationContext";
+import { useUserProfile } from "../hooks/useUserProfile";
 
 interface TopBarProps {
-  selectedLocation?: string;
-  userName?: string;
-  userEmail?: string;
-  onLocationChange?: (location: string) => void;
   onSearch?: (query: string) => void;
   onSettingsPress?: () => void;
   onUserManagementPress?: () => void;
@@ -15,13 +13,10 @@ interface TopBarProps {
   onNavigateToSettings?: () => void;
   onNavigateToUsers?: () => void;
   onNavigateToBilling?: () => void;
+  onNavigateToMasterFiles?: () => void;
 }
 
 export default function TopBar({
-  selectedLocation = "Downtown Hotel",
-  userName = "John Doe",
-  userEmail = "john.doe@hotel.com",
-  onLocationChange,
   onSearch,
   onSettingsPress,
   onUserManagementPress,
@@ -29,21 +24,27 @@ export default function TopBar({
   onNavigateToSettings,
   onNavigateToUsers,
   onNavigateToBilling,
+  onNavigateToMasterFiles,
 }: TopBarProps) {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const locations = [
-    "Downtown Hotel",
-    "Beach Resort",
-    "Mountain Lodge",
-    "City Center",
-    "Airport Hotel",
-  ];
+  const { profile } = useUserProfile();
+  const {
+    selectedLocation,
+    setSelectedLocation,
+    locations,
+    loading: locationsLoading,
+    getSelectedLocationData,
+  } = useLocationContext();
 
-  const handleLocationSelect = (location: string) => {
-    onLocationChange?.(location);
+  // Get the selected location data
+  const selectedLocationData = getSelectedLocationData();
+  const selectedLocationName = selectedLocationData?.name || "No Locations";
+
+  const handleLocationSelect = (locationId: string) => {
+    setSelectedLocation(locationId);
     setShowLocationDropdown(false);
   };
 
@@ -76,7 +77,7 @@ export default function TopBar({
           >
             <Ionicons name="location" size={16} color="#6b7280" />
             <Text className="ml-2 text-sm font-medium text-gray-700">
-              {selectedLocation}
+              {selectedLocationName}
             </Text>
             <Ionicons
               name="chevron-down"
@@ -94,10 +95,10 @@ export default function TopBar({
         >
           <View className="w-8 h-8 bg-blue-500 rounded-full items-center justify-center">
             <Text className="text-white text-sm font-semibold">
-              {userName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
+              {profile?.name
+                ?.split(" ")
+                .map((n: string) => n[0])
+                .join("") || "U"}
             </Text>
           </View>
           <Ionicons
@@ -125,23 +126,37 @@ export default function TopBar({
             <Text className="text-lg font-semibold text-gray-800 px-4 py-2 border-b border-gray-200">
               Select Location
             </Text>
-            {locations.map((location) => (
-              <TouchableOpacity
-                key={location}
-                onPress={() => handleLocationSelect(location)}
-                className="px-4 py-3 border-b border-gray-100"
-              >
-                <Text
-                  className={`text-sm ${
-                    location === selectedLocation
-                      ? "text-blue-600 font-semibold"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {location}
+            {locationsLoading ? (
+              <View className="px-4 py-3">
+                <Text className="text-sm text-gray-500">
+                  Loading locations...
                 </Text>
-              </TouchableOpacity>
-            ))}
+              </View>
+            ) : locations.length === 0 ? (
+              <View className="px-4 py-3">
+                <Text className="text-sm text-gray-500">
+                  No locations found
+                </Text>
+              </View>
+            ) : (
+              locations.map((location) => (
+                <TouchableOpacity
+                  key={location.id}
+                  onPress={() => handleLocationSelect(location.id)}
+                  className="px-4 py-3 border-b border-gray-100"
+                >
+                  <Text
+                    className={`text-sm ${
+                      location.id === selectedLocation
+                        ? "text-blue-600 font-semibold"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {location.name}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         </TouchableOpacity>
       </Modal>
@@ -161,9 +176,11 @@ export default function TopBar({
           <View className="bg-white rounded-lg py-2 w-64">
             <View className="px-4 py-3 border-b border-gray-200">
               <Text className="text-sm font-semibold text-gray-800">
-                {userName}
+                {profile?.name || "User"}
               </Text>
-              <Text className="text-xs text-gray-600">{userEmail}</Text>
+              <Text className="text-xs text-gray-600">
+                {profile?.email || ""}
+              </Text>
             </View>
 
             <TouchableOpacity
@@ -176,6 +193,17 @@ export default function TopBar({
             >
               <Ionicons name="settings-outline" size={16} color="#6b7280" />
               <Text className="ml-3 text-sm text-gray-700">Settings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setShowUserDropdown(false);
+                onNavigateToMasterFiles?.();
+              }}
+              className="flex-row items-center px-4 py-3 border-b border-gray-100"
+            >
+              <Ionicons name="folder-outline" size={16} color="#6b7280" />
+              <Text className="ml-3 text-sm text-gray-700">Master Files</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

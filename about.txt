@@ -13,24 +13,34 @@ Hooks Analysis & Mobile Compatibility
 Directly Reusable Hooks (Copy & Paste with minor tweaks)
 These hooks are business logic focused and can be directly copied:
 
-useIncomeData.tsx - ✅ Pure data fetching logic
-useExpenseData.tsx - ✅ Pure data fetching logic
-useCalendarData.tsx - ✅ Pure data fetching logic
-usePermissions.tsx - ✅ Permission checking logic
-useProfile.tsx - ✅ Simple profile wrapper
-useTenant.tsx - ✅ Tenant management logic
-useUserPermissions.tsx - ✅ User permission logic
-useUsersData.tsx - ✅ User data fetching
+useIncomeData.tsx 	- ✅ Pure data fetching logic
+useExpenseData.tsx      - ✅ Pure data fetching logic
+useCalendarData.tsx     - ✅ Pure data fetching logic
+usePermissions.tsx      - ✅ Permission checking logic
+useProfile.tsx          - ✅ Simple profile wrapper
+useTenant.tsx           - ✅ Tenant management logic
+useUserPermissions.tsx  - ✅ User permission logic
+useUsersData.tsx        - ✅ User data fetching
 useRoomAvailability.tsx - ✅ Room availability logic
 useFormFieldPreferences.tsx - ✅ Form preferences logic
 
+utils  - currency.ts
+
+Folders under components folder
+
+accounts     -Components related to account management, such as account lists, account forms, and account details for financial tracking.
+calendar     - Components for displaying and interacting with booking calendars, including date pickers and calendar views for reservations.
+dashboard    - Components used on the main dashboard page, such as summary cards, charts, and quick stats for hotel operations.
+expense      - Components for managing and displaying expense records, expense forms, and related financial UI elements.
+master-files - Components for managing master data like agents, guides, locations, rooms, and commissions—used in the configuration/master files section.
+reports      - Components for generating and displaying various reports, including financial, commission, and account reports.
+reservation  - Components for reservation management, such as reservation forms, lists, dialogs, and printable views.
+settings     - Components for application and user settings, including forms and settings panels.
+ui           -  Shared UI components (buttons, modals, inputs, etc.), often based on shadcn/ui, used throughout the app for consistent design.
+users        -  Components for user management, such as user lists, user forms, and permission dialogs.
 
 
 Database tables
 
 location - 4 co
 
-
-
-
-look dont use css in files in onbaridng folder and onboading screen use tailwind css for wstyling in everywhere. 

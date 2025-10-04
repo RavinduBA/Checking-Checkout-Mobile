@@ -4,6 +4,7 @@ import AuthScreen from "../components/screens/AuthScreen";
 import LoadingScreen from "../components/screens/LoadingScreen";
 import OnboardingScreen from "../components/screens/OnboardingScreen";
 import { AuthProvider } from "../contexts/AuthContext";
+import { LocationProvider } from "../contexts/LocationContext";
 import { useAuth } from "../hooks/useAuth";
 import { useUserProfile } from "../hooks/useUserProfile";
 import "./global.css";
@@ -53,7 +54,11 @@ function AppContent() {
 
   // Show main app if authenticated and has tenant
   console.log("Showing main app - has tenant:", profile?.tenant_id);
-  return <BottomTabNavigator />;
+  return (
+    <LocationProvider>
+      <BottomTabNavigator />
+    </LocationProvider>
+  );
 }
 
 // Main app wrapped with AuthProvider

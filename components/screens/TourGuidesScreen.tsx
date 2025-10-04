@@ -9,129 +9,137 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-interface TourGuide {
-  id: string;
-  fullName: string;
-  licenseNumber: string;
-  phone: string;
-  email: string;
-  address: string;
-  commissionRate: number;
-  status: "Active" | "Inactive";
-  createdDate: string;
-}
+import { useGuides } from "../../hooks/useGuides";
+import { useUserProfile } from "../../hooks/useUserProfile";
 
 export default function TourGuidesScreen() {
-  const [guides, setGuides] = useState<TourGuide[]>([
-    {
-      id: "1",
-      fullName: "Ravindu Bandara Abeysinghe",
-      licenseNumber: "12132v",
-      phone: "+94716589780",
-      email: "ravindubandaraha@gmail.com",
-      address: "123 Main Street, Colombo 07, Sri Lanka",
-      commissionRate: 2,
-      status: "Active",
-      createdDate: "10/1/2025",
-    },
-  ]);
+  const { guides, loading, error, createGuide, updateGuide, deleteGuide } =
+    useGuides();
+  const { profile } = useUserProfile();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingGuide, setEditingGuide] = useState<TourGuide | null>(null);
+  const [editingGuide, setEditingGuide] = useState<any>(null);
 
   // Form state
   const [formData, setFormData] = useState({
-    fullName: "",
-    licenseNumber: "",
+    name: "",
+    license_number: "",
     phone: "",
     email: "",
     address: "",
-    commissionRate: 0,
-    status: "Active" as "Active" | "Inactive",
+    notes: "",
+    commission_rate: 10,
+    is_active: true,
   });
 
   const resetForm = () => {
     setFormData({
-      fullName: "",
-      licenseNumber: "",
+      name: "",
+      license_number: "",
       phone: "",
       email: "",
       address: "",
-      commissionRate: 0,
-      status: "Active",
+      notes: "",
+      commission_rate: 10,
+      is_active: true,
     });
   };
 
-  const handleAddGuide = () => {
-    if (formData.fullName.trim() && formData.licenseNumber.trim()) {
-      const newGuide: TourGuide = {
-        id: Date.now().toString(),
-        fullName: formData.fullName.trim(),
-        licenseNumber: formData.licenseNumber.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        address: formData.address.trim(),
-        commissionRate: formData.commissionRate,
-        status: formData.status,
-        createdDate: new Date().toLocaleDateString(),
-      };
-      setGuides([...guides, newGuide]);
-      resetForm();
+  const handleAddGuide = async () => {
+    if (!formData.name.trim()) {
+      Alert.alert("Error", "Guide name is required");
+      return;
+    }
+
+    if (!profile?.tenant_id) {
+      Alert.alert("Error", "User profile not loaded. Please try again.");
+      return;
+    }
+
+    try {
+      await createGuide({
+        name: formData.name.trim(),
+        license_number: formData.license_number.trim() || undefined,
+        phone: formData.phone.trim() || undefined,
+        email: formData.email.trim() || undefined,
+        address: formData.address.trim() || undefined,
+        notes: formData.notes.trim() || undefined,
+        commission_rate: formData.commission_rate,
+        is_active: formData.is_active,
+      });
+
       setShowAddModal(false);
+      resetForm();
+      Alert.alert("Success", "Tour guide added successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Unknown error occurred";
+      Alert.alert("Error", `Failed to add tour guide: ${errorMessage}`);
+      console.error("Error adding tour guide:", error);
     }
   };
 
-  const handleEditGuide = (guide: TourGuide) => {
+  const handleEditGuide = (guide: any) => {
     setEditingGuide(guide);
     setFormData({
-      fullName: guide.fullName,
-      licenseNumber: guide.licenseNumber,
-      phone: guide.phone,
-      email: guide.email,
-      address: guide.address,
-      commissionRate: guide.commissionRate,
-      status: guide.status,
+      name: guide.name,
+      license_number: guide.license_number || "",
+      phone: guide.phone || "",
+      email: guide.email || "",
+      address: guide.address || "",
+      notes: guide.notes || "",
+      commission_rate: guide.commission_rate,
+      is_active: guide.is_active,
     });
     setShowEditModal(true);
   };
 
-  const handleUpdateGuide = () => {
-    if (
-      editingGuide &&
-      formData.fullName.trim() &&
-      formData.licenseNumber.trim()
-    ) {
-      setGuides(
-        guides.map((guide) =>
-          guide.id === editingGuide.id
-            ? {
-                ...guide,
-                ...formData,
-                fullName: formData.fullName.trim(),
-                licenseNumber: formData.licenseNumber.trim(),
-              }
-            : guide
-        )
-      );
+  const handleUpdateGuide = async () => {
+    if (!editingGuide || !formData.name.trim()) {
+      Alert.alert("Error", "Guide name is required");
+      return;
+    }
+
+    try {
+      await updateGuide(editingGuide.id, {
+        name: formData.name.trim(),
+        license_number: formData.license_number.trim() || undefined,
+        phone: formData.phone.trim() || undefined,
+        email: formData.email.trim() || undefined,
+        address: formData.address.trim() || undefined,
+        notes: formData.notes.trim() || undefined,
+        commission_rate: formData.commission_rate,
+        is_active: formData.is_active,
+      });
+
       setShowEditModal(false);
       setEditingGuide(null);
       resetForm();
+      Alert.alert("Success", "Tour guide updated successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Unknown error occurred";
+      Alert.alert("Error", `Failed to update tour guide: ${errorMessage}`);
+      console.error("Error updating tour guide:", error);
     }
   };
 
   const handleDeleteGuide = (guideId: string) => {
     Alert.alert(
-      "Delete Guide",
+      "Delete Tour Guide",
       "Are you sure you want to delete this tour guide?",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
-          onPress: () =>
-            setGuides(guides.filter((guide) => guide.id !== guideId)),
+          onPress: async () => {
+            try {
+              await deleteGuide(guideId);
+              Alert.alert("Success", "Tour guide deleted successfully");
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete tour guide");
+            }
+          },
         },
       ]
     );
@@ -172,17 +180,17 @@ export default function TourGuidesScreen() {
           </Text>
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Full Name */}
+            {/* Name */}
             <View className="mb-4">
               <Text className="text-sm font-medium text-gray-700 mb-2">
-                Full Name
+                Name
               </Text>
               <TextInput
-                value={formData.fullName}
+                value={formData.name}
                 onChangeText={(text) =>
-                  setFormData((prev) => ({ ...prev, fullName: text }))
+                  setFormData((prev) => ({ ...prev, name: text }))
                 }
-                placeholder="Guide's full name"
+                placeholder="Guide's name"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
               />
             </View>
@@ -193,9 +201,9 @@ export default function TourGuidesScreen() {
                 License Number
               </Text>
               <TextInput
-                value={formData.licenseNumber}
+                value={formData.license_number}
                 onChangeText={(text) =>
-                  setFormData((prev) => ({ ...prev, licenseNumber: text }))
+                  setFormData((prev) => ({ ...prev, license_number: text }))
                 }
                 placeholder="Tour guide license number"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
@@ -253,18 +261,36 @@ export default function TourGuidesScreen() {
               />
             </View>
 
+            {/* Notes */}
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Notes
+              </Text>
+              <TextInput
+                value={formData.notes}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, notes: text }))
+                }
+                placeholder="Additional notes about the guide"
+                multiline
+                numberOfLines={3}
+                className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
+                style={{ textAlignVertical: "top" }}
+              />
+            </View>
+
             {/* Commission Rate */}
             <View className="mb-4">
               <Text className="text-sm font-medium text-gray-700 mb-2">
                 Commission Rate (%)
               </Text>
               <TextInput
-                value={formData.commissionRate.toString()}
+                value={formData.commission_rate.toString()}
                 onChangeText={(text) => {
                   const rate = parseFloat(text) || 0;
-                  setFormData((prev) => ({ ...prev, commissionRate: rate }));
+                  setFormData((prev) => ({ ...prev, commission_rate: rate }));
                 }}
-                placeholder="0"
+                placeholder="10"
                 keyboardType="numeric"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-gray-800"
               />
@@ -278,19 +304,17 @@ export default function TourGuidesScreen() {
               <View className="flex-row" style={{ gap: 12 }}>
                 <TouchableOpacity
                   onPress={() =>
-                    setFormData((prev) => ({ ...prev, status: "Active" }))
+                    setFormData((prev) => ({ ...prev, is_active: true }))
                   }
                   className={`flex-1 py-3 rounded-lg border ${
-                    formData.status === "Active"
+                    formData.is_active
                       ? "bg-green-50 border-green-500"
                       : "bg-gray-50 border-gray-300"
                   }`}
                 >
                   <Text
                     className={`text-center font-medium ${
-                      formData.status === "Active"
-                        ? "text-green-700"
-                        : "text-gray-600"
+                      formData.is_active ? "text-green-700" : "text-gray-600"
                     }`}
                   >
                     Active
@@ -298,19 +322,17 @@ export default function TourGuidesScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() =>
-                    setFormData((prev) => ({ ...prev, status: "Inactive" }))
+                    setFormData((prev) => ({ ...prev, is_active: false }))
                   }
                   className={`flex-1 py-3 rounded-lg border ${
-                    formData.status === "Inactive"
+                    !formData.is_active
                       ? "bg-red-50 border-red-500"
                       : "bg-gray-50 border-gray-300"
                   }`}
                 >
                   <Text
                     className={`text-center font-medium ${
-                      formData.status === "Inactive"
-                        ? "text-red-700"
-                        : "text-gray-600"
+                      !formData.is_active ? "text-red-700" : "text-gray-600"
                     }`}
                   >
                     Inactive
@@ -400,34 +422,32 @@ export default function TourGuidesScreen() {
                   className="flex-row p-4 border-b border-gray-100"
                 >
                   <Text className="w-40 text-gray-800" numberOfLines={2}>
-                    {guide.fullName}
+                    {guide.name}
                   </Text>
                   <Text className="w-24 text-gray-800">
-                    {guide.licenseNumber}
+                    {guide.license_number || "N/A"}
                   </Text>
-                  <Text className="w-32 text-gray-800">{guide.phone}</Text>
+                  <Text className="w-32 text-gray-800">
+                    {guide.phone || "N/A"}
+                  </Text>
                   <Text className="w-48 text-gray-800" numberOfLines={2}>
-                    {guide.email}
+                    {guide.email || "N/A"}
                   </Text>
                   <Text className="w-24 text-gray-800">
-                    {guide.commissionRate}%
+                    {guide.commission_rate}%
                   </Text>
                   <View className="w-20">
                     <View
                       className={`px-2 py-1 rounded-full ${
-                        guide.status === "Active"
-                          ? "bg-green-100"
-                          : "bg-red-100"
+                        guide.is_active ? "bg-green-100" : "bg-red-100"
                       }`}
                     >
                       <Text
                         className={`text-xs font-medium text-center ${
-                          guide.status === "Active"
-                            ? "text-green-800"
-                            : "text-red-800"
+                          guide.is_active ? "text-green-800" : "text-red-800"
                         }`}
                       >
-                        {guide.status}
+                        {guide.is_active ? "Active" : "Inactive"}
                       </Text>
                     </View>
                   </View>

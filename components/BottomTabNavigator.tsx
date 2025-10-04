@@ -54,12 +54,6 @@ function ScreenWithTopBar({
     <View className="flex-1 bg-gray-100">
       <View className="mt-20">
         <TopBar
-          selectedLocation="Downtown Hotel"
-          userName={user?.user_metadata?.full_name || user?.email || "User"}
-          userEmail={user?.email || ""}
-          onLocationChange={(location: string) =>
-            console.log("Location changed to:", location)
-          }
           onSearch={(query: string) => console.log("Search query:", query)}
           onSettingsPress={() => console.log("Settings pressed")}
           onUserManagementPress={() => console.log("User management pressed")}
@@ -67,6 +61,7 @@ function ScreenWithTopBar({
           onNavigateToSettings={() => navigation.navigate("Settings")}
           onNavigateToUsers={() => navigation.navigate("Users")}
           onNavigateToBilling={() => navigation.navigate("Billing")}
+          onNavigateToMasterFiles={() => navigation.navigate("MasterFiles")}
         />
       </View>
       <Component navigation={navigation} />
@@ -169,16 +164,6 @@ function MainTabs() {
         {() => <ScreenWithTopBar component={BookingChannelsScreen} />}
       </Tab.Screen>
       <Tab.Screen
-        name="Master Files"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="folder" size={20} color={color} />
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={MasterFilesScreen} />}
-      </Tab.Screen>
-      <Tab.Screen
         name="Reports"
         options={{
           tabBarIcon: ({ color }) => (
@@ -199,6 +184,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Users" component={UsersScreen} />
       <Stack.Screen name="Billing" component={BillingSubscriptionsScreen} />
+      <Stack.Screen name="MasterFiles" component={MasterFilesScreen} />
     </Stack.Navigator>
   );
 }

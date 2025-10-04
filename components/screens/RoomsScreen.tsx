@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -9,24 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLocationContext } from "../../contexts/LocationContext";
+import { useRooms } from "../../hooks/useRooms";
+import { useUserProfile } from "../../hooks/useUserProfile";
 
-interface Room {
-  id: string;
-  roomNumber: string;
-  roomType: string;
-  location: string;
-  propertyType: string;
-  bedType: string;
-  maxOccupancy: number;
-  basePrice: number;
-  currency: string;
-  description: string;
-  amenities: string[];
-  status: "Active" | "Inactive";
-  createdDate: string;
-}
-
-const PROPERTY_TYPES = ["Room", "Suite", "Villa", "Apartment"];
+const PROPERTY_TYPES = ["Room", "Villa"];
 const ROOM_TYPES = [
   "Standard",
   "Deluxe",
@@ -35,7 +23,6 @@ const ROOM_TYPES = [
   "Presidential",
 ];
 const BED_TYPES = ["Single", "Double", "Queen", "King", "Twin", "Sofa Bed"];
-const LOCATIONS = ["Ocean View", "Garden Villa", "Pool Side", "Main Building"];
 const CURRENCIES = ["USD", "EUR", "GBP", "LKR"];
 
 const AMENITIES = [
@@ -58,39 +45,17 @@ const AMENITIES = [
 ];
 
 export default function RoomsScreen() {
-  const [rooms, setRooms] = useState<Room[]>([
-    {
-      id: "1",
-      roomNumber: "101",
-      roomType: "Deluxe",
-      location: "Ocean View",
-      propertyType: "Room",
-      bedType: "King",
-      maxOccupancy: 2,
-      basePrice: 1211,
-      currency: "USD",
-      description: "Luxurious ocean view room with modern amenities",
-      amenities: [
-        "Air Conditioning",
-        "WiFi",
-        "TV",
-        "Mini Bar",
-        "Sea View",
-        "Balcony",
-      ],
-      status: "Active",
-      createdDate: "10/1/2025",
-    },
-  ]);
-
+  const { locations } = useLocationContext();
+    const { rooms, loading, error, createRoom, updateRoom, deleteRoom } = useRooms(); // Remove selectedLocation to get ALL rooms
+  const { profile } = useUserProfile();
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
-
+  const [editingRoom, setEditingRoom] = useState<any>(null);
   // Form state
   const [formData, setFormData] = useState({
     roomNumber: "",
-    location: LOCATIONS[0],
+    location: "",
     propertyType: PROPERTY_TYPES[0],
     roomType: ROOM_TYPES[0],
     bedType: BED_TYPES[0],
@@ -101,6 +66,13 @@ export default function RoomsScreen() {
     amenities: [] as string[],
     status: "Active" as "Active" | "Inactive",
   });
+
+  // Set default location to first available location
+  React.useEffect(() => {
+    if (locations.length > 0 && !formData.location) {
+      setFormData(prev => ({ ...prev, location: locations[0].id }));
+    }
+  }, [locations, formData.location]);
 
   // Dropdown state
   const [openDropdowns, setOpenDropdowns] = useState<{
@@ -117,7 +89,7 @@ export default function RoomsScreen() {
   const resetForm = () => {
     setFormData({
       roomNumber: "",
-      location: LOCATIONS[0],
+      location: locations.length > 0 ? locations[0].id : "",
       propertyType: PROPERTY_TYPES[0],
       roomType: ROOM_TYPES[0],
       bedType: BED_TYPES[0],
@@ -131,59 +103,132 @@ export default function RoomsScreen() {
     setOpenDropdowns({});
   };
 
-  const handleAddRoom = () => {
-    if (formData.roomNumber.trim()) {
-      const newRoom: Room = {
-        id: Date.now().toString(),
-        roomNumber: formData.roomNumber.trim(),
-        roomType: formData.roomType,
-        location: formData.location,
-        propertyType: formData.propertyType,
-        bedType: formData.bedType,
-        maxOccupancy: formData.maxOccupancy,
-        basePrice: formData.basePrice,
+  const handleAddRoom = async () => {
+    if (!formData.roomNumber.trim()) {
+      Alert.alert("Error", "Room number is required");
+      return;
+    }
+
+    if (!formData.location) {
+      Alert.alert("Error", "Please select a location");
+      return;
+    }
+
+    // Check if we have a valid profile with tenant_id
+    if (!profile?.tenant_id) {
+      Alert.alert("Error", "User profile not loaded or missing tenant information");
+      console.error("Profile state:", profile);
+      return;
+    }
+
+    try {
+      console.log("Profile tenant_id:", profile.tenant_id);
+      console.log("Selected location:", formData.location);
+      console.log("Attempting to create room with data:", {
+        room_number: formData.roomNumber.trim(),
+        room_type: formData.roomType,
+        property_type: formData.propertyType,
+        bed_type: formData.bedType,
+        max_occupancy: formData.maxOccupancy,
+        base_price: formData.basePrice,
         currency: formData.currency,
         description: formData.description,
+        location_id: formData.location,
+        is_active: formData.status === "Active",
         amenities: formData.amenities,
-        status: formData.status,
-        createdDate: new Date().toLocaleDateString(),
-      };
-      setRooms([...rooms, newRoom]);
-      resetForm();
+      });
+
+      await createRoom({
+        room_number: formData.roomNumber.trim(),
+        room_type: formData.roomType,
+        property_type: formData.propertyType,
+        bed_type: formData.bedType,
+        max_occupancy: formData.maxOccupancy,
+        base_price: formData.basePrice,
+        currency: formData.currency,
+        description: formData.description,
+        location_id: formData.location,
+        is_active: formData.status === "Active",
+        amenities: formData.amenities,
+      });
+
       setShowAddModal(false);
+      resetForm();
+      Alert.alert("Success", "Room added successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Unknown error occurred";
+      Alert.alert("Error", `Failed to add room: ${errorMessage}`);
+      console.error("Error adding room:", error);
+      
+      // Additional debugging for RLS errors
+      if (error?.code === "42501") {
+        console.error("RLS Policy Error - This indicates the Row Level Security policy is blocking the insert");
+        console.error("Make sure the RLS policies are correctly configured for the rooms table");
+        Alert.alert(
+          "Database Security Error", 
+          "Row Level Security policy is blocking this operation. Please check your database configuration."
+        );
+      }
     }
   };
 
-  const handleEditRoom = (room: Room) => {
+  const handleEditRoom = (room: any) => {
     setEditingRoom(room);
     setFormData({
-      roomNumber: room.roomNumber,
-      location: room.location,
-      propertyType: room.propertyType,
-      roomType: room.roomType,
-      bedType: room.bedType,
-      maxOccupancy: room.maxOccupancy,
-      basePrice: room.basePrice,
+      roomNumber: room.room_number,
+      location: room.location_id,
+      propertyType: room.property_type,
+      roomType: room.room_type,
+      bedType: room.bed_type,
+      maxOccupancy: room.max_occupancy,
+      basePrice: room.base_price,
       currency: room.currency,
-      description: room.description,
-      amenities: room.amenities,
-      status: room.status,
+      description: room.description || "",
+      amenities: room.amenities || [],
+      status: room.is_active ? "Active" : "Inactive",
     });
     setShowEditModal(true);
   };
 
-  const handleUpdateRoom = () => {
-    if (editingRoom && formData.roomNumber.trim()) {
-      setRooms(
-        rooms.map((room) =>
-          room.id === editingRoom.id
-            ? { ...room, ...formData, roomNumber: formData.roomNumber.trim() }
-            : room
-        )
-      );
+  const handleUpdateRoom = async () => {
+    if (!editingRoom || !formData.roomNumber.trim()) {
+      Alert.alert("Error", "Room number is required");
+      return;
+    }
+
+    if (!formData.location) {
+      Alert.alert("Error", "Please select a location");
+      return;
+    }
+
+    if (!profile?.tenant_id) {
+      Alert.alert("Error", "User profile not loaded. Please try again.");
+      return;
+    }
+
+    try {
+      await updateRoom(editingRoom.id, {
+        room_number: formData.roomNumber.trim(),
+        room_type: formData.roomType,
+        property_type: formData.propertyType,
+        bed_type: formData.bedType,
+        max_occupancy: formData.maxOccupancy,
+        base_price: formData.basePrice,
+        currency: formData.currency,
+        description: formData.description,
+        location_id: formData.location,
+        is_active: formData.status === "Active",
+        amenities: formData.amenities,
+      });
+
       setShowEditModal(false);
       setEditingRoom(null);
       resetForm();
+      Alert.alert("Success", "Room updated successfully");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Unknown error occurred";
+      Alert.alert("Error", `Failed to update room: ${errorMessage}`);
+      console.error("Error updating room:", error);
     }
   };
 
@@ -193,7 +238,14 @@ export default function RoomsScreen() {
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => setRooms(rooms.filter((room) => room.id !== roomId)),
+        onPress: async () => {
+          try {
+            await deleteRoom(roomId);
+            Alert.alert("Success", "Room deleted successfully");
+          } catch (error) {
+            Alert.alert("Error", "Failed to delete room");
+          }
+        },
       },
     ]);
   };
@@ -210,11 +262,21 @@ export default function RoomsScreen() {
   const renderDropdown = (
     label: string,
     value: string,
-    options: string[],
+    options: string[] | { value: string; label: string }[],
     onSelect: (value: string) => void
   ) => {
     const dropdownKey = label.toLowerCase().replace(/\s+/g, "");
     const isOpen = openDropdowns[dropdownKey] || false;
+
+    // Handle both string arrays and object arrays
+    const getOptionValue = (option: string | { value: string; label: string }) =>
+      typeof option === 'string' ? option : option.value;
+    const getOptionLabel = (option: string | { value: string; label: string }) =>
+      typeof option === 'string' ? option : option.label;
+
+    // Find current selection label
+    const currentOption = options.find(opt => getOptionValue(opt) === value);
+    const displayValue = currentOption ? getOptionLabel(currentOption) : `Select ${label}`;
 
     return (
       <View className="mb-4" style={{ zIndex: isOpen ? 1000 : 1 }}>
@@ -225,7 +287,7 @@ export default function RoomsScreen() {
             className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between bg-white"
           >
             <Text className={value ? "text-gray-800" : "text-gray-500"}>
-              {value || `Select ${label}`}
+              {displayValue}
             </Text>
             <Ionicons
               name={isOpen ? "chevron-up" : "chevron-down"}
@@ -239,33 +301,37 @@ export default function RoomsScreen() {
               className="absolute top-full left-0 right-0 border border-gray-300 rounded-lg bg-white mt-1"
               style={{ zIndex: 1001 }}
             >
-              {options.map((option, index) => (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => {
-                    onSelect(option);
-                    toggleDropdown(dropdownKey);
-                  }}
-                  className={`px-3 py-3 flex-row items-center justify-between ${
-                    index !== options.length - 1
-                      ? "border-b border-gray-200"
-                      : ""
-                  } ${value === option ? "bg-blue-50" : "bg-white"}`}
-                >
-                  <Text
-                    className={
-                      value === option
-                        ? "text-blue-700 font-medium"
-                        : "text-gray-800"
-                    }
+              {options.map((option, index) => {
+                const optionValue = getOptionValue(option);
+                const optionLabel = getOptionLabel(option);
+                return (
+                  <TouchableOpacity
+                    key={optionValue}
+                    onPress={() => {
+                      onSelect(optionValue);
+                      toggleDropdown(dropdownKey);
+                    }}
+                    className={`px-3 py-3 flex-row items-center justify-between ${
+                      index !== options.length - 1
+                        ? "border-b border-gray-200"
+                        : ""
+                    } ${value === optionValue ? "bg-blue-50" : "bg-white"}`}
                   >
-                    {option}
-                  </Text>
-                  {value === option && (
-                    <Ionicons name="checkmark" size={16} color="#1d4ed8" />
-                  )}
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      className={
+                        value === optionValue
+                          ? "text-blue-700 font-medium"
+                          : "text-gray-800"
+                      }
+                    >
+                      {optionLabel}
+                    </Text>
+                    {value === optionValue && (
+                      <Ionicons name="checkmark" size={16} color="#1d4ed8" />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </View>
@@ -325,7 +391,7 @@ export default function RoomsScreen() {
             </View>
 
             {/* Location */}
-            {renderDropdown("Location", formData.location, LOCATIONS, (value) =>
+            {renderDropdown("Location", formData.location, locations.map(loc => ({ value: loc.id, label: loc.name })), (value) =>
               setFormData((prev) => ({ ...prev, location: value }))
             )}
 
@@ -533,6 +599,41 @@ export default function RoomsScreen() {
     </Modal>
   );
 
+  // Loading state
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-4 text-gray-600">Loading rooms...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50 px-6">
+        <Ionicons name="alert-circle" size={48} color="#EF4444" />
+        <Text className="mt-4 text-red-600 text-center">{error}</Text>
+      </View>
+    );
+  }
+
+  // Show message if no locations are available
+  if (locations.length === 0 && !loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50 px-6">
+        <Ionicons name="business" size={48} color="#9CA3AF" />
+        <Text className="mt-4 text-gray-600 text-center text-lg">
+          No locations available
+        </Text>
+        <Text className="mt-2 text-gray-500 text-center">
+          Please add a location to manage rooms
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-gray-50 p-4">
       {/* Header with Add Button */}
@@ -587,9 +688,9 @@ export default function RoomsScreen() {
         <ScrollView className="flex-1">
           {rooms.map((room, index) => {
             const statusColor =
-              room.status === "Active" ? "text-green-700" : "text-red-700";
+              room.is_active ? "text-green-700" : "text-red-700";
             const statusBg =
-              room.status === "Active" ? "bg-green-100" : "bg-red-100";
+              room.is_active ? "bg-green-100" : "bg-red-100";
             const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50";
 
             return (
@@ -599,22 +700,22 @@ export default function RoomsScreen() {
               >
                 <View className="flex-row items-center">
                   <Text className="w-16 text-gray-800 font-medium">
-                    {room.roomNumber}
+                    {room.room_number}
                   </Text>
-                  <Text className="flex-1 text-gray-800">{room.roomType}</Text>
+                  <Text className="flex-1 text-gray-800">{room.room_type}</Text>
                   <Text className="w-20 text-gray-600 text-xs">
-                    {room.location}
+                    {room.location?.name || 'N/A'}
                   </Text>
                   <Text className="w-16 text-gray-600 text-center">
-                    {room.maxOccupancy}
+                    {room.max_occupancy}
                   </Text>
                   <Text className="w-20 text-gray-800 text-center font-medium">
-                    ${room.basePrice}
+                    {room.currency} {room.base_price}
                   </Text>
                   <View className="w-16 items-center">
                     <View className={`px-2 py-1 rounded-full ${statusBg}`}>
                       <Text className={`text-xs font-medium ${statusColor}`}>
-                        {room.status}
+                        {room.is_active ? "Active" : "Inactive"}
                       </Text>
                     </View>
                   </View>
