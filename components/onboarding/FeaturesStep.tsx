@@ -1,12 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { OnboardingFormData } from "../screens/OnboardingScreen";
 
 const FEATURES = [
@@ -87,76 +81,89 @@ export default function FeaturesStep({
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.iconContainer}>
+    <ScrollView
+      className="flex-1 bg-white px-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="items-center mb-8">
         <Ionicons name="flash" size={48} color="#007AFF" />
       </View>
 
-      <Text style={styles.title}>Choose Your Features</Text>
-      <Text style={styles.subtitle}>
+      <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+        Choose Your Features
+      </Text>
+      <Text className="text-base text-gray-600 text-center mb-8">
         Select the features you need to get started
       </Text>
 
-      <View style={styles.form}>
-        <View style={styles.featuresContainer}>
+      <View className="space-y-6">
+        <View className="space-y-3">
           {FEATURES.map((feature) => (
             <TouchableOpacity
               key={feature.id}
-              style={[
-                styles.featureCard,
-                formData.selectedFeatures.includes(feature.id) &&
-                  styles.featureCardSelected,
-                feature.essential && styles.featureCardEssential,
-              ]}
-              onPress={() => handleFeatureToggle(feature.id, feature.essential)}
+              className={`p-4 border-2 rounded-lg flex-row items-center ${
+                formData.selectedFeatures.includes(feature.id)
+                  ? "border-blue-500 bg-blue-50"
+                  : feature.essential
+                  ? "border-green-300 bg-green-50"
+                  : "border-gray-200 bg-white"
+              }`}
+              onPress={() =>
+                handleFeatureToggle(feature.id, feature.essential || false)
+              }
               disabled={feature.essential}
             >
-              <View style={styles.featureHeader}>
-                <View style={styles.featureIconContainer}>
-                  <View
-                    style={[
-                      styles.checkbox,
-                      formData.selectedFeatures.includes(feature.id) &&
-                        styles.checkboxSelected,
-                      feature.essential && styles.checkboxEssential,
-                    ]}
-                  >
-                    {formData.selectedFeatures.includes(feature.id) && (
-                      <Ionicons name="checkmark" size={16} color="white" />
-                    )}
-                  </View>
-                  <Ionicons
-                    name={feature.icon as any}
-                    size={24}
-                    color="#007AFF"
-                    style={styles.featureIcon}
-                  />
+              <View className="flex-row items-center">
+                <View
+                  className={`w-6 h-6 rounded border-2 mr-3 items-center justify-center ${
+                    formData.selectedFeatures.includes(feature.id)
+                      ? "bg-blue-500 border-blue-500"
+                      : feature.essential
+                      ? "bg-green-500 border-green-500"
+                      : "border-gray-300"
+                  }`}
+                >
+                  {formData.selectedFeatures.includes(feature.id) && (
+                    <Ionicons name="checkmark" size={16} color="white" />
+                  )}
                 </View>
-                <View style={styles.featureContent}>
-                  <View style={styles.featureTitleRow}>
-                    <Text style={styles.featureLabel}>{feature.label}</Text>
-                    {feature.essential && (
-                      <View style={styles.essentialBadge}>
-                        <Text style={styles.essentialBadgeText}>Essential</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.featureDescription}>
-                    {feature.description}
+                <Ionicons
+                  name={feature.icon as any}
+                  size={24}
+                  color="#007AFF"
+                  className="mr-3"
+                />
+              </View>
+              <View className="flex-1">
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    {feature.label}
                   </Text>
+                  {feature.essential && (
+                    <View className="bg-green-100 px-2 py-1 rounded">
+                      <Text className="text-xs font-medium text-green-800">
+                        Essential
+                      </Text>
+                    </View>
+                  )}
                 </View>
+                <Text className="text-sm text-gray-600">
+                  {feature.description}
+                </Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Preferred Currency</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Preferred Currency
+          </Text>
           <TouchableOpacity
-            style={styles.selectButton}
+            className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white"
             onPress={() => setShowCurrencyPicker(!showCurrencyPicker)}
           >
-            <Text style={styles.selectButtonText}>
+            <Text className="text-base text-gray-900">
               {CURRENCIES.find((c) => c.value === formData.currency)?.label ||
                 "Select currency"}
             </Text>
@@ -168,11 +175,11 @@ export default function FeaturesStep({
           </TouchableOpacity>
 
           {showCurrencyPicker && (
-            <View style={styles.dropdown}>
+            <View className="border border-gray-200 rounded-lg mt-2 bg-white shadow-sm">
               {CURRENCIES.map((currency) => (
                 <TouchableOpacity
                   key={currency.value}
-                  style={styles.dropdownItem}
+                  className="px-4 py-3 flex-row justify-between items-center border-b border-gray-100 last:border-b-0"
                   onPress={() => {
                     setFormData((prev) => ({
                       ...prev,
@@ -181,7 +188,9 @@ export default function FeaturesStep({
                     setShowCurrencyPicker(false);
                   }}
                 >
-                  <Text style={styles.dropdownItemText}>{currency.label}</Text>
+                  <Text className="text-base text-gray-900">
+                    {currency.label}
+                  </Text>
                   {formData.currency === currency.value && (
                     <Ionicons name="checkmark" size={20} color="#007AFF" />
                   )}
@@ -194,151 +203,3 @@ export default function FeaturesStep({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  iconContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-    color: "#1a1a1a",
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#666",
-    marginBottom: 32,
-  },
-  form: {
-    gap: 24,
-  },
-  featuresContainer: {
-    gap: 12,
-  },
-  featureCard: {
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: "white",
-  },
-  featureCardSelected: {
-    borderColor: "#007AFF",
-    backgroundColor: "#f0f8ff",
-  },
-  featureCardEssential: {
-    opacity: 0.8,
-  },
-  featureHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
-  },
-  featureIconContainer: {
-    alignItems: "center",
-    gap: 8,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checkboxSelected: {
-    backgroundColor: "#007AFF",
-    borderColor: "#007AFF",
-  },
-  checkboxEssential: {
-    backgroundColor: "#666",
-    borderColor: "#666",
-  },
-  featureIcon: {
-    marginTop: 4,
-  },
-  featureContent: {
-    flex: 1,
-  },
-  featureTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
-  },
-  featureLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1a1a1a",
-  },
-  essentialBadge: {
-    backgroundColor: "#f0f0f0",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  essentialBadgeText: {
-    fontSize: 12,
-    color: "#666",
-    fontWeight: "500",
-  },
-  featureDescription: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-  },
-  inputContainer: {
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#1a1a1a",
-  },
-  selectButton: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  selectButtonText: {
-    fontSize: 16,
-    color: "#1a1a1a",
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    backgroundColor: "white",
-    marginTop: 4,
-    maxHeight: 200,
-  },
-  dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    color: "#1a1a1a",
-  },
-});

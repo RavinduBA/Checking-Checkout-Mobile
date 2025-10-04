@@ -30,12 +30,7 @@ interface LocationDisplay {
 }
 
 export default function HotelLocationsScreen() {
-  // Temporarily disable profile loading for simplified flow
-  // const { profile, tenantId, loading: profileLoading } = useUserProfile();
-  const profile = null;
-  const tenantId = null;
-  const profileLoading = false;
-  
+  const { profile, tenantId, loading: profileLoading } = useUserProfile();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

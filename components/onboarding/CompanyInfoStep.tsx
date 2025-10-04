@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -39,21 +38,28 @@ export default function CompanyInfoStep({
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.iconContainer}>
+    <ScrollView
+      className="flex-1 bg-white px-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="items-center mb-8">
         <Ionicons name="business" size={48} color="#007AFF" />
       </View>
 
-      <Text style={styles.title}>Tell us about your business</Text>
-      <Text style={styles.subtitle}>
+      <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+        Tell us about your business
+      </Text>
+      <Text className="text-base text-gray-600 text-center mb-8">
         We'll use this information to customize your experience
       </Text>
 
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Company/Hotel Name *</Text>
+      <View className="space-y-6">
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Company/Hotel Name *
+          </Text>
           <TextInput
-            style={styles.input}
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
             value={formData.companyName}
             onChangeText={(value) => updateFormData("companyName", value)}
             placeholder="e.g., Oceanview Resort"
@@ -61,10 +67,12 @@ export default function CompanyInfoStep({
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Contact Person *</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Contact Person *
+          </Text>
           <TextInput
-            style={styles.input}
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
             value={formData.contactName}
             onChangeText={(value) => updateFormData("contactName", value)}
             placeholder="Your full name"
@@ -72,10 +80,12 @@ export default function CompanyInfoStep({
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Business Email *</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Business Email *
+          </Text>
           <TextInput
-            style={styles.input}
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
             value={formData.email}
             onChangeText={(value) => updateFormData("email", value)}
             placeholder="contact@yourhotel.com"
@@ -85,10 +95,12 @@ export default function CompanyInfoStep({
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Phone Number
+          </Text>
           <TextInput
-            style={styles.input}
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
             value={formData.phone}
             onChangeText={(value) => updateFormData("phone", value)}
             placeholder="Enter a phone number"
@@ -97,10 +109,12 @@ export default function CompanyInfoStep({
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Business Address</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Business Address
+          </Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[80px]"
             value={formData.address}
             onChangeText={(value) => updateFormData("address", value)}
             placeholder="Street address, city, state/province, country"
@@ -111,17 +125,18 @@ export default function CompanyInfoStep({
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Country</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Country
+          </Text>
           <TouchableOpacity
-            style={styles.selectButton}
+            className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white"
             onPress={() => setShowCountryPicker(!showCountryPicker)}
           >
             <Text
-              style={[
-                styles.selectButtonText,
-                !formData.country && styles.placeholder,
-              ]}
+              className={`text-base ${
+                !formData.country ? "text-gray-400" : "text-gray-900"
+              }`}
             >
               {formData.country
                 ? COUNTRIES.find((c) => c.value === formData.country)?.label
@@ -135,17 +150,19 @@ export default function CompanyInfoStep({
           </TouchableOpacity>
 
           {showCountryPicker && (
-            <View style={styles.dropdown}>
+            <View className="border border-gray-200 rounded-lg mt-2 bg-white shadow-sm">
               {COUNTRIES.map((country) => (
                 <TouchableOpacity
                   key={country.value}
-                  style={styles.dropdownItem}
+                  className="px-4 py-3 flex-row justify-between items-center border-b border-gray-100 last:border-b-0"
                   onPress={() => {
                     updateFormData("country", country.value);
                     setShowCountryPicker(false);
                   }}
                 >
-                  <Text style={styles.dropdownItemText}>{country.label}</Text>
+                  <Text className="text-base text-gray-900">
+                    {country.label}
+                  </Text>
                   {formData.country === country.value && (
                     <Ionicons name="checkmark" size={20} color="#007AFF" />
                   )}
@@ -158,91 +175,3 @@ export default function CompanyInfoStep({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  iconContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-    color: "#1a1a1a",
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#666",
-    marginBottom: 32,
-  },
-  form: {
-    gap: 20,
-  },
-  inputContainer: {
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#1a1a1a",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: "white",
-    color: "#1a1a1a",
-  },
-  textArea: {
-    height: 80,
-    paddingTop: 12,
-  },
-  selectButton: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  selectButtonText: {
-    fontSize: 16,
-    color: "#1a1a1a",
-  },
-  placeholder: {
-    color: "#999",
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    backgroundColor: "white",
-    marginTop: 4,
-    maxHeight: 200,
-  },
-  dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    color: "#1a1a1a",
-  },
-});

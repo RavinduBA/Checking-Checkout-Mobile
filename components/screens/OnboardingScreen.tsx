@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
   ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
-import CompanyInfoStep from '../onboarding/CompanyInfoStep';
-import PropertyDetailsStep from '../onboarding/PropertyDetailsStep';
-import FeaturesStep from '../onboarding/FeaturesStep';
-import PlanSelectionStep from '../onboarding/PlanSelectionStep';
-import CompleteStep from '../onboarding/CompleteStep';
+  View,
+} from "react-native";
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase";
+import CompanyInfoStep from "../onboarding/CompanyInfoStep";
+import CompleteStep from "../onboarding/CompleteStep";
+import FeaturesStep from "../onboarding/FeaturesStep";
+import PlanSelectionStep from "../onboarding/PlanSelectionStep";
+import PropertyDetailsStep from "../onboarding/PropertyDetailsStep";
 
 const STEPS = [
-  { id: 1, title: 'Company Info', description: 'Tell us about your business' },
-  { id: 2, title: 'Property Details', description: 'Describe your properties' },
-  { id: 3, title: 'Features', description: 'Choose your features' },
-  { id: 4, title: 'Select Plan', description: 'Choose your subscription plan' },
-  { id: 5, title: 'Complete', description: "You're all set!" },
+  { id: 1, title: "Company Info", description: "Tell us about your business" },
+  { id: 2, title: "Property Details", description: "Describe your properties" },
+  { id: 3, title: "Features", description: "Choose your features" },
+  { id: 4, title: "Select Plan", description: "Choose your subscription plan" },
+  { id: 5, title: "Complete", description: "You're all set!" },
 ];
 
 export interface OnboardingFormData {
@@ -55,25 +55,25 @@ export default function OnboardingScreen() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [formData, setFormData] = useState<OnboardingFormData>({
     // Company Info
-    companyName: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    address: '',
-    country: '',
+    companyName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    address: "",
+    country: "",
 
     // Property Details
-    propertyType: '',
-    propertyCount: '',
-    totalRooms: '',
-    description: '',
+    propertyType: "",
+    propertyCount: "",
+    totalRooms: "",
+    description: "",
 
     // Features
-    selectedFeatures: ['bookings', 'payments'], // Essential features pre-selected
+    selectedFeatures: ["bookings", "payments"], // Essential features pre-selected
 
     // User preferences
-    currency: 'USD',
-    timezone: '',
+    currency: "USD",
+    timezone: "",
   });
 
   const router = useRouter();
@@ -82,10 +82,10 @@ export default function OnboardingScreen() {
   React.useEffect(() => {
     // Pre-fill user email if available
     if (user?.email && !formData.email) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         email: user.email!,
-        contactName: user.user_metadata?.name || '',
+        contactName: user.user_metadata?.name || "",
       }));
     }
   }, [user, formData.email]);
@@ -107,23 +107,24 @@ export default function OnboardingScreen() {
       setLoading(true);
 
       if (!user) {
-        throw new Error('No authenticated user found');
+        throw new Error("No authenticated user found");
       }
 
       // Generate unique slug for tenant
       const generateUniqueSlug = async (name: string): Promise<string> => {
-        const baseSlug = name
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .trim() || 'tenant';
+        const baseSlug =
+          name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .trim() || "tenant";
 
         // Check if base slug exists
         const { data: existing } = await supabase
-          .from('tenants')
-          .select('slug')
-          .eq('slug', baseSlug)
+          .from("tenants")
+          .select("slug")
+          .eq("slug", baseSlug)
           .limit(1);
 
         if (!existing || existing.length === 0) {
@@ -136,9 +137,9 @@ export default function OnboardingScreen() {
 
         while (true) {
           const { data: existingCandidate } = await supabase
-            .from('tenants')
-            .select('slug')
-            .eq('slug', candidateSlug)
+            .from("tenants")
+            .select("slug")
+            .eq("slug", candidateSlug)
             .limit(1);
 
           if (!existingCandidate || existingCandidate.length === 0) {
@@ -154,7 +155,7 @@ export default function OnboardingScreen() {
 
       // Create tenant
       const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
+        .from("tenants")
         .insert({
           name: formData.companyName,
           slug: slug,
@@ -162,11 +163,13 @@ export default function OnboardingScreen() {
           hotel_email: formData.email,
           hotel_phone: formData.phone,
           hotel_address: formData.address,
-          hotel_timezone: formData.timezone || 'UTC',
+          hotel_timezone: formData.timezone || "UTC",
           owner_profile_id: user.id,
           onboarding_completed: true,
-          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          subscription_status: 'trial',
+          trial_ends_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000
+          ).toISOString(),
+          subscription_status: "trial",
         })
         .select()
         .single();
@@ -175,37 +178,35 @@ export default function OnboardingScreen() {
 
       // Ensure profile exists and update it with tenant_id
       const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
         .single();
 
       let profileError;
       if (!existingProfile) {
         // Create profile if it doesn't exist
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            email: user.email!,
-            name: user.user_metadata?.full_name || user.email!.split('@')[0],
-            tenant_role: 'tenant_admin',
-            tenant_id: tenant.id,
-            is_tenant_admin: true,
-            first_login_completed: true,
-          });
+        const { error } = await supabase.from("profiles").insert({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.full_name || user.email!.split("@")[0],
+          tenant_role: "tenant_admin",
+          tenant_id: tenant.id,
+          is_tenant_admin: true,
+          first_login_completed: true,
+        });
         profileError = error;
       } else {
         // Update existing profile with tenant_id
         const { error } = await supabase
-          .from('profiles')
+          .from("profiles")
           .update({
             tenant_id: tenant.id,
-            tenant_role: 'tenant_admin',
+            tenant_role: "tenant_admin",
             is_tenant_admin: true,
             first_login_completed: true,
           })
-          .eq('id', user.id);
+          .eq("id", user.id);
         profileError = error;
       }
 
@@ -213,7 +214,7 @@ export default function OnboardingScreen() {
 
       // Create default location for the tenant
       const { data: location, error: locationError } = await supabase
-        .from('locations')
+        .from("locations")
         .insert({
           name: formData.companyName,
           tenant_id: tenant.id,
@@ -230,13 +231,13 @@ export default function OnboardingScreen() {
 
       // Create user permissions for the new location
       const { error: permissionsError } = await supabase
-        .from('user_permissions')
+        .from("user_permissions")
         .insert([
           {
             user_id: user.id,
             tenant_id: tenant.id,
             location_id: location.id,
-            tenant_role: 'tenant_admin',
+            tenant_role: "tenant_admin",
             is_tenant_admin: true,
             access_dashboard: true,
             access_income: true,
@@ -255,37 +256,26 @@ export default function OnboardingScreen() {
 
       if (permissionsError) throw permissionsError;
 
-      // Create trial subscription
-      const { error: subscriptionError } = await supabase
-        .from('subscriptions')
-        .insert({
-          tenant_id: tenant.id,
-          plan_id: 'professional',
-          status: 'trialing',
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          trial_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-
-      if (subscriptionError) throw subscriptionError;
+      // Note: Trial subscription creation disabled for now - will implement later
+      // Features and plan selections are collected but not saved to database yet
 
       Alert.alert(
-        'Welcome aboard! 🎉',
-        `Your ${formData.companyName} account has been set up successfully. You're on a 7-day free trial!`,
+        "Welcome aboard! 🎉",
+        `Your ${formData.companyName} account has been set up successfully. You can now access your dashboard!`,
         [
           {
-            text: 'Get Started',
+            text: "Get Started",
             onPress: () => {
-              router.replace('/');
+              router.replace("/");
             },
           },
         ]
       );
     } catch (error: any) {
-      console.error('Onboarding error:', error);
+      console.error("Onboarding error:", error);
       Alert.alert(
-        'Setup Error',
-        error.message || 'Failed to complete setup. Please try again.'
+        "Setup Error",
+        error.message || "Failed to complete setup. Please try again."
       );
     } finally {
       setLoading(false);
@@ -299,9 +289,9 @@ export default function OnboardingScreen() {
       case 2:
         return formData.propertyType && formData.propertyCount;
       case 3:
-        return formData.selectedFeatures.length > 0;
+        return true; // Features step is optional for now
       case 4:
-        return selectedPlanId !== null;
+        return true; // Plan selection is optional for now
       default:
         return true;
     }
@@ -311,25 +301,14 @@ export default function OnboardingScreen() {
     switch (currentStep) {
       case 1:
         return (
-          <CompanyInfoStep
-            formData={formData}
-            setFormData={setFormData}
-          />
+          <CompanyInfoStep formData={formData} setFormData={setFormData} />
         );
       case 2:
         return (
-          <PropertyDetailsStep
-            formData={formData}
-            setFormData={setFormData}
-          />
+          <PropertyDetailsStep formData={formData} setFormData={setFormData} />
         );
       case 3:
-        return (
-          <FeaturesStep
-            formData={formData}
-            setFormData={setFormData}
-          />
-        );
+        return <FeaturesStep formData={formData} setFormData={setFormData} />;
       case 4:
         return (
           <PlanSelectionStep
@@ -390,16 +369,15 @@ export default function OnboardingScreen() {
           ))}
         </View>
         <Text style={styles.stepTitle}>
-          Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1]?.description}
+          Step {currentStep} of {STEPS.length}:{" "}
+          {STEPS[currentStep - 1]?.description}
         </Text>
       </View>
 
       {/* Main Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {STEPS[currentStep - 1]?.title}
-          </Text>
+          <Text style={styles.cardTitle}>{STEPS[currentStep - 1]?.title}</Text>
           {renderStepContent()}
         </View>
       </ScrollView>
@@ -415,7 +393,7 @@ export default function OnboardingScreen() {
             <Ionicons
               name="arrow-back"
               size={20}
-              color={currentStep === 1 ? '#ccc' : '#666'}
+              color={currentStep === 1 ? "#ccc" : "#666"}
             />
             <Text
               style={[
@@ -448,7 +426,7 @@ export default function OnboardingScreen() {
             <Ionicons
               name="arrow-forward"
               size={20}
-              color={!validateStep() ? '#ccc' : 'white'}
+              color={!validateStep() ? "#ccc" : "white"}
             />
           </TouchableOpacity>
         </View>
@@ -467,70 +445,70 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
+    borderBottomColor: "#e1e5e9",
   },
   progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   progressStep: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   stepCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#e1e5e9',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#e1e5e9",
+    justifyContent: "center",
+    alignItems: "center",
   },
   stepCircleActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   stepNumber: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
   },
   stepNumberActive: {
-    color: 'white',
+    color: "white",
   },
   progressLine: {
     width: 40,
     height: 2,
-    backgroundColor: '#e1e5e9',
+    backgroundColor: "#e1e5e9",
     marginHorizontal: 8,
   },
   progressLineActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   stepTitle: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 24,
     marginTop: 20,
     marginBottom: 100,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -538,69 +516,69 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 24,
-    color: '#1a1a1a',
+    color: "#1a1a1a",
   },
   navigation: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopWidth: 1,
-    borderTopColor: '#e1e5e9',
+    borderTopColor: "#e1e5e9",
   },
   navButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     gap: 8,
   },
   prevButton: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderWidth: 1,
-    borderColor: '#e1e5e9',
+    borderColor: "#e1e5e9",
   },
   nextButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   navButtonDisabled: {
-    backgroundColor: '#f8f9fa',
-    borderColor: '#e1e5e9',
+    backgroundColor: "#f8f9fa",
+    borderColor: "#e1e5e9",
   },
   navButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
   },
   nextButtonText: {
-    color: 'white',
+    color: "white",
   },
   navButtonTextDisabled: {
-    color: '#ccc',
+    color: "#ccc",
   },
   loadingOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
   },
 });

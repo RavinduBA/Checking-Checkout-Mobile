@@ -30,30 +30,10 @@ export const signUp = async (email: string, password: string, fullName?: string)
 
     // Since email confirmation is disabled, user is immediately logged in
     if (data?.user && data?.session) {
-      // Create profile record for the new user
-      try {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email!,
-            name: fullName || data.user.email!.split('@')[0],
-            tenant_role: 'tenant_admin',
-            is_tenant_admin: false, // Will be set to true during onboarding
-            first_login_completed: false, // Will be set to true during onboarding
-          });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          // Don't fail the registration if profile creation fails
-          // The onboarding flow will handle missing profiles
-        }
-      } catch (profileError) {
-        console.error('Unexpected error creating profile:', profileError);
-      }
-
+      console.log('Registration successful, user authenticated');
+      
       Alert.alert(
-        'Registration Successful!',
+        'Registration Successful!', 
         'Your account has been created and you are now signed in. Welcome!',
         [{ text: 'OK' }]
       );

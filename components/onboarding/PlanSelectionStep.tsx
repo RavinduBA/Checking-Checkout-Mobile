@@ -3,7 +3,6 @@ import React from "react";
 import {
   ActivityIndicator,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -76,62 +75,75 @@ export default function PlanSelectionStep({
   loading,
 }: PlanSelectionStepProps) {
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.iconContainer}>
+    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <View className="items-center mb-6">
         <Ionicons name="card" size={48} color="#007AFF" />
       </View>
 
-      <Text style={styles.title}>Choose Your Plan</Text>
-      <Text style={styles.subtitle}>
+      <Text className="text-xl font-bold text-center mb-2 text-gray-800">
+        Choose Your Plan
+      </Text>
+      <Text className="text-base text-center text-gray-600 mb-8">
         Start with a 7-day free trial, then choose the plan that fits your needs
       </Text>
 
-      <View style={styles.plansContainer}>
+      <View className="gap-4 mb-6">
         {DUMMY_PLANS.map((plan) => (
           <TouchableOpacity
             key={plan.id}
-            style={[
-              styles.planCard,
-              selectedPlanId === plan.id && styles.planCardSelected,
-            ]}
+            className={`border-2 ${
+              selectedPlanId === plan.id
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200"
+            } rounded-2xl p-5 bg-white relative`}
             onPress={() => setSelectedPlanId(plan.id)}
           >
             {plan.popular && (
-              <View style={styles.popularBadge}>
-                <Text style={styles.popularBadgeText}>Most Popular</Text>
+              <View className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-orange-500 px-3 py-1 rounded-full">
+                <Text className="text-xs font-semibold text-white">
+                  Most Popular
+                </Text>
               </View>
             )}
 
-            <View style={styles.planHeader}>
-              <View style={styles.planTitleRow}>
+            <View className="mb-4">
+              <View className="flex-row items-center gap-2 mb-2">
                 {plan.name === "Professional" && (
                   <Ionicons name="star" size={20} color="#FFD700" />
                 )}
-                <Text style={styles.planName}>{plan.name}</Text>
+                <Text className="text-xl font-bold text-gray-800">
+                  {plan.name}
+                </Text>
               </View>
-              <View style={styles.priceRow}>
-                <Text style={styles.planPrice}>${plan.price}</Text>
-                <Text style={styles.planInterval}>
+              <View className="flex-row items-baseline gap-1 mb-2">
+                <Text className="text-2xl font-bold text-gray-800">
+                  ${plan.price}
+                </Text>
+                <Text className="text-base text-gray-600">
                   /{plan.billing_interval}
                 </Text>
               </View>
               {plan.description && (
-                <Text style={styles.planDescription}>{plan.description}</Text>
+                <Text className="text-sm text-gray-600 mb-3">
+                  {plan.description}
+                </Text>
               )}
             </View>
 
-            <View style={styles.planFeatures}>
+            <View className="gap-3">
               {plan.features.map((feature, index) => (
-                <View key={index} style={styles.featureRow}>
+                <View key={index} className="flex-row items-center gap-3">
                   <Ionicons name="checkmark-circle" size={16} color="#00C851" />
-                  <Text style={styles.featureText}>{feature}</Text>
+                  <Text className="text-sm text-gray-700 flex-1">
+                    {feature}
+                  </Text>
                 </View>
               ))}
 
-              <View style={styles.planLimits}>
-                <View style={styles.limitRow}>
+              <View className="gap-2 mt-3 pt-3 border-t border-gray-100">
+                <View className="flex-row items-center gap-3">
                   <Ionicons name="business" size={16} color="#007AFF" />
-                  <Text style={styles.limitText}>
+                  <Text className="text-sm text-gray-600">
                     Up to{" "}
                     {plan.max_locations === 999
                       ? "unlimited"
@@ -139,9 +151,9 @@ export default function PlanSelectionStep({
                     locations
                   </Text>
                 </View>
-                <View style={styles.limitRow}>
+                <View className="flex-row items-center gap-3">
                   <Ionicons name="bed" size={16} color="#9C27B0" />
-                  <Text style={styles.limitText}>
+                  <Text className="text-sm text-gray-600">
                     Up to{" "}
                     {plan.max_rooms === 999 ? "unlimited" : plan.max_rooms}{" "}
                     rooms
@@ -151,7 +163,7 @@ export default function PlanSelectionStep({
             </View>
 
             {selectedPlanId === plan.id && (
-              <View style={styles.selectedIndicator}>
+              <View className="absolute top-4 right-4">
                 <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
               </View>
             )}
@@ -160,9 +172,9 @@ export default function PlanSelectionStep({
       </View>
 
       {selectedPlanId && (
-        <View style={styles.actionContainer}>
+        <View className="gap-4">
           <TouchableOpacity
-            style={styles.trialButton}
+            className="bg-blue-500 rounded-xl py-4 px-6 flex-row items-center justify-center gap-3 disabled:opacity-50"
             onPress={onStartTrial}
             disabled={loading}
           >
@@ -170,7 +182,7 @@ export default function PlanSelectionStep({
               <ActivityIndicator color="white" />
             ) : (
               <>
-                <Text style={styles.trialButtonText}>
+                <Text className="text-white text-lg font-semibold">
                   Start 7-Day Free Trial
                 </Text>
                 <Ionicons name="calendar" size={20} color="white" />
@@ -178,8 +190,8 @@ export default function PlanSelectionStep({
             )}
           </TouchableOpacity>
 
-          <View style={styles.trialInfo}>
-            <Text style={styles.trialInfoText}>
+          <View className="bg-green-50 rounded-xl p-4">
+            <Text className="text-center text-sm text-green-700 font-medium">
               ✨ 7-day free trial • Cancel anytime • No hidden fees
             </Text>
           </View>
@@ -188,154 +200,3 @@ export default function PlanSelectionStep({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  iconContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-    color: "#1a1a1a",
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#666",
-    marginBottom: 32,
-  },
-  plansContainer: {
-    gap: 16,
-    marginBottom: 24,
-  },
-  planCard: {
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
-    borderRadius: 16,
-    padding: 20,
-    backgroundColor: "white",
-    position: "relative",
-  },
-  planCardSelected: {
-    borderColor: "#007AFF",
-    backgroundColor: "#f0f8ff",
-  },
-  popularBadge: {
-    position: "absolute",
-    top: -8,
-    right: 20,
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  popularBadgeText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  planHeader: {
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  planTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 8,
-  },
-  planName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1a1a1a",
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    marginBottom: 8,
-  },
-  planPrice: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#1a1a1a",
-  },
-  planInterval: {
-    fontSize: 16,
-    color: "#666",
-    marginLeft: 4,
-  },
-  planDescription: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  planFeatures: {
-    gap: 12,
-  },
-  featureRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  featureText: {
-    fontSize: 14,
-    color: "#1a1a1a",
-    flex: 1,
-  },
-  planLimits: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-    gap: 8,
-  },
-  limitRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  limitText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  selectedIndicator: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-  },
-  actionContainer: {
-    alignItems: "center",
-    paddingTop: 16,
-    gap: 16,
-  },
-  trialButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    minWidth: 200,
-    justifyContent: "center",
-  },
-  trialButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  trialInfo: {
-    alignItems: "center",
-  },
-  trialInfoText: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-});

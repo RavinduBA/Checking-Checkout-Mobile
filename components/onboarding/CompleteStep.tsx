@@ -3,7 +3,6 @@ import React from "react";
 import {
   ActivityIndicator,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -23,46 +22,58 @@ export default function CompleteStep({
 }: CompleteStepProps) {
   return (
     <ScrollView
-      style={styles.container}
+      className="flex-1"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={{ alignItems: "center", paddingBottom: 40 }}
     >
-      <View style={styles.iconContainer}>
+      <View className="items-center mb-6">
         <Ionicons name="checkmark-circle" size={64} color="#00C851" />
       </View>
 
-      <Text style={styles.title}>You're All Set! 🎉</Text>
-      <Text style={styles.subtitle}>
+      <Text className="text-2xl font-bold text-center mb-3 text-gray-800">
+        You're All Set! 🎉
+      </Text>
+      <Text className="text-base text-center text-gray-600 mb-8 px-4">
         Welcome to Check In_Check Out! Your account has been configured based on
         your preferences.
       </Text>
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Setup Summary</Text>
-        <View style={styles.summaryContent}>
-          <View style={styles.summaryRow}>
+      <View className="bg-white rounded-2xl p-6 w-full mb-6 border border-gray-100">
+        <Text className="text-lg font-bold mb-4 text-gray-800">
+          Setup Summary
+        </Text>
+        <View className="gap-4">
+          <View className="flex-row items-center gap-3">
             <Ionicons name="business" size={20} color="#007AFF" />
-            <Text style={styles.summaryLabel}>Company:</Text>
-            <Text style={styles.summaryValue}>{formData.companyName}</Text>
+            <Text className="text-sm font-medium text-gray-600">Company:</Text>
+            <Text className="text-sm text-gray-800 flex-1">
+              {formData.companyName}
+            </Text>
           </View>
 
-          <View style={styles.summaryRow}>
+          <View className="flex-row items-center gap-3">
             <Ionicons name="person" size={20} color="#007AFF" />
-            <Text style={styles.summaryLabel}>Contact:</Text>
-            <Text style={styles.summaryValue}>{formData.contactName}</Text>
+            <Text className="text-sm font-medium text-gray-600">Contact:</Text>
+            <Text className="text-sm text-gray-800 flex-1">
+              {formData.contactName}
+            </Text>
           </View>
 
-          <View style={styles.summaryRow}>
+          <View className="flex-row items-center gap-3">
             <Ionicons name="mail" size={20} color="#007AFF" />
-            <Text style={styles.summaryLabel}>Email:</Text>
-            <Text style={styles.summaryValue}>{formData.email}</Text>
+            <Text className="text-sm font-medium text-gray-600">Email:</Text>
+            <Text className="text-sm text-gray-800 flex-1">
+              {formData.email}
+            </Text>
           </View>
 
           {formData.propertyType && (
-            <View style={styles.summaryRow}>
+            <View className="flex-row items-center gap-3">
               <Ionicons name="home" size={20} color="#007AFF" />
-              <Text style={styles.summaryLabel}>Property Type:</Text>
-              <Text style={styles.summaryValue}>
+              <Text className="text-sm font-medium text-gray-600">
+                Property Type:
+              </Text>
+              <Text className="text-sm text-gray-800 flex-1">
                 {formData.propertyType.charAt(0).toUpperCase() +
                   formData.propertyType.slice(1)}
               </Text>
@@ -70,40 +81,49 @@ export default function CompleteStep({
           )}
 
           {formData.propertyCount && (
-            <View style={styles.summaryRow}>
+            <View className="flex-row items-center gap-3">
               <Ionicons name="layers" size={20} color="#007AFF" />
-              <Text style={styles.summaryLabel}>Properties:</Text>
-              <Text style={styles.summaryValue}>{formData.propertyCount}</Text>
+              <Text className="text-sm font-medium text-gray-600">
+                Properties:
+              </Text>
+              <Text className="text-sm text-gray-800 flex-1">
+                {formData.propertyCount}
+              </Text>
             </View>
           )}
         </View>
       </View>
 
-      <View style={styles.nextStepsCard}>
-        <Text style={styles.nextStepsTitle}>What's Next:</Text>
-        <View style={styles.nextStepsList}>
-          <View style={styles.nextStepItem}>
+      <View className="bg-green-50 rounded-2xl p-6 w-full mb-8 border border-green-100">
+        <Text className="text-lg font-bold mb-4 text-green-800">
+          What's Next:
+        </Text>
+        <View className="gap-3">
+          <View className="flex-row items-center gap-3">
             <Ionicons name="checkmark-circle" size={16} color="#00C851" />
-            <Text style={styles.nextStepText}>Set up your first property</Text>
+            <Text className="text-sm text-green-700">
+              Set up your first property
+            </Text>
           </View>
-          <View style={styles.nextStepItem}>
+          <View className="flex-row items-center gap-3">
             <Ionicons name="checkmark-circle" size={16} color="#00C851" />
-            <Text style={styles.nextStepText}>
+            <Text className="text-sm text-green-700">
               Configure room types and pricing
             </Text>
           </View>
-          <View style={styles.nextStepItem}>
+          <View className="flex-row items-center gap-3">
             <Ionicons name="checkmark-circle" size={16} color="#00C851" />
-            <Text style={styles.nextStepText}>Start accepting bookings</Text>
+            <Text className="text-sm text-green-700">
+              Start accepting bookings
+            </Text>
           </View>
         </View>
       </View>
 
       <TouchableOpacity
-        style={[
-          styles.completeButton,
-          loading && styles.completeButtonDisabled,
-        ]}
+        className={`bg-blue-500 rounded-xl py-4 px-8 flex-row items-center justify-center gap-3 w-full mb-6 ${
+          loading ? "opacity-50" : ""
+        }`}
         onPress={onComplete}
         disabled={loading}
       >
@@ -111,136 +131,19 @@ export default function CompleteStep({
           <ActivityIndicator color="white" />
         ) : (
           <>
-            <Text style={styles.completeButtonText}>Enter Your Dashboard</Text>
+            <Text className="text-white text-lg font-semibold">
+              Enter Your Dashboard
+            </Text>
             <Ionicons name="arrow-forward" size={20} color="white" />
           </>
         )}
       </TouchableOpacity>
 
-      <View style={styles.trialInfo}>
-        <Text style={styles.trialInfoText}>
+      <View className="bg-blue-50 rounded-xl p-4 w-full">
+        <Text className="text-center text-sm text-blue-700 font-medium">
           🎉 You're now on a 7-day free trial with full access to all features!
         </Text>
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    alignItems: "center",
-    paddingBottom: 40,
-  },
-  iconContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 12,
-    color: "#1a1a1a",
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#666",
-    marginBottom: 32,
-    paddingHorizontal: 20,
-    lineHeight: 24,
-  },
-  summaryCard: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-    width: "100%",
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
-    color: "#1a1a1a",
-  },
-  summaryContent: {
-    gap: 12,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: "#666",
-    minWidth: 80,
-  },
-  summaryValue: {
-    fontSize: 14,
-    color: "#1a1a1a",
-    fontWeight: "500",
-    flex: 1,
-  },
-  nextStepsCard: {
-    backgroundColor: "#f0f8ff",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 32,
-    width: "100%",
-  },
-  nextStepsTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 16,
-    color: "#1a1a1a",
-  },
-  nextStepsList: {
-    gap: 12,
-  },
-  nextStepItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  nextStepText: {
-    fontSize: 14,
-    color: "#1a1a1a",
-    flex: 1,
-  },
-  completeButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 24,
-    minWidth: 250,
-    justifyContent: "center",
-  },
-  completeButtonDisabled: {
-    backgroundColor: "#ccc",
-  },
-  completeButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  trialInfo: {
-    backgroundColor: "#e8f5e8",
-    borderRadius: 8,
-    padding: 16,
-    width: "100%",
-  },
-  trialInfoText: {
-    fontSize: 14,
-    color: "#2d5016",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-});

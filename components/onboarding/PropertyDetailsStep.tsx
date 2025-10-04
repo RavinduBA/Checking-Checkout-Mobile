@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -20,7 +19,7 @@ const PROPERTY_TYPES = [
   {
     id: "resort",
     label: "Resort",
-    icon: "island",
+    icon: "home",
     description: "Resort with amenities and activities",
   },
   {
@@ -71,30 +70,35 @@ export default function PropertyDetailsStep({
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.iconContainer}>
+    <ScrollView
+      className="flex-1 bg-white px-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="items-center mb-8">
         <Ionicons name="business" size={48} color="#007AFF" />
       </View>
 
-      <Text style={styles.title}>Property Information</Text>
-      <Text style={styles.subtitle}>
+      <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+        Property Information
+      </Text>
+      <Text className="text-base text-gray-600 text-center mb-8">
         Help us understand your property setup
       </Text>
 
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>
+      <View className="space-y-6">
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-4">
             What type of property do you manage? *
           </Text>
-          <View style={styles.propertyTypesGrid}>
+          <View className="flex-row flex-wrap gap-3">
             {PROPERTY_TYPES.map((type) => (
               <TouchableOpacity
                 key={type.id}
-                style={[
-                  styles.propertyTypeCard,
-                  formData.propertyType === type.id &&
-                    styles.propertyTypeCardSelected,
-                ]}
+                className={`flex-1 min-w-[45%] p-4 border-2 rounded-lg items-center ${
+                  formData.propertyType === type.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 bg-white"
+                }`}
                 onPress={() => updateFormData("propertyType", type.id)}
               >
                 <Ionicons
@@ -103,15 +107,15 @@ export default function PropertyDetailsStep({
                   color={formData.propertyType === type.id ? "#007AFF" : "#666"}
                 />
                 <Text
-                  style={[
-                    styles.propertyTypeLabel,
-                    formData.propertyType === type.id &&
-                      styles.propertyTypeLabelSelected,
-                  ]}
+                  className={`text-sm font-medium mt-2 ${
+                    formData.propertyType === type.id
+                      ? "text-blue-600"
+                      : "text-gray-700"
+                  }`}
                 >
                   {type.label}
                 </Text>
-                <Text style={styles.propertyTypeDescription}>
+                <Text className="text-xs text-gray-500 mt-1 text-center">
                   {type.description}
                 </Text>
               </TouchableOpacity>
@@ -119,20 +123,21 @@ export default function PropertyDetailsStep({
           </View>
         </View>
 
-        <View style={styles.row}>
-          <View style={[styles.inputContainer, styles.halfWidth]}>
-            <Text style={styles.label}>Number of Properties *</Text>
+        <View className="flex-row gap-4">
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-700 mb-2">
+              Number of Properties *
+            </Text>
             <TouchableOpacity
-              style={styles.selectButton}
+              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white"
               onPress={() =>
                 setShowPropertyCountPicker(!showPropertyCountPicker)
               }
             >
               <Text
-                style={[
-                  styles.selectButtonText,
-                  !formData.propertyCount && styles.placeholder,
-                ]}
+                className={`text-base ${
+                  !formData.propertyCount ? "text-gray-400" : "text-gray-900"
+                }`}
               >
                 {formData.propertyCount
                   ? PROPERTY_COUNT_OPTIONS.find(
@@ -148,17 +153,19 @@ export default function PropertyDetailsStep({
             </TouchableOpacity>
 
             {showPropertyCountPicker && (
-              <View style={styles.dropdown}>
+              <View className="border border-gray-200 rounded-lg mt-2 bg-white shadow-sm">
                 {PROPERTY_COUNT_OPTIONS.map((option) => (
                   <TouchableOpacity
                     key={option.value}
-                    style={styles.dropdownItem}
+                    className="px-4 py-3 flex-row justify-between items-center border-b border-gray-100 last:border-b-0"
                     onPress={() => {
                       updateFormData("propertyCount", option.value);
                       setShowPropertyCountPicker(false);
                     }}
                   >
-                    <Text style={styles.dropdownItemText}>{option.label}</Text>
+                    <Text className="text-base text-gray-900">
+                      {option.label}
+                    </Text>
                     {formData.propertyCount === option.value && (
                       <Ionicons name="checkmark" size={20} color="#007AFF" />
                     )}
@@ -168,17 +175,18 @@ export default function PropertyDetailsStep({
             )}
           </View>
 
-          <View style={[styles.inputContainer, styles.halfWidth]}>
-            <Text style={styles.label}>Total Rooms/Units *</Text>
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-700 mb-2">
+              Total Rooms/Units *
+            </Text>
             <TouchableOpacity
-              style={styles.selectButton}
+              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white"
               onPress={() => setShowRoomCountPicker(!showRoomCountPicker)}
             >
               <Text
-                style={[
-                  styles.selectButtonText,
-                  !formData.totalRooms && styles.placeholder,
-                ]}
+                className={`text-base ${
+                  !formData.totalRooms ? "text-gray-400" : "text-gray-900"
+                }`}
               >
                 {formData.totalRooms
                   ? ROOM_COUNT_OPTIONS.find(
@@ -194,17 +202,19 @@ export default function PropertyDetailsStep({
             </TouchableOpacity>
 
             {showRoomCountPicker && (
-              <View style={styles.dropdown}>
+              <View className="border border-gray-200 rounded-lg mt-2 bg-white shadow-sm">
                 {ROOM_COUNT_OPTIONS.map((option) => (
                   <TouchableOpacity
                     key={option.value}
-                    style={styles.dropdownItem}
+                    className="px-4 py-3 flex-row justify-between items-center border-b border-gray-100 last:border-b-0"
                     onPress={() => {
                       updateFormData("totalRooms", option.value);
                       setShowRoomCountPicker(false);
                     }}
                   >
-                    <Text style={styles.dropdownItemText}>{option.label}</Text>
+                    <Text className="text-base text-gray-900">
+                      {option.label}
+                    </Text>
                     {formData.totalRooms === option.value && (
                       <Ionicons name="checkmark" size={20} color="#007AFF" />
                     )}
@@ -215,10 +225,12 @@ export default function PropertyDetailsStep({
           </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Brief Description</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Brief Description
+          </Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[100px]"
             value={formData.description}
             onChangeText={(value) => updateFormData("description", value)}
             placeholder="Tell us about your property, target guests, special features..."
@@ -232,129 +244,3 @@ export default function PropertyDetailsStep({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  iconContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-    color: "#1a1a1a",
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#666",
-    marginBottom: 32,
-  },
-  form: {
-    gap: 24,
-  },
-  inputContainer: {
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#1a1a1a",
-  },
-  propertyTypesGrid: {
-    gap: 12,
-  },
-  propertyTypeCard: {
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: "white",
-    alignItems: "center",
-  },
-  propertyTypeCardSelected: {
-    borderColor: "#007AFF",
-    backgroundColor: "#f0f8ff",
-  },
-  propertyTypeLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 8,
-    marginBottom: 4,
-    color: "#1a1a1a",
-  },
-  propertyTypeLabelSelected: {
-    color: "#007AFF",
-  },
-  propertyTypeDescription: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  row: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  halfWidth: {
-    flex: 1,
-  },
-  selectButton: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  selectButtonText: {
-    fontSize: 16,
-    color: "#1a1a1a",
-  },
-  placeholder: {
-    color: "#999",
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    backgroundColor: "white",
-    marginTop: 4,
-    maxHeight: 200,
-    zIndex: 1000,
-  },
-  dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    color: "#1a1a1a",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: "white",
-    color: "#1a1a1a",
-  },
-  textArea: {
-    height: 100,
-    paddingTop: 12,
-  },
-});
