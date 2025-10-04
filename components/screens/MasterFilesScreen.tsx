@@ -155,7 +155,7 @@ export default function MasterFilesScreen({
     return (
       <View className="flex-1 bg-gray-50">
         {/* Back button header */}
-        <View className="flex-row items-center p-4 bg-white border-b border-gray-200">
+        <View className="flex-row items-center p-4 mt-20 bg-white border-b border-gray-200">
           <TouchableOpacity
             onPress={() => setActiveScreen("main")}
             className="flex-row items-center"

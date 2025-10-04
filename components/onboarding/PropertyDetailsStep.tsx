@@ -74,23 +74,23 @@ export default function PropertyDetailsStep({
       className="flex-1 bg-white px-6"
       showsVerticalScrollIndicator={false}
     >
-      <View className="items-center mb-8">
-        <Ionicons name="business" size={48} color="#007AFF" />
+      <View className="items-center mb-2">
+        <Ionicons name="business" size={40} color="#007AFF" />
       </View>
 
-      <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+      <Text className="text-lg font-bold text-gray-900 text-center ">
         Property Information
       </Text>
-      <Text className="text-base text-gray-600 text-center mb-8">
+      <Text className="text-base text-gray-600 text-center mb-5">
         Help us understand your property setup
       </Text>
 
       <View className="space-y-6">
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">
             What type of property do you manage? *
           </Text>
-          <View className="flex-row flex-wrap gap-3">
+          <View className="flex-row flex-wrap gap-3 mb-2">
             {PROPERTY_TYPES.map((type) => (
               <TouchableOpacity
                 key={type.id}
@@ -125,7 +125,7 @@ export default function PropertyDetailsStep({
 
         <View className="flex-row gap-4">
           <View className="flex-1">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
+            <Text className="text-sm font-medium text-gray-700 mb-1">
               Number of Properties *
             </Text>
             <TouchableOpacity
@@ -157,13 +157,13 @@ export default function PropertyDetailsStep({
                 {PROPERTY_COUNT_OPTIONS.map((option) => (
                   <TouchableOpacity
                     key={option.value}
-                    className="px-4 py-3 flex-row justify-between items-center border-b border-gray-100 last:border-b-0"
+                    className="px-4 py-3 flex-row justify-between items-center border-b  border-gray-100 last:border-b-0"
                     onPress={() => {
                       updateFormData("propertyCount", option.value);
                       setShowPropertyCountPicker(false);
                     }}
                   >
-                    <Text className="text-base text-gray-900">
+                    <Text className="text-base text-gray-900 ">
                       {option.label}
                     </Text>
                     {formData.propertyCount === option.value && (
@@ -176,11 +176,11 @@ export default function PropertyDetailsStep({
           </View>
 
           <View className="flex-1">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
+            <Text className="text-sm font-medium text-gray-700 mb-1">
               Total Rooms/Units *
             </Text>
             <TouchableOpacity
-              className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white"
+              className="border border-gray-300 rounded-lg px-4 py-3 mb-2 flex-row justify-between items-center bg-white"
               onPress={() => setShowRoomCountPicker(!showRoomCountPicker)}
             >
               <Text
@@ -202,7 +202,7 @@ export default function PropertyDetailsStep({
             </TouchableOpacity>
 
             {showRoomCountPicker && (
-              <View className="border border-gray-200 rounded-lg mt-2 bg-white shadow-sm">
+              <View className="border border-gray-200 rounded-lg mt-2  bg-white shadow-sm">
                 {ROOM_COUNT_OPTIONS.map((option) => (
                   <TouchableOpacity
                     key={option.value}
@@ -226,11 +226,11 @@ export default function PropertyDetailsStep({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Brief Description
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[100px]"
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white h-[70px]"
             value={formData.description}
             onChangeText={(value) => updateFormData("description", value)}
             placeholder="Tell us about your property, target guests, special features..."

@@ -40,26 +40,26 @@ export default function CompanyInfoStep({
   return (
     <ScrollView
       className="flex-1 bg-white px-6"
-      showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={true}
     >
-      <View className="items-center mb-8">
-        <Ionicons name="business" size={48} color="#007AFF" />
+      <View className="items-center mb-2">
+        <Ionicons name="business" size={40} color="#007AFF" />
       </View>
 
-      <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+      <Text className="text-lg font-bold text-gray-900 text-center ">
         Tell us about your business
       </Text>
-      <Text className="text-base text-gray-600 text-center mb-8">
+      <Text className="text-base text-gray-600 text-center mb-5">
         We'll use this information to customize your experience
       </Text>
 
       <View className="space-y-6">
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Company/Hotel Name *
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base  bg-white mb-2"
             value={formData.companyName}
             onChangeText={(value) => updateFormData("companyName", value)}
             placeholder="e.g., Oceanview Resort"
@@ -68,11 +68,11 @@ export default function CompanyInfoStep({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Contact Person *
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white h-10 mb-2"
             value={formData.contactName}
             onChangeText={(value) => updateFormData("contactName", value)}
             placeholder="Your full name"
@@ -81,11 +81,11 @@ export default function CompanyInfoStep({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Business Email *
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white h-10 mb-2"
             value={formData.email}
             onChangeText={(value) => updateFormData("email", value)}
             placeholder="contact@yourhotel.com"
@@ -96,11 +96,11 @@ export default function CompanyInfoStep({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Phone Number
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white h-10 mb-2"
             value={formData.phone}
             onChangeText={(value) => updateFormData("phone", value)}
             placeholder="Enter a phone number"
@@ -110,11 +110,11 @@ export default function CompanyInfoStep({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Business Address
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white min-h-[80px]"
+            className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white h-15 mb-2"
             value={formData.address}
             onChangeText={(value) => updateFormData("address", value)}
             placeholder="Street address, city, state/province, country"
@@ -126,11 +126,11 @@ export default function CompanyInfoStep({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-sm font-medium text-gray-700 mb-1">
             Country
           </Text>
           <TouchableOpacity
-            className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white"
+            className="border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center bg-white h-12 "
             onPress={() => setShowCountryPicker(!showCountryPicker)}
           >
             <Text

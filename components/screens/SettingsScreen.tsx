@@ -3,64 +3,42 @@ import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
+// Import settings components
+import BookingManagement from "../settings/BookingManagement";
+import CurrencySettings from "../settings/CurrencySettings";
+import ExpenseCategories from "../settings/ExpenseCategories";
+import FormFieldPreferences from "../settings/FormFieldPreferences";
+import IncomeTypes from "../settings/IncomeTypes";
+import Profile from "../settings/Profile";
+
 export default function SettingsScreen() {
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("Profile");
 
   const tabs = [
     "Profile",
-    "Locations", 
+
     "Form Fields",
     "Expense Categories",
     "Income Types",
     "Currency Settings",
-    "Booking Management"
+    "Booking Management",
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case "Profile":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Profile Settings</Text>
-          </View>
-        );
-      case "Locations":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Location Settings</Text>
-          </View>
-        );
+        return <Profile />;
       case "Form Fields":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Form Fields Settings</Text>
-          </View>
-        );
+        return <FormFieldPreferences />;
       case "Expense Categories":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Expense Categories</Text>
-          </View>
-        );
+        return <ExpenseCategories />;
       case "Income Types":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Income Types</Text>
-          </View>
-        );
+        return <IncomeTypes />;
       case "Currency Settings":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Currency Settings</Text>
-          </View>
-        );
+        return <CurrencySettings />;
       case "Booking Management":
-        return (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-lg text-gray-600">Booking Management</Text>
-          </View>
-        );
+        return <BookingManagement />;
       default:
         return (
           <View className="flex-1 justify-center items-center">
@@ -89,8 +67,8 @@ export default function SettingsScreen() {
 
       {/* Tab Bar */}
       <View className="bg-white border-b border-gray-200">
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           className="px-2"
         >
@@ -100,16 +78,12 @@ export default function SettingsScreen() {
                 key={tab}
                 onPress={() => setActiveTab(tab)}
                 className={`px-4 py-2 mx-1 rounded-full ${
-                  activeTab === tab
-                    ? "bg-blue-500"
-                    : "bg-gray-100"
+                  activeTab === tab ? "bg-blue-500" : "bg-gray-100"
                 }`}
               >
                 <Text
                   className={`text-sm font-medium ${
-                    activeTab === tab
-                      ? "text-white"
-                      : "text-gray-600"
+                    activeTab === tab ? "text-white" : "text-gray-600"
                   }`}
                 >
                   {tab}
@@ -121,9 +95,7 @@ export default function SettingsScreen() {
       </View>
 
       {/* Tab Content */}
-      <View className="flex-1">
-        {renderContent()}
-      </View>
+      <View className="flex-1">{renderContent()}</View>
     </View>
   );
 }

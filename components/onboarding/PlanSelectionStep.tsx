@@ -76,18 +76,18 @@ export default function PlanSelectionStep({
 }: PlanSelectionStepProps) {
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="items-center mb-6">
-        <Ionicons name="card" size={48} color="#007AFF" />
+      <View className="items-center mb-2">
+        <Ionicons name="card" size={40} color="#007AFF" />
       </View>
 
-      <Text className="text-xl font-bold text-center mb-2 text-gray-800">
+      <Text className="text-lg font-bold text-center  text-gray-800">
         Choose Your Plan
       </Text>
-      <Text className="text-base text-center text-gray-600 mb-8">
+      <Text className="text-base text-center text-gray-600 ">
         Start with a 7-day free trial, then choose the plan that fits your needs
       </Text>
 
-      <View className="gap-4 mb-6">
+      <View className="gap-4 m-6">
         {DUMMY_PLANS.map((plan) => (
           <TouchableOpacity
             key={plan.id}

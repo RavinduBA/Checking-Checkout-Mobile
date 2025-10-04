@@ -85,14 +85,14 @@ export default function FeaturesStep({
       className="flex-1 bg-white px-6"
       showsVerticalScrollIndicator={false}
     >
-      <View className="items-center mb-8">
-        <Ionicons name="flash" size={48} color="#007AFF" />
+      <View className="items-center mb-2">
+        <Ionicons name="flash" size={40} color="#007AFF" />
       </View>
 
-      <Text className="text-2xl font-bold text-gray-900 text-center mb-2">
+      <Text className="text-lg font-bold text-gray-900 text-center ">
         Choose Your Features
       </Text>
-      <Text className="text-base text-gray-600 text-center mb-8">
+      <Text className="text-base text-gray-600 text-center mb-5">
         Select the features you need to get started
       </Text>
 

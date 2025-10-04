@@ -81,7 +81,7 @@ function MainTabs() {
           borderTopColor: "#e5e7eb",
           paddingBottom: 10,
           paddingTop: 3,
-          height: 80,
+          height: 95,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           position: "absolute",
@@ -107,7 +107,7 @@ function MainTabs() {
         name="Dashboard"
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={20} color={color} />
+            <Ionicons name="home" size={25} color={color} />
           ),
         }}
       >
@@ -117,7 +117,7 @@ function MainTabs() {
         name="Calendar"
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons name="calendar" size={20} color={color} />
+            <Ionicons name="calendar" size={25} color={color} />
           ),
         }}
       >
@@ -127,7 +127,7 @@ function MainTabs() {
         name="Reservations"
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons name="bed" size={20} color={color} />
+            <Ionicons name="bed" size={25} color={color} />
           ),
         }}
       >
@@ -137,7 +137,7 @@ function MainTabs() {
         name="Expenses"
         options={{
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="attach-money" size={20} color={color} />
+            <MaterialIcons name="attach-money" size={25} color={color} />
           ),
         }}
       >
@@ -147,7 +147,7 @@ function MainTabs() {
         name="Accounts"
         options={{
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="account-balance" size={20} color={color} />
+            <MaterialIcons name="account-balance" size={25} color={color} />
           ),
         }}
       >
@@ -157,7 +157,7 @@ function MainTabs() {
         name="Booking Channels"
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons name="globe" size={20} color={color} />
+            <Ionicons name="globe" size={25} color={color} />
           ),
         }}
       >
@@ -167,7 +167,7 @@ function MainTabs() {
         name="Reports"
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons name="bar-chart" size={20} color={color} />
+            <Ionicons name="bar-chart" size={25} color={color} />
           ),
         }}
       >

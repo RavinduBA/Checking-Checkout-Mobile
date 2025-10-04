@@ -26,19 +26,19 @@ export default function CompleteStep({
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ alignItems: "center", paddingBottom: 40 }}
     >
-      <View className="items-center mb-6">
-        <Ionicons name="checkmark-circle" size={64} color="#00C851" />
+      <View className="items-center mb-2">
+        <Ionicons name="checkmark-circle" size={50} color="#00C851" />
       </View>
 
-      <Text className="text-2xl font-bold text-center mb-3 text-gray-800">
+      <Text className="text-lg font-bold text-center  text-gray-800">
         You're All Set! 🎉
       </Text>
-      <Text className="text-base text-center text-gray-600 mb-8 px-4">
+      <Text className="text-base text-center text-gray-600 mb-5 px-4">
         Welcome to Check In_Check Out! Your account has been configured based on
         your preferences.
       </Text>
 
-      <View className="bg-white rounded-2xl p-6 w-full mb-6 border border-gray-100">
+      <View className="bg-white rounded-2xl p-4 w-full border border-gray-100">
         <Text className="text-lg font-bold mb-4 text-gray-800">
           Setup Summary
         </Text>
@@ -94,7 +94,7 @@ export default function CompleteStep({
         </View>
       </View>
 
-      <View className="bg-green-50 rounded-2xl p-6 w-full mb-8 border border-green-100">
+      <View className="bg-green-50 rounded-2xl p-6 w-full m-6 border border-green-100">
         <Text className="text-lg font-bold mb-4 text-green-800">
           What's Next:
         </Text>

@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -332,26 +331,24 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-50">
       {/* Progress Header */}
-      <View style={styles.header}>
-        <View style={styles.progressContainer}>
+      <View className="pt-15 px-5 pb-4 mt-20 border-b border-gray-200">
+        <View className="flex-row justify-center items-center mb-4">
           {STEPS.map((step, index) => (
-            <View key={step.id} style={styles.progressStep}>
+            <View key={step.id} className="flex-row items-center">
               <View
-                style={[
-                  styles.stepCircle,
-                  currentStep >= step.id && styles.stepCircleActive,
-                ]}
+                className={`w-8 h-8 rounded-full justify-center items-center ${
+                  currentStep >= step.id ? "bg-blue-500" : "bg-gray-200"
+                }`}
               >
                 {currentStep > step.id ? (
                   <Ionicons name="checkmark" size={16} color="white" />
                 ) : (
                   <Text
-                    style={[
-                      styles.stepNumber,
-                      currentStep >= step.id && styles.stepNumberActive,
-                    ]}
+                    className={`text-sm font-semibold ${
+                      currentStep >= step.id ? "text-white" : "text-gray-600"
+                    }`}
                   >
                     {step.id}
                   </Text>
@@ -359,34 +356,39 @@ export default function OnboardingScreen() {
               </View>
               {index < STEPS.length - 1 && (
                 <View
-                  style={[
-                    styles.progressLine,
-                    currentStep > step.id && styles.progressLineActive,
-                  ]}
+                  className={`w-10 h-0.5 mx-2 ${
+                    currentStep > step.id ? "bg-blue-500" : "bg-gray-200"
+                  }`}
                 />
               )}
             </View>
           ))}
         </View>
-        <Text style={styles.stepTitle}>
+        <Text className="text-center text-sm text-gray-600">
           Step {currentStep} of {STEPS.length}:{" "}
           {STEPS[currentStep - 1]?.description}
         </Text>
       </View>
 
       {/* Main Content */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{STEPS[currentStep - 1]?.title}</Text>
+      <ScrollView className="flex-1 px-5 mt-4" showsVerticalScrollIndicator={false}>
+        <View className="bg-white rounded-xl pt-3 pb-3 mt-[10px] mb-[10px] shadow-sm">
+          <Text className="text-xl font-bold text-center mb-2  text-gray-900">
+            {STEPS[currentStep - 1]?.title}
+          </Text>
           {renderStepContent()}
         </View>
       </ScrollView>
 
       {/* Navigation */}
       {currentStep < 5 && (
-        <View style={styles.navigation}>
+        <View className="absolute bottom-0 left-0 right-0 flex-row justify-between px-5 py-5 bg-white border-t border-gray-200">
           <TouchableOpacity
-            style={[styles.navButton, styles.prevButton]}
+            className={`flex-row items-center py-3 px-6 rounded-lg border ${
+              currentStep === 1
+                ? "bg-gray-50 border-gray-200"
+                : "bg-gray-50 border-gray-300"
+            }`}
             onPress={handlePrevious}
             disabled={currentStep === 1}
           >
@@ -396,30 +398,27 @@ export default function OnboardingScreen() {
               color={currentStep === 1 ? "#ccc" : "#666"}
             />
             <Text
-              style={[
-                styles.navButtonText,
-                currentStep === 1 && styles.navButtonTextDisabled,
-              ]}
+              className={`ml-2 text-base font-semibold ${
+                currentStep === 1 ? "text-gray-400" : "text-gray-600"
+              }`}
             >
               Previous
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.navButton,
-              styles.nextButton,
-              !validateStep() && styles.navButtonDisabled,
-            ]}
+            className={`flex-row items-center py-3 px-6 rounded-lg ${
+              !validateStep()
+                ? "bg-gray-50 border border-gray-200"
+                : "bg-blue-500"
+            }`}
             onPress={handleNext}
             disabled={!validateStep()}
           >
             <Text
-              style={[
-                styles.navButtonText,
-                styles.nextButtonText,
-                !validateStep() && styles.navButtonTextDisabled,
-              ]}
+              className={`mr-2 text-base font-semibold ${
+                !validateStep() ? "text-gray-400" : "text-white"
+              }`}
             >
               Next Step
             </Text>
@@ -433,152 +432,13 @@ export default function OnboardingScreen() {
       )}
 
       {loading && (
-        <View style={styles.loadingOverlay}>
+        <View className="absolute inset-0 bg-black bg-opacity-50 justify-center items-center">
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Setting up your account...</Text>
+          <Text className="mt-4 text-base text-white text-center">
+            Setting up your account...
+          </Text>
         </View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e1e5e9",
-  },
-  progressContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  progressStep: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#e1e5e9",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  stepCircleActive: {
-    backgroundColor: "#007AFF",
-  },
-  stepNumber: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-  },
-  stepNumberActive: {
-    color: "white",
-  },
-  progressLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: "#e1e5e9",
-    marginHorizontal: 8,
-  },
-  progressLineActive: {
-    backgroundColor: "#007AFF",
-  },
-  stepTitle: {
-    textAlign: "center",
-    fontSize: 14,
-    color: "#666",
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  card: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 24,
-    marginTop: 20,
-    marginBottom: 100,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 24,
-    color: "#1a1a1a",
-  },
-  navigation: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#e1e5e9",
-  },
-  navButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    gap: 8,
-  },
-  prevButton: {
-    backgroundColor: "#f8f9fa",
-    borderWidth: 1,
-    borderColor: "#e1e5e9",
-  },
-  nextButton: {
-    backgroundColor: "#007AFF",
-  },
-  navButtonDisabled: {
-    backgroundColor: "#f8f9fa",
-    borderColor: "#e1e5e9",
-  },
-  navButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#666",
-  },
-  nextButtonText: {
-    color: "white",
-  },
-  navButtonTextDisabled: {
-    color: "#ccc",
-  },
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: "white",
-    textAlign: "center",
-  },
-});
