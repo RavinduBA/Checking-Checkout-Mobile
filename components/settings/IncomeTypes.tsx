@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,21 +10,116 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useIncomeTypes } from "../../hooks/useIncomeTypes";
+import { useUserProfile } from "../../hooks/useUserProfile";
+import { supabase } from "../../lib/supabase";
+
+interface IncomeType {
+  id: string;
+  type_name: string;
+  tenant_id: string;
+  created_at: string;
+}
 
 export default function IncomeTypes() {
-  const {
-    incomeTypes,
-    loading,
-    error,
-    refetch,
-    createIncomeType,
-    deleteIncomeType,
-  } = useIncomeTypes();
-
+  const [incomeTypes, setIncomeTypes] = useState<IncomeType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
   const [saving, setSaving] = useState(false);
+  const { profile } = useUserProfile();
+
+  // Fetch income types with tenant filtering
+  const fetchIncomeTypes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (!profile?.tenant_id) {
+        setError("No tenant context available");
+        return;
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from("income_types")
+        .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .order("type_name", { ascending: true });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      setIncomeTypes(data || []);
+    } catch (err: any) {
+      console.error("Error fetching income types:", err);
+      setError(err.message || "Failed to fetch income types");
+    } finally {
+      setLoading(false);
+    }
+  }, [profile?.tenant_id]);
+
+  // Create new income type with tenant_id
+  const createIncomeType = useCallback(
+    async (typeName: string) => {
+      try {
+        if (!profile?.tenant_id) {
+          throw new Error("No tenant context available");
+        }
+
+        const { error: createError } = await supabase
+          .from("income_types")
+          .insert({
+            type_name: typeName.trim(),
+            tenant_id: profile.tenant_id,
+          });
+
+        if (createError) {
+          throw createError;
+        }
+
+        // Refresh the data
+        await fetchIncomeTypes();
+      } catch (err: any) {
+        console.error("Error creating income type:", err);
+        throw err;
+      }
+    },
+    [profile?.tenant_id, fetchIncomeTypes]
+  );
+
+  // Delete income type
+  const deleteIncomeType = useCallback(
+    async (id: string) => {
+      try {
+        const { error: deleteError } = await supabase
+          .from("income_types")
+          .delete()
+          .eq("id", id);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+
+        // Refresh the data
+        await fetchIncomeTypes();
+      } catch (err: any) {
+        console.error("Error deleting income type:", err);
+        throw err;
+      }
+    },
+    [fetchIncomeTypes]
+  );
+
+  const refetch = useCallback(async () => {
+    await fetchIncomeTypes();
+  }, [fetchIncomeTypes]);
+
+  useEffect(() => {
+    if (profile?.tenant_id) {
+      fetchIncomeTypes();
+    }
+  }, [fetchIncomeTypes, profile?.tenant_id]);
 
   const handleAdd = () => {
     setNewTypeName("");

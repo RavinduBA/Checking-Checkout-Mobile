@@ -56,7 +56,7 @@ export default function TopBar({
   return (
     <View className="bg-white border-b border-gray-200 px-4 py-3">
       <View className="flex-row items-center justify-between">
-        {/* Left side with Logo and Location Selector */}
+        {/* Left side with Logo, App Name and Location Selector */}
         <View className="flex-row items-center">
           {/* Logo */}
           <View className="w-8 h-8 mr-3">
@@ -70,20 +70,30 @@ export default function TopBar({
             </Svg>
           </View>
 
+          {/* App Name
+          
+          */}
+          <Text className="text-sm font-bold text-gray-900 mr-2">
+            CheckingCheckout
+          </Text>
+
           {/* Location Selector */}
           <TouchableOpacity
             onPress={() => setShowLocationDropdown(true)}
-            className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+            className="flex-row items-center bg-gray-100 px-1 py-1 rounded-lg"
           >
             <Ionicons name="location" size={16} color="#6b7280" />
-            <Text className="ml-2 text-sm font-medium text-gray-700">
-              {selectedLocationName}
-            </Text>
+            <View className="ml-2">
+              <Text className="text-sm font-medium text-gray-700">
+                {selectedLocationName}
+              </Text>
+              <Text className="text-xs text-gray-500">active location</Text>
+            </View>
             <Ionicons
               name="chevron-down"
               size={16}
               color="#6b7280"
-              className="ml-1"
+              className="ml-2"
             />
           </TouchableOpacity>
         </View>
