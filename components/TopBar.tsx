@@ -71,11 +71,10 @@ export default function TopBar({
           </View>
 
           {/* App Name
-          
-          */}
           <Text className="text-sm font-bold text-gray-900 mr-2">
             CheckingCheckout
           </Text>
+          */}
 
           {/* Location Selector */}
           <TouchableOpacity
@@ -134,7 +133,7 @@ export default function TopBar({
         >
           <View className="bg-white rounded-lg mx-4 py-2 w-64">
             <Text className="text-lg font-semibold text-gray-800 px-4 py-2 border-b border-gray-200">
-              Select Location
+              Locations
             </Text>
             {locationsLoading ? (
               <View className="px-4 py-3">

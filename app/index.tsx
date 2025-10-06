@@ -1,59 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import BottomTabNavigator from "../components/BottomTabNavigator";
-import AuthScreen from "../components/screens/AuthScreen";
+import LoginScreen from "../components/screens/LoginScreen";
+import RegistrationScreen from "../components/screens/RegistrationScreen";
 import LoadingScreen from "../components/screens/LoadingScreen";
 import OnboardingScreen from "../components/screens/OnboardingScreen";
+import WelcomeScreen from "../components/screens/WelcomeScreen";
 import { AuthProvider } from "../contexts/AuthContext";
 import { LocationProvider } from "../contexts/LocationContext";
 import { useAuth } from "../hooks/useAuth";
 import { useUserProfile } from "../hooks/useUserProfile";
 import "./global.css";
 
-// Inner component that uses the auth context
+// main logic of your app that decides what screen to show based on the auth and profile state.
 function AppContent() {
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { profile, loading: profileLoading, tenantId } = useUserProfile();
+  const { profile, loading: profileLoading } = useUserProfile();
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log("AppContent Debug:", {
-      isAuthenticated,
-      authLoading,
-      profileLoading,
-      profile: profile ? { ...profile, tenant_id: profile.tenant_id } : null,
-      tenantId,
-    });
-  }, [isAuthenticated, authLoading, profileLoading, profile, tenantId]);
+  // this local state replaces what used to be inside AuthScreen
+  const [showLogin, setShowLogin] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   // Show loading spinner while checking authentication and profile
   if (authLoading || (isAuthenticated && profileLoading)) {
     return <LoadingScreen />;
   }
 
-  // Show auth screens if not authenticated
+  // Show welcome screen first (only for unauthenticated users)
+  if (!isAuthenticated && showWelcome) {
+    return <WelcomeScreen onGetStarted={() => setShowWelcome(false)} />;
+  }
+
+  // Show login/registration after welcome screen
   if (!isAuthenticated) {
-    return <AuthScreen />;
+    return showLogin ? (
+      <LoginScreen onSwitchToRegister={() => setShowLogin(false)} />
+    ) : (
+      <RegistrationScreen onSwitchToLogin={() => setShowLogin(true)} />
+    );
   }
 
   // Show onboarding if authenticated but either no profile or no tenant
-  // This handles cases where profile creation failed or user hasn't completed onboarding
   if (
     isAuthenticated &&
     (!profile || !profile.tenant_id || !profile.first_login_completed)
   ) {
-    console.log(
-      "Showing onboarding - profile:",
-      !!profile,
-      "tenantId:",
-      profile?.tenant_id,
-      "firstLoginCompleted:",
-      profile?.first_login_completed
-    );
     return <OnboardingScreen />;
   }
 
   // Show main app if authenticated and has tenant
-  console.log("Showing main app - has tenant:", profile?.tenant_id);
   return (
     <LocationProvider>
       <BottomTabNavigator />

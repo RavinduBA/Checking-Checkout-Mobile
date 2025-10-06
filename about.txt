@@ -28,7 +28,7 @@ utils  - currency.ts
 
 Folders under components folder
 
-accounts     -Components related to account management, such as account lists, account forms, and account details for financial tracking.
+accounts     - Components related to account management, such as account lists, account forms, and account details for financial tracking.
 calendar     - Components for displaying and interacting with booking calendars, including date pickers and calendar views for reservations.
 dashboard    - Components used on the main dashboard page, such as summary cards, charts, and quick stats for hotel operations.
 expense      - Components for managing and displaying expense records, expense forms, and related financial UI elements.
@@ -43,4 +43,26 @@ users        -  Components for user management, such as user lists, user forms, 
 Database tables
 
 location - 4 co
+
+
+commands in future 
+
+In top bar after logo it must show "CheckingCheckout" its the apps name also  in location dropdown it must show active locations name and below that in small font "active loaction" like
+
+
+App info
+
+Tenant is based on Company/ hotel name , tenant id  is stored in tenant table and profile table 
+Slug - Identifies a company in the database or web app uniquely
+
+
+
+Things to verify 
+
+- totalRooms, propertyCount, and selectedFeatures are collected in the onboarding UI but are not stored in your database.
+
+
+things to fix
+- when new location added app must relod for add that to dropdown
+
 

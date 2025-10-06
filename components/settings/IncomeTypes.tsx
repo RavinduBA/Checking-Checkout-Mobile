@@ -279,12 +279,7 @@ export default function IncomeTypes() {
             <Text className="text-sm text-gray-500 text-center mt-2">
               Start by adding your first income type category.
             </Text>
-            <TouchableOpacity
-              onPress={handleAdd}
-              className="bg-blue-500 py-2 px-4 rounded-lg mt-4"
-            >
-              <Text className="text-white font-semibold">Add Income Type</Text>
-            </TouchableOpacity>
+            
           </View>
         }
       />

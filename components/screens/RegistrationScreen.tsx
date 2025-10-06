@@ -11,13 +11,12 @@ import {
 } from "react-native";
 import { signUp } from "../../lib/auth";
 
+// prop function onSwitchToLogin, used to switch back to the login screen
 interface RegistrationScreenProps {
   onSwitchToLogin: () => void;
 }
 
-export default function RegistrationScreen({
-  onSwitchToLogin,
-}: RegistrationScreenProps) {
+export default function RegistrationScreen({onSwitchToLogin,}: RegistrationScreenProps) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -28,7 +27,8 @@ export default function RegistrationScreen({
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+   
+  // Regsitration form validation
   const validateForm = () => {
     if (!formData.fullName.trim()) {
       Alert.alert("Error", "Please enter your full name");

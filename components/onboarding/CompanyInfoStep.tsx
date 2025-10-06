@@ -27,12 +27,11 @@ interface CompanyInfoStepProps {
   setFormData: React.Dispatch<React.SetStateAction<OnboardingFormData>>;
 }
 
-export default function CompanyInfoStep({
-  formData,
-  setFormData,
-}: CompanyInfoStepProps) {
+export default function CompanyInfoStep({formData,setFormData,}: CompanyInfoStepProps) 
+{
   const [showCountryPicker, setShowCountryPicker] = React.useState(false);
-
+  
+  // Function to update form data
   const updateFormData = (field: keyof OnboardingFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };

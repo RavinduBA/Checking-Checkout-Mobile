@@ -17,7 +17,6 @@ export default function SettingsScreen() {
 
   const tabs = [
     "Profile",
-
     "Form Fields",
     "Expense Categories",
     "Income Types",

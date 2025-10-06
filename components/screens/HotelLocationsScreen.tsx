@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import PullToRefresh from "../ui/PullToRefresh";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import {
   createLocation,
@@ -41,9 +42,7 @@ export default function HotelLocationsScreen() {
   const [newLocationPhone, setNewLocationPhone] = useState("");
   const [newLocationEmail, setNewLocationEmail] = useState("");
   const [newLocationPropertyType, setNewLocationPropertyType] = useState("");
-  const [newLocationStatus, setNewLocationStatus] = useState<
-    "Active" | "Inactive"
-  >("Active");
+  const [newLocationStatus, setNewLocationStatus] = useState<"Active" | "Inactive">("Active");
 
   // Load locations when component mounts
   useEffect(() => {
@@ -404,7 +403,11 @@ export default function HotelLocationsScreen() {
         </View>
 
         {/* Table Content */}
-        <ScrollView className="flex-1">
+        <PullToRefresh 
+          onRefresh={loadLocations}
+          refreshing={loading}
+          style={{ flex: 1 }}
+        >
           {locations.map((location, index) => (
             <View
               key={location.id}
@@ -460,7 +463,7 @@ export default function HotelLocationsScreen() {
               </View>
             </View>
           ))}
-        </ScrollView>
+        </PullToRefresh>
 
         {/* Empty State */}
         {locations.length === 0 && (

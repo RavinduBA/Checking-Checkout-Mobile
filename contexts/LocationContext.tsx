@@ -22,6 +22,7 @@ interface LocationContextType {
   getSelectedLocationData: () => Location | null;
 }
 
+// Create the location context
 const LocationContext = createContext<LocationContextType | undefined>(
   undefined
 );
@@ -32,6 +33,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { profile } = useUserProfile();
 
+  // Fetch locations from Supabase when profile changes
   useEffect(() => {
     const fetchLocations = async () => {
       if (!profile?.tenant_id) {

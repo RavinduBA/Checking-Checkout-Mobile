@@ -21,6 +21,7 @@ export default function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Login form validation
   const validateForm = () => {
     if (!email.trim()) {
       Alert.alert("Error", "Please enter your email");
@@ -37,6 +38,7 @@ export default function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {
     return true;
   };
 
+  // Handle login button press
   const handleLogin = async () => {
     if (!validateForm()) return;
 

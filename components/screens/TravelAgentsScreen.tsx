@@ -59,7 +59,6 @@ export default function TravelAgentsScreen() {
     const fetchAgents = async () => {
       try {
         setLoading(true);
-        console.log("Fetching agents for tenant:", profile.tenant_id);
 
         const { data, error } = await supabase
           .from("agents")
@@ -72,11 +71,6 @@ export default function TravelAgentsScreen() {
           throw error;
         }
 
-        console.log(
-          "✅ Agents fetched successfully:",
-          data?.length || 0,
-          "agents"
-        );
         setAgents(data || []);
       } catch (err) {
         console.error("Error in fetchAgents:", err);
@@ -124,8 +118,6 @@ export default function TravelAgentsScreen() {
         is_active: formData.is_active,
         tenant_id: profile.tenant_id,
       };
-
-      console.log("Creating agent with data:", dataToInsert);
 
       const { data, error } = await supabase
         .from("agents")
@@ -196,7 +188,6 @@ export default function TravelAgentsScreen() {
         throw error;
       }
 
-      console.log("Agent updated successfully:", data);
       // Update local state
       setAgents((prev) =>
         prev.map((agent) => (agent.id === editingAgent.id ? data : agent))
@@ -232,8 +223,6 @@ export default function TravelAgentsScreen() {
               if (error) {
                 throw error;
               }
-
-              console.log("Agent deleted successfully");
               // Update local state
               setAgents((prev) => prev.filter((agent) => agent.id !== agentId));
               Alert.alert("Success", "Travel agent deleted successfully");

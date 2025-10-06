@@ -79,7 +79,7 @@ export default function OnboardingScreen() {
   const { user } = useAuth();
 
   React.useEffect(() => {
-    // Pre-fill user email if available
+    // Automatically fills email and contact name if the user is already authenticated.
     if (user?.email && !formData.email) {
       setFormData((prev) => ({
         ...prev,
@@ -89,12 +89,12 @@ export default function OnboardingScreen() {
     }
   }, [user, formData.email]);
 
+  // Functions to move between steps (Next/Previous).
   const handleNext = () => {
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1);
     }
   };
-
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -281,6 +281,7 @@ export default function OnboardingScreen() {
     }
   };
 
+  // Ensures required fields are filled before allowing the user to go to the next step.
   const validateStep = () => {
     switch (currentStep) {
       case 1:

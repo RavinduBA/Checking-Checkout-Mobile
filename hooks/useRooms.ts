@@ -42,10 +42,6 @@ export function useRooms(locationId?: string) {
       try {
         setLoading(true);
         setError(null);
-
-        console.log('🔍 Fetching ALL rooms (active & inactive) for tenant_id:', profile.tenant_id);
-        console.log('🔍 LocationId filter:', locationId);
-
         let query = supabase
           .from('rooms')
           .select(`
@@ -61,8 +57,6 @@ export function useRooms(locationId?: string) {
         if (locationId) {
           query = query.eq('location_id', locationId);
         }
-
-        console.log('🔍 Executing rooms query...');
         const { data, error } = await query.order('room_number', { ascending: true });
 
         if (error) {
@@ -71,8 +65,6 @@ export function useRooms(locationId?: string) {
           return;
         }
 
-        console.log('✅ Rooms fetched successfully:', data?.length || 0, 'rooms');
-        console.log('📊 Rooms data:', data);
         setRooms(data || []);
       } catch (err) {
         console.error('Error in fetchRooms:', err);
@@ -96,8 +88,6 @@ export function useRooms(locationId?: string) {
       tenant_id: profile.tenant_id
     };
 
-    console.log('Creating room with data:', dataToInsert);
-    console.log('User profile tenant_id:', profile.tenant_id);
 
     try {
       const { data, error } = await supabase
@@ -116,8 +106,6 @@ export function useRooms(locationId?: string) {
         console.error('Supabase error:', error);
         throw error;
       }
-
-      console.log('Room created successfully:', data);
       // Update local state
       setRooms(prev => [...prev, data]);
       return data;

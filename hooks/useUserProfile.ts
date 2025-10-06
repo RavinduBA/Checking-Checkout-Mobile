@@ -42,7 +42,6 @@ export function useUserProfile() {
           .single();
 
         if (data && !error) {
-          console.log('Profile found:', data);
           setProfile(data);
           return;
         }
@@ -52,7 +51,7 @@ export function useUserProfile() {
         
         // Check if user is properly authenticated
         if (!user || !user.id || !user.email) {
-          console.error('Invalid user data:', user);
+        
           setError('Authentication data is incomplete');
           return;
         }

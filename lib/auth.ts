@@ -10,7 +10,7 @@ export interface AuthUser {
   };
 }
 
-// Sign up with email and password
+// Async function to create a new user with email and password.
 export const signUp = async (email: string, password: string, fullName?: string) => {
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -83,7 +83,7 @@ export const signOut = async () => {
   }
 };
 
-// Get current user
+// Fetches the currently logged-in user
 export const getCurrentUser = async () => {
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
