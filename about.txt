@@ -60,9 +60,13 @@ Slug - Identifies a company in the database or web app uniquely
 Things to verify 
 
 - totalRooms, propertyCount, and selectedFeatures are collected in the onboarding UI but are not stored in your database.
+- Teanat id not assigned to currency rates so it fetches all the data from that table
 
 
 things to fix
 - when new location added app must relod for add that to dropdown
+
+
+
 
 

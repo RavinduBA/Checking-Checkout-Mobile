@@ -198,8 +198,10 @@ CREATE TABLE IF NOT EXISTS public.accounts (
   name text NOT NULL,
   currency currency_type NOT NULL DEFAULT 'LKR'::currency_type,
   initial_balance numeric NOT NULL DEFAULT 0,
+  current_balance numeric NOT NULL DEFAULT 0,
   location_access text[] NOT NULL DEFAULT '{}'::text[],
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
   tenant_id uuid NOT NULL,
   CONSTRAINT accounts_pkey PRIMARY KEY (id),
   CONSTRAINT accounts_tenant_id_fkey FOREIGN KEY (tenant_id) REFERENCES public.tenants(id)
