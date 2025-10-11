@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SUPPORTED_CURRENCIES, CurrencyType } from "../../lib/currencies";
+import { CurrencyType, SUPPORTED_CURRENCIES } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
 interface Account {
@@ -58,6 +58,14 @@ export function AccountForm({
 
   useEffect(() => {
     if (editingAccount) {
+      console.log("Loading editing account:", {
+        id: editingAccount.id,
+        name: editingAccount.name,
+        currency: editingAccount.currency,
+        initial_balance: editingAccount.initial_balance,
+        current_balance: editingAccount.current_balance,
+      });
+
       setFormData({
         name: editingAccount.name,
         currency: editingAccount.currency,
@@ -106,19 +114,34 @@ export function AccountForm({
         const newCurrentBalance =
           editingAccount.current_balance + initialBalanceDifference;
 
+        console.log("Updating account:", {
+          accountId: editingAccount.id,
+          oldInitialBalance: editingAccount.initial_balance,
+          newInitialBalance: formData.initial_balance,
+          initialBalanceDifference,
+          oldCurrentBalance: editingAccount.current_balance,
+          newCurrentBalance,
+        });
+
+        const updateData = {
+          name: formData.name,
+          currency: formData.currency,
+          initial_balance: formData.initial_balance,
+          current_balance: newCurrentBalance,
+          location_access: formData.location_access,
+        };
+
         const { error } = await supabase
           .from("accounts")
-          .update({
-            name: formData.name,
-            currency: formData.currency,
-            initial_balance: formData.initial_balance,
-            current_balance: newCurrentBalance,
-            location_access: formData.location_access,
-          })
+          .update(updateData)
           .eq("id", editingAccount.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Database update error:", error);
+          throw error;
+        }
 
+        console.log("Account updated successfully");
         Alert.alert("Success", "Account updated successfully");
       } else {
         // Create new account
@@ -213,30 +236,35 @@ export function AccountForm({
             <TouchableOpacity
               className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
               onPress={() => {
-                Alert.alert(
-                  "Select Currency",
-                  "Choose your account currency",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    ...SUPPORTED_CURRENCIES.map((currency) => ({
-                      text: `${currency.symbol} ${currency.value} - ${currency.label}`,
-                      onPress: () => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          currency: currency.value,
-                        }));
-                      },
-                    })),
-                  ]
-                );
+                Alert.alert("Select Currency", "Choose your account currency", [
+                  { text: "Cancel", style: "cancel" },
+                  ...SUPPORTED_CURRENCIES.map((currency) => ({
+                    text: `${currency.symbol} ${currency.value} - ${currency.label}`,
+                    onPress: () => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        currency: currency.value,
+                      }));
+                    },
+                  })),
+                ]);
               }}
             >
               <View className="flex-1">
                 <Text className="font-medium text-gray-800">
-                  {SUPPORTED_CURRENCIES.find(c => c.value === formData.currency)?.symbol} {formData.currency}
+                  {
+                    SUPPORTED_CURRENCIES.find(
+                      (c) => c.value === formData.currency
+                    )?.symbol
+                  }{" "}
+                  {formData.currency}
                 </Text>
                 <Text className="text-sm text-gray-500">
-                  {SUPPORTED_CURRENCIES.find(c => c.value === formData.currency)?.label}
+                  {
+                    SUPPORTED_CURRENCIES.find(
+                      (c) => c.value === formData.currency
+                    )?.label
+                  }
                 </Text>
               </View>
               <Ionicons name="chevron-down" size={20} color="#6B7280" />
@@ -249,15 +277,34 @@ export function AccountForm({
               Initial Balance
             </Text>
             <TextInput
-              value={formData.initial_balance.toString()}
+              value={
+                formData.initial_balance === 0
+                  ? ""
+                  : formData.initial_balance.toString()
+              }
               onChangeText={(text) => {
-                const value = parseFloat(text) || 0;
-                setFormData((prev) => ({ ...prev, initial_balance: value }));
+                console.log("Initial balance input changed:", text);
+                // Handle empty string and parse correctly
+                if (text === "") {
+                  setFormData((prev) => ({ ...prev, initial_balance: 0 }));
+                } else {
+                  const value = parseFloat(text);
+                  if (!isNaN(value)) {
+                    console.log("Setting initial balance to:", value);
+                    setFormData((prev) => ({
+                      ...prev,
+                      initial_balance: value,
+                    }));
+                  }
+                }
               }}
               placeholder="0.00"
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-800"
             />
+            <Text className="text-xs text-gray-500 mt-1">
+              Current value: {formData.initial_balance}
+            </Text>
           </View>
 
           {/* Location Access */}

@@ -1,21 +1,7 @@
 import React from "react";
 import { FlatList, RefreshControl, Text, View } from "react-native";
+import { Account } from "../../lib/types";
 import { AccountCard } from "./AccountCard";
-
-
-// no problems found
-
-
-interface Account {
-  id: string;
-  name: string;
-  currency: "LKR" | "USD" | "EUR" | "GBP";
-  current_balance: number;
-  initial_balance: number;
-  location_access: string[];
-  tenant_id: string;
-  created_at: string;
-}
 
 type AccountWithBalance = Account & { currentBalance: number };
 

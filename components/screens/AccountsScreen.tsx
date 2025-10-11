@@ -4,6 +4,7 @@ import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useLocations } from "../../hooks/useLocations";
 import { useTenant } from "../../hooks/useTenant";
+import { Account } from "../../lib/types";
 import {
   AccountForm,
   AccountGrid,
@@ -12,17 +13,6 @@ import {
   AccountTransferForm,
   RecentTransactions,
 } from "../accounts";
-
-interface Account {
-  id: string;
-  name: string;
-  currency: "LKR" | "USD" | "EUR" | "GBP";
-  current_balance: number;
-  initial_balance: number;
-  location_access: string[];
-  tenant_id: string;
-  created_at: string;
-}
 
 type TabType = "accounts" | "transactions";
 
