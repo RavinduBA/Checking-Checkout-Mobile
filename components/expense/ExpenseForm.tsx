@@ -5,7 +5,6 @@ import {
   Modal,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -13,6 +12,18 @@ import { Account, ExpenseType } from "../../hooks/useExpenseData";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import { CurrencyType, getCurrencySymbol } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
+import { ExpenseCategories } from "./ExpenseCategories";
+import { ExpenseDetails } from "./ExpenseDetails";
+
+interface ExpenseFormData {
+  mainCategory: string;
+  subCategory: string;
+  amount: string;
+  accountId: string;
+  date: string;
+  note: string;
+  currency: "LKR" | "USD";
+}
 
 interface ExpenseFormProps {
   visible: boolean;
@@ -41,14 +52,14 @@ export function ExpenseForm({
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ExpenseFormData>({
     mainCategory: "",
     subCategory: "",
     amount: "",
     accountId: "",
     date: new Date().toISOString().slice(0, 10),
     note: "",
-    currency: "LKR" as CurrencyType,
+    currency: "LKR",
   });
 
   const resetForm = () => {
@@ -75,6 +86,15 @@ export function ExpenseForm({
 
     if (!selectedLocationId) {
       Alert.alert("Error", "Please select a location first");
+      return;
+    }
+
+    if (expenseTypes.length === 0) {
+      Alert.alert(
+        "No Expense Categories",
+        "You need to create expense categories first. Please go to Settings -> Expense Categories to add some categories.",
+        [{ text: "OK" }]
+      );
       return;
     }
 
@@ -107,7 +127,6 @@ export function ExpenseForm({
         date: formData.date,
         note: formData.note || null,
         tenant_id: tenantId,
-        created_by: profile?.id || null,
       };
 
       console.log("Inserting expense data:", expenseData);
@@ -119,7 +138,24 @@ export function ExpenseForm({
         throw error;
       }
 
-      Alert.alert("Success", "Expense added successfully");
+      // Fetch updated account balance (automatically updated by database trigger)
+      const { data: updatedAccount } = await supabase
+        .from("accounts")
+        .select("current_balance, currency, name")
+        .eq("id", formData.accountId)
+        .single();
+
+      const currentBalance = updatedAccount?.current_balance || 0;
+      const accountCurrencySymbol = getCurrencySymbol(
+        (updatedAccount?.currency as CurrencyType) || "LKR"
+      );
+
+      Alert.alert(
+        "Success",
+        `Expense added successfully!\n\n${
+          updatedAccount?.name
+        }\nNew Balance: ${accountCurrencySymbol}${currentBalance.toLocaleString()}`
+      );
       onSuccess();
       onClose();
       resetForm();
@@ -172,294 +208,32 @@ export function ExpenseForm({
         </View>
 
         <ScrollView className="flex-1 px-6 py-6">
-          {/* Main Category */}
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Main Category *
-            </Text>
-            <View>
-              <TouchableOpacity
-                className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
-                onPress={() =>
-                  setShowMainCategoryDropdown(!showMainCategoryDropdown)
-                }
-              >
-                <Text
-                  className={
-                    formData.mainCategory
-                      ? "text-gray-800 font-medium"
-                      : "text-gray-500"
-                  }
-                >
-                  {formData.mainCategory || "Select main category"}
-                </Text>
-                <Ionicons
-                  name={
-                    showMainCategoryDropdown ? "chevron-up" : "chevron-down"
-                  }
-                  size={20}
-                  color="#6B7280"
-                />
-              </TouchableOpacity>
+          {/* Categories Section */}
+          <ExpenseCategories
+            formData={formData}
+            expenseTypes={expenseTypes}
+            onFormDataChange={(data) =>
+              setFormData((prev) => ({ ...prev, ...data }))
+            }
+            showMainCategoryDropdown={showMainCategoryDropdown}
+            showSubCategoryDropdown={showSubCategoryDropdown}
+            setShowMainCategoryDropdown={setShowMainCategoryDropdown}
+            setShowSubCategoryDropdown={setShowSubCategoryDropdown}
+          />
 
-              {showMainCategoryDropdown && (
-                <View className="bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm">
-                  {mainCategories.map((category) => (
-                    <TouchableOpacity
-                      key={category}
-                      className="px-4 py-3 border-b border-gray-100 last:border-b-0"
-                      onPress={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          mainCategory: category,
-                          subCategory: "", // Reset sub category when main changes
-                        }));
-                        setShowMainCategoryDropdown(false);
-                      }}
-                    >
-                      <Text className="font-medium text-gray-800">
-                        {category}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Sub Category */}
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Sub Category *
-            </Text>
-            <View>
-              <TouchableOpacity
-                className={`bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between ${
-                  !formData.mainCategory ? "bg-gray-100" : ""
-                }`}
-                onPress={() => {
-                  if (formData.mainCategory) {
-                    setShowSubCategoryDropdown(!showSubCategoryDropdown);
-                  }
-                }}
-                disabled={!formData.mainCategory}
-              >
-                <Text
-                  className={
-                    !formData.mainCategory
-                      ? "text-gray-400"
-                      : formData.subCategory
-                      ? "text-gray-800 font-medium"
-                      : "text-gray-500"
-                  }
-                >
-                  {!formData.mainCategory
-                    ? "Select main category first"
-                    : formData.subCategory || "Select sub category"}
-                </Text>
-                <Ionicons
-                  name={showSubCategoryDropdown ? "chevron-up" : "chevron-down"}
-                  size={20}
-                  color={!formData.mainCategory ? "#9CA3AF" : "#6B7280"}
-                />
-              </TouchableOpacity>
-
-              {showSubCategoryDropdown && formData.mainCategory && (
-                <View className="bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm">
-                  {subCategories.map((subCategory) => (
-                    <TouchableOpacity
-                      key={subCategory}
-                      className="px-4 py-3 border-b border-gray-100 last:border-b-0"
-                      onPress={() => {
-                        setFormData((prev) => ({ ...prev, subCategory }));
-                        setShowSubCategoryDropdown(false);
-                      }}
-                    >
-                      <Text className="font-medium text-gray-800">
-                        {subCategory}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Amount and Currency */}
-          <View className="flex-row gap-4 mb-6">
-            <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
-                Amount *
-              </Text>
-              <View className="relative">
-                <Text className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 z-10">
-                  {getCurrencySymbol(formData.currency)}
-                </Text>
-                <TextInput
-                  value={formData.amount}
-                  onChangeText={(text) => {
-                    // Only allow numbers and decimal point
-                    const cleaned = text.replace(/[^0-9.]/g, "");
-                    setFormData((prev) => ({ ...prev, amount: cleaned }));
-                  }}
-                  placeholder="0.00"
-                  keyboardType="decimal-pad"
-                  className="bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-gray-800"
-                />
-              </View>
-            </View>
-
-            <View className="w-32">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
-                Currency *
-              </Text>
-              <View>
-                <TouchableOpacity
-                  className="bg-white border border-gray-200 rounded-lg px-3 py-3 flex-row items-center justify-between"
-                  onPress={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                >
-                  <Text className="text-gray-800 font-medium">
-                    {formData.currency}
-                  </Text>
-                  <Ionicons
-                    name={showCurrencyDropdown ? "chevron-up" : "chevron-down"}
-                    size={16}
-                    color="#6B7280"
-                  />
-                </TouchableOpacity>
-
-                {showCurrencyDropdown && (
-                  <View className="absolute top-full left-0 right-0 bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm z-10">
-                    {(["LKR", "USD"] as CurrencyType[]).map((currency) => (
-                      <TouchableOpacity
-                        key={currency}
-                        className="px-3 py-3 border-b border-gray-100 last:border-b-0"
-                        onPress={() => {
-                          setFormData((prev) => ({ ...prev, currency }));
-                          setShowCurrencyDropdown(false);
-                        }}
-                      >
-                        <Text className="font-medium text-gray-800">
-                          {currency}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Account */}
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Account *
-            </Text>
-            <View>
-              <TouchableOpacity
-                className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
-                onPress={() => setShowAccountDropdown(!showAccountDropdown)}
-              >
-                <View className="flex-1">
-                  {selectedAccount ? (
-                    <>
-                      <Text className="font-medium text-gray-800">
-                        {selectedAccount.name}
-                      </Text>
-                      <Text className="text-sm text-gray-500">
-                        Balance: {getCurrencySymbol(selectedAccount.currency)}
-                        {selectedAccount.current_balance.toLocaleString()}
-                      </Text>
-                    </>
-                  ) : (
-                    <Text className="text-gray-500">Select account</Text>
-                  )}
-                </View>
-                <View className="flex-row items-center">
-                  {selectedAccount && (
-                    <View className="px-2 py-1 bg-gray-100 rounded mr-2">
-                      <Text className="text-xs text-gray-600">
-                        {selectedAccount.currency}
-                      </Text>
-                    </View>
-                  )}
-                  <Ionicons
-                    name={showAccountDropdown ? "chevron-up" : "chevron-down"}
-                    size={20}
-                    color="#6B7280"
-                  />
-                </View>
-              </TouchableOpacity>
-
-              {showAccountDropdown && (
-                <View className="bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm">
-                  {accounts.map((account) => (
-                    <TouchableOpacity
-                      key={account.id}
-                      className="px-4 py-3 border-b border-gray-100 last:border-b-0"
-                      onPress={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          accountId: account.id,
-                        }));
-                        setShowAccountDropdown(false);
-                      }}
-                    >
-                      <View className="flex-row items-center justify-between">
-                        <View className="flex-1">
-                          <Text className="font-medium text-gray-800">
-                            {account.name}
-                          </Text>
-                          <Text className="text-sm text-gray-500">
-                            Balance: {getCurrencySymbol(account.currency)}
-                            {account.current_balance.toLocaleString()}
-                          </Text>
-                        </View>
-                        <View className="px-2 py-1 bg-gray-100 rounded">
-                          <Text className="text-xs text-gray-600">
-                            {account.currency}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Date */}
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Date *
-            </Text>
-            <TextInput
-              value={formData.date}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, date: text }))
-              }
-              placeholder="YYYY-MM-DD"
-              className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-800"
-            />
-          </View>
-
-          {/* Notes */}
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Notes (Optional)
-            </Text>
-            <TextInput
-              value={formData.note}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, note: text }))
-              }
-              placeholder="Add any notes about this expense"
-              multiline
-              numberOfLines={3}
-              className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-800"
-              textAlignVertical="top"
-            />
-          </View>
+          {/* Details Section */}
+          <ExpenseDetails
+            formData={formData}
+            accounts={accounts}
+            selectedLocation={selectedLocationId}
+            onFormDataChange={(data) =>
+              setFormData((prev) => ({ ...prev, ...data }))
+            }
+            showAccountDropdown={showAccountDropdown}
+            showCurrencyDropdown={showCurrencyDropdown}
+            setShowAccountDropdown={setShowAccountDropdown}
+            setShowCurrencyDropdown={setShowCurrencyDropdown}
+          />
         </ScrollView>
       </View>
     </Modal>
