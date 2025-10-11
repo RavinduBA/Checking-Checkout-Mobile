@@ -4,7 +4,7 @@
 export interface Account {
   id: string;
   name: string;
-  currency: 'LKR' | 'USD' | 'EUR' | 'GBP';
+  currency: 'LKR' | 'USD'; // Restricted to only LKR and USD
   current_balance: number;
   initial_balance: number;
   location_access: string[];

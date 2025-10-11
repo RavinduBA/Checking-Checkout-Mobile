@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useLocations } from "../../hooks/useLocations";
 import { useTenant } from "../../hooks/useTenant";
@@ -12,7 +12,6 @@ import {
   AccountTransferForm,
   RecentTransactions,
 } from "../accounts";
-
 
 interface Account {
   id: string;
@@ -166,16 +165,12 @@ export default function AccountsScreen() {
             <TouchableOpacity
               onPress={() => setActiveTab("transactions")}
               className={`flex-1 py-3 rounded-md ${
-                activeTab === "transactions"
-                  ? "bg-blue-500"
-                  : "bg-transparent"
+                activeTab === "transactions" ? "bg-blue-500" : "bg-transparent"
               }`}
             >
               <Text
                 className={`text-center font-medium ${
-                  activeTab === "transactions"
-                    ? "text-white"
-                    : "text-gray-600"
+                  activeTab === "transactions" ? "text-white" : "text-gray-600"
                 }`}
               >
                 Transactions
@@ -195,7 +190,7 @@ export default function AccountsScreen() {
               refreshing={refreshing}
             />
           ) : (
-            <RecentTransactions 
+            <RecentTransactions
               accounts={accounts}
               onRefresh={handleRefresh}
               refreshing={refreshing}

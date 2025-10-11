@@ -9,12 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getCurrencySymbol, getConversionRate, CurrencyType, DEFAULT_EXCHANGE_RATES } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
 interface Account {
   id: string;
   name: string;
-  currency: "LKR" | "USD" | "EUR" | "GBP";
+  currency: CurrencyType;
   current_balance: number;
   initial_balance: number;
   location_access: string[];
@@ -36,26 +37,20 @@ export function AccountTransferForm({
   onTransferCompleted,
 }: AccountTransferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentExchangeRate, setCurrentExchangeRate] = useState(DEFAULT_EXCHANGE_RATES);
+  const [showFromDropdown, setShowFromDropdown] = useState(false);
+  const [showToDropdown, setShowToDropdown] = useState(false);
   const [formData, setFormData] = useState({
     fromAccountId: "",
     toAccountId: "",
     amount: 0,
+    conversionRate: 1,
     description: "",
   });
 
-  const getCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case "LKR":
-        return "Rs.";
-      case "USD":
-        return "$";
-      case "EUR":
-        return "€";
-      case "GBP":
-        return "£";
-      default:
-        return "$";
-    }
+  // Use centralized conversion rate function with current exchange rates
+  const getConversionRateWithCurrent = (fromCurrency: CurrencyType, toCurrency: CurrencyType) => {
+    return getConversionRate(fromCurrency, toCurrency, currentExchangeRate);
   };
 
   const resetForm = () => {
@@ -63,8 +58,11 @@ export function AccountTransferForm({
       fromAccountId: "",
       toAccountId: "",
       amount: 0,
+      conversionRate: 1,
       description: "",
     });
+    setShowFromDropdown(false);
+    setShowToDropdown(false);
   };
 
   const handleSubmit = async () => {
@@ -96,14 +94,6 @@ export function AccountTransferForm({
       return;
     }
 
-    if (fromAccount.currency !== toAccount.currency) {
-      Alert.alert(
-        "Error",
-        "Can only transfer between accounts with the same currency"
-      );
-      return;
-    }
-
     if (fromAccount.current_balance < formData.amount) {
       Alert.alert("Error", "Insufficient balance in source account");
       return;
@@ -113,6 +103,22 @@ export function AccountTransferForm({
     setIsSubmitting(true);
 
     try {
+      // First, record the transfer in the account_transfers table
+      const { error: transferError } = await supabase
+        .from("account_transfers")
+        .insert({
+          from_account_id: formData.fromAccountId,
+          to_account_id: formData.toAccountId,
+          amount: formData.amount,
+          conversion_rate: formData.conversionRate,
+          note:
+            formData.description ||
+            `Transfer from ${fromAccount.name} to ${toAccount.name}`,
+          tenant_id: fromAccount.tenant_id,
+        });
+
+      if (transferError) throw transferError;
+
       // Update both accounts in a transaction-like manner
       const { error: fromError } = await supabase
         .from("accounts")
@@ -126,7 +132,9 @@ export function AccountTransferForm({
       const { error: toError } = await supabase
         .from("accounts")
         .update({
-          current_balance: toAccount.current_balance + formData.amount,
+          current_balance:
+            toAccount.current_balance +
+            formData.amount * formData.conversionRate,
         })
         .eq("id", formData.toAccountId);
 
@@ -192,113 +200,238 @@ export function AccountTransferForm({
         <ScrollView className="flex-1 px-6 py-6">
           {/* From Account */}
           <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-3">
+            <Text className="text-sm font-medium text-gray-700 mb-2">
               From Account *
             </Text>
-            <View className="space-y-2">
-              {accounts.map((account) => (
-                <TouchableOpacity
-                  key={account.id}
-                  onPress={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      fromAccountId: account.id,
-                    }))
-                  }
-                  className={`bg-white border rounded-lg px-4 py-3 ${
-                    formData.fromAccountId === account.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text
-                        className={`font-medium ${
-                          formData.fromAccountId === account.id
-                            ? "text-blue-700"
-                            : "text-gray-800"
-                        }`}
-                      >
-                        {account.name}
+            <View>
+              <TouchableOpacity
+                className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
+                onPress={() => setShowFromDropdown(!showFromDropdown)}
+              >
+                <View className="flex-1">
+                  {fromAccount ? (
+                    <>
+                      <Text className="font-medium text-gray-800">
+                        {fromAccount.name}
                       </Text>
                       <Text className="text-sm text-gray-500">
-                        {getCurrencySymbol(account.currency)}
-                        {account.current_balance.toLocaleString()}
+                        Available: {getCurrencySymbol(fromAccount.currency)}
+                        {fromAccount.current_balance.toLocaleString()}
                       </Text>
-                    </View>
-                    <View className="px-2 py-1 bg-gray-100 rounded">
+                    </>
+                  ) : (
+                    <Text className="text-gray-500">Select from account</Text>
+                  )}
+                </View>
+                <View className="flex-row items-center">
+                  {fromAccount && (
+                    <View className="px-2 py-1 bg-gray-100 rounded mr-2">
                       <Text className="text-xs text-gray-600">
-                        {account.currency}
+                        {fromAccount.currency}
                       </Text>
                     </View>
-                    {formData.fromAccountId === account.id && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color="#3B82F6"
-                      />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  )}
+                  <Ionicons 
+                    name={showFromDropdown ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#6B7280" 
+                  />
+                </View>
+              </TouchableOpacity>
+              
+              {/* Dropdown Options */}
+              {showFromDropdown && (
+                <View className="bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm">
+                  {accounts.map((account) => (
+                    <TouchableOpacity
+                      key={account.id}
+                      className="px-4 py-3 border-b border-gray-100 last:border-b-0"
+                      onPress={() => {
+                        const toAccount = accounts.find(
+                          (acc) => acc.id === formData.toAccountId
+                        );
+                        setFormData((prev) => ({
+                          ...prev,
+                          fromAccountId: account.id,
+                          conversionRate: toAccount
+                            ? getConversionRateWithCurrent(
+                                account.currency,
+                                toAccount.currency
+                              )
+                            : 1,
+                        }));
+                        setShowFromDropdown(false);
+                      }}
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-1">
+                          <Text className="font-medium text-gray-800">
+                            {account.name}
+                          </Text>
+                          <Text className="text-sm text-gray-500">
+                            Available: {getCurrencySymbol(account.currency)}
+                            {account.current_balance.toLocaleString()}
+                          </Text>
+                        </View>
+                        <View className="px-2 py-1 bg-gray-100 rounded">
+                          <Text className="text-xs text-gray-600">
+                            {account.currency}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
 
           {/* To Account */}
           <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-3">
+            <Text className="text-sm font-medium text-gray-700 mb-2">
               To Account *
             </Text>
-            <View className="space-y-2">
-              {accounts
-                .filter((account) => account.id !== formData.fromAccountId)
-                .map((account) => (
-                  <TouchableOpacity
-                    key={account.id}
-                    onPress={() =>
+            <View>
+              <TouchableOpacity
+                className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
+                onPress={() => setShowToDropdown(!showToDropdown)}
+              >
+                <View className="flex-1">
+                  {toAccount ? (
+                    <>
+                      <Text className="font-medium text-gray-800">
+                        {toAccount.name}
+                      </Text>
+                      <Text className="text-sm text-gray-500">
+                        Balance: {getCurrencySymbol(toAccount.currency)}
+                        {toAccount.current_balance.toLocaleString()}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text className="text-gray-500">Select to account</Text>
+                  )}
+                </View>
+                <View className="flex-row items-center">
+                  {toAccount && (
+                    <View className="px-2 py-1 bg-gray-100 rounded mr-2">
+                      <Text className="text-xs text-gray-600">
+                        {toAccount.currency}
+                      </Text>
+                    </View>
+                  )}
+                  <Ionicons 
+                    name={showToDropdown ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#6B7280" 
+                  />
+                </View>
+              </TouchableOpacity>
+              
+              {/* Dropdown Options */}
+              {showToDropdown && (
+                <View className="bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm">
+                  {accounts
+                    .filter((account) => account.id !== formData.fromAccountId)
+                    .map((account) => (
+                      <TouchableOpacity
+                        key={account.id}
+                        className="px-4 py-3 border-b border-gray-100 last:border-b-0"
+                        onPress={() => {
+                          const fromAccount = accounts.find(
+                            (acc) => acc.id === formData.fromAccountId
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            toAccountId: account.id,
+                            conversionRate: fromAccount
+                              ? getConversionRateWithCurrent(
+                                  fromAccount.currency,
+                                  account.currency
+                                )
+                              : 1,
+                          }));
+                          setShowToDropdown(false);
+                        }}
+                      >
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-1">
+                            <Text className="font-medium text-gray-800">
+                              {account.name}
+                            </Text>
+                            <Text className="text-sm text-gray-500">
+                              Balance: {getCurrencySymbol(account.currency)}
+                              {account.current_balance.toLocaleString()}
+                            </Text>
+                          </View>
+                          <View className="px-2 py-1 bg-gray-100 rounded">
+                            <Text className="text-xs text-gray-600">
+                              {account.currency}
+                            </Text>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Exchange Rate Settings */}
+          <View className="mb-6">
+            <Text className="text-sm font-medium text-gray-700 mb-3">
+              Exchange Rates
+            </Text>
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                <Text className="text-xs text-gray-600 mb-1">USD to LKR</Text>
+                <TextInput
+                  value={currentExchangeRate.usdToLkr.toString()}
+                  onChangeText={(text) => {
+                    const rate = parseFloat(text) || 300;
+                    setCurrentExchangeRate({
+                      usdToLkr: rate,
+                      lkrToUsd: 1 / rate,
+                    });
+                    // Update conversion rate if accounts are selected
+                    if (fromAccount && toAccount) {
                       setFormData((prev) => ({
                         ...prev,
-                        toAccountId: account.id,
-                      }))
+                        conversionRate: getConversionRateWithCurrent(
+                          fromAccount.currency,
+                          toAccount.currency
+                        ),
+                      }));
                     }
-                    className={`bg-white border rounded-lg px-4 py-3 ${
-                      formData.toAccountId === account.id
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200"
-                    }`}
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-1">
-                        <Text
-                          className={`font-medium ${
-                            formData.toAccountId === account.id
-                              ? "text-green-700"
-                              : "text-gray-800"
-                          }`}
-                        >
-                          {account.name}
-                        </Text>
-                        <Text className="text-sm text-gray-500">
-                          {getCurrencySymbol(account.currency)}
-                          {account.current_balance.toLocaleString()}
-                        </Text>
-                      </View>
-                      <View className="px-2 py-1 bg-gray-100 rounded">
-                        <Text className="text-xs text-gray-600">
-                          {account.currency}
-                        </Text>
-                      </View>
-                      {formData.toAccountId === account.id && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={20}
-                          color="#10B981"
-                        />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                  }}
+                  keyboardType="numeric"
+                  className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-xs text-gray-600 mb-1">LKR to USD</Text>
+                <TextInput
+                  value={currentExchangeRate.lkrToUsd.toFixed(4)}
+                  onChangeText={(text) => {
+                    const rate = parseFloat(text) || 0.0033;
+                    setCurrentExchangeRate({
+                      lkrToUsd: rate,
+                      usdToLkr: 1 / rate,
+                    });
+                    // Update conversion rate if accounts are selected
+                    if (fromAccount && toAccount) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        conversionRate: getConversionRateWithCurrent(
+                          fromAccount.currency,
+                          toAccount.currency
+                        ),
+                      }));
+                    }
+                  }}
+                  keyboardType="numeric"
+                  className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800"
+                />
+              </View>
             </View>
           </View>
 
@@ -323,6 +456,17 @@ export function AccountTransferForm({
               keyboardType="numeric"
               className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-800"
             />
+            {/* Show conversion preview */}
+            {fromAccount &&
+              toAccount &&
+              fromAccount.currency !== toAccount.currency &&
+              formData.amount > 0 && (
+                <Text className="text-xs text-blue-600 mt-2">
+                  {formData.amount} {fromAccount.currency} ={" "}
+                  {(formData.amount * formData.conversionRate).toFixed(2)}{" "}
+                  {toAccount.currency}
+                </Text>
+              )}
           </View>
 
           {/* Description */}
@@ -335,27 +479,42 @@ export function AccountTransferForm({
               onChangeText={(text) =>
                 setFormData((prev) => ({ ...prev, description: text }))
               }
-              placeholder="Transfer description"
+              placeholder={
+                fromAccount &&
+                toAccount &&
+                fromAccount.currency !== toAccount.currency
+                  ? `Transfer with conversion rate: ${formData.conversionRate.toFixed(
+                      4
+                    )}`
+                  : "Transfer description"
+              }
               multiline
               numberOfLines={3}
               className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-800"
             />
+            {fromAccount &&
+              toAccount &&
+              fromAccount.currency !== toAccount.currency && (
+                <Text className="text-xs text-blue-600 mt-1">
+                  Exchange rate: 1 {fromAccount.currency} ={" "}
+                  {formData.conversionRate.toFixed(4)} {toAccount.currency}
+                </Text>
+              )}
           </View>
 
-          {/* Currency Warning */}
+          {/* Currency Info */}
           {fromAccount &&
             toAccount &&
             fromAccount.currency !== toAccount.currency && (
-              <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <View className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <View className="flex-row items-center">
-                  <Ionicons name="warning" size={20} color="#F59E0B" />
-                  <Text className="text-yellow-800 font-medium ml-2">
-                    Currency Mismatch
+                  <Ionicons name="information-circle" size={20} color="#3B82F6" />
+                  <Text className="text-blue-800 font-medium ml-2">
+                    Currency Conversion
                   </Text>
                 </View>
-                <Text className="text-yellow-700 text-sm mt-1">
-                  Transfers are only allowed between accounts with the same
-                  currency.
+                <Text className="text-blue-700 text-sm mt-1">
+                  Transfer will be converted from {fromAccount.currency} to {toAccount.currency} using the current exchange rate.
                 </Text>
               </View>
             )}

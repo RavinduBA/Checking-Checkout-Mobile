@@ -27,10 +27,13 @@ interface Transaction {
   date: string;
   description: string;
   amount: number;
-  type: "income" | "expense";
+  type: "income" | "expense" | "transfer_in" | "transfer_out" | "transfer";
   currency: string;
   account_id: string;
   account_name: string;
+  transfer_account?: string; // For transfers, the other account involved
+  conversion_rate?: number;
+  note?: string;
 }
 
 interface RecentTransactionsProps {
@@ -39,7 +42,11 @@ interface RecentTransactionsProps {
   refreshing?: boolean;
 }
 
-export function RecentTransactions({ accounts, onRefresh: externalOnRefresh, refreshing: externalRefreshing }: RecentTransactionsProps) {
+export function RecentTransactions({
+  accounts,
+  onRefresh: externalOnRefresh,
+  refreshing: externalRefreshing,
+}: RecentTransactionsProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -116,17 +123,45 @@ export function RecentTransactions({ accounts, onRefresh: externalOnRefresh, ref
 
       if (expenseError) throw expenseError;
 
+      // Fetch transfer transactions (both incoming and outgoing)
+      const { data: transferData, error: transferError } = await supabase
+        .from("account_transfers")
+        .select(
+          `
+          id,
+          created_at,
+          note,
+          amount,
+          conversion_rate,
+          from_account_id,
+          to_account_id,
+          from_account:accounts!account_transfers_from_account_id_fkey(id, name, currency),
+          to_account:accounts!account_transfers_to_account_id_fkey(id, name, currency)
+        `
+        )
+        .or(
+          `from_account_id.in.(${accountIds.join(
+            ","
+          )}),to_account_id.in.(${accountIds.join(",")})`
+        )
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (transferError) throw transferError;
+
       // Combine and format transactions
       const formattedIncomes: Transaction[] = (incomeData || []).map(
         (item) => ({
           id: item.id,
           date: item.date,
-          description: item.note || `${item.type} - ${item.payment_method}` || "Income",
+          description:
+            item.note || `${item.type} - ${item.payment_method}` || "Income",
           amount: item.amount,
           type: "income" as const,
           currency: item.currency,
           account_id: (item.accounts as any)?.id || "",
           account_name: (item.accounts as any)?.name || "Unknown Account",
+          note: item.note,
         })
       );
 
@@ -134,17 +169,47 @@ export function RecentTransactions({ accounts, onRefresh: externalOnRefresh, ref
         (item) => ({
           id: item.id,
           date: item.date,
-          description: item.note || `${item.main_type} - ${item.sub_type}` || "Expense",
+          description:
+            item.note || `${item.main_type} - ${item.sub_type}` || "Expense",
           amount: item.amount,
           type: "expense" as const,
           currency: item.currency,
           account_id: (item.accounts as any)?.id || "",
           account_name: (item.accounts as any)?.name || "Unknown Account",
+          note: item.note,
         })
       );
 
+      // Format transfer transactions - show one transaction per transfer (not separate in/out)
+      const formattedTransfers: Transaction[] = (transferData || []).map(
+        (item) => {
+          const fromAccount = item.from_account as any;
+          const toAccount = item.to_account as any;
+
+          return {
+            id: item.id,
+            date: item.created_at,
+            description: `Transfer from ${
+              fromAccount?.name || "Unknown Account"
+            } to ${toAccount?.name || "Unknown Account"}`,
+            amount: item.amount,
+            type: "transfer" as const,
+            currency: fromAccount?.currency || "USD",
+            account_id: item.from_account_id, // Use source account as primary
+            account_name: fromAccount?.name || "Unknown Account",
+            transfer_account: toAccount?.name || "Unknown Account",
+            conversion_rate: item.conversion_rate,
+            note: item.note,
+          };
+        }
+      );
+
       // Combine and sort by date
-      const allTransactions = [...formattedIncomes, ...formattedExpenses]
+      const allTransactions = [
+        ...formattedIncomes,
+        ...formattedExpenses,
+        ...formattedTransfers,
+      ]
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 20);
 
@@ -178,44 +243,110 @@ export function RecentTransactions({ accounts, onRefresh: externalOnRefresh, ref
     }
   };
 
-  const renderTransaction = ({ item }: { item: Transaction }) => (
-    <View className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100">
-      <View className="flex-row items-center justify-between mb-2">
-        <View className="flex-row items-center flex-1">
-          <View
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              item.type === "income" ? "bg-green-100" : "bg-red-100"
-            }`}
-          >
-            <Ionicons
-              name={item.type === "income" ? "arrow-down" : "arrow-up"}
-              size={18}
-              color={item.type === "income" ? "#10B981" : "#EF4444"}
-            />
+  const getTransactionStyle = (type: Transaction["type"]) => {
+    switch (type) {
+      case "income":
+        return {
+          bgColor: "bg-green-100",
+          textColor: "text-green-600",
+          iconColor: "#10B981",
+          iconName: "arrow-down" as const,
+          prefix: "+",
+        };
+      case "expense":
+        return {
+          bgColor: "bg-red-100",
+          textColor: "text-red-600",
+          iconColor: "#EF4444",
+          iconName: "arrow-up" as const,
+          prefix: "-",
+        };
+      case "transfer":
+      case "transfer_in":
+        return {
+          bgColor: "bg-blue-100",
+          textColor: "text-blue-600",
+          iconColor: "#3B82F6",
+          iconName: "arrow-forward" as const,
+          prefix: "",
+        };
+      case "transfer_out":
+        return {
+          bgColor: "bg-orange-100",
+          textColor: "text-orange-600",
+          iconColor: "#F97316",
+          iconName: "arrow-back" as const,
+          prefix: "-",
+        };
+      default:
+        return {
+          bgColor: "bg-gray-100",
+          textColor: "text-gray-600",
+          iconColor: "#6B7280",
+          iconName: "help" as const,
+          prefix: "",
+        };
+    }
+  };
+
+  const renderTransaction = ({ item }: { item: Transaction }) => {
+    const style = getTransactionStyle(item.type);
+
+    return (
+      <View className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100">
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center flex-1">
+            <View
+              className={`w-10 h-10 rounded-full flex items-center justify-center ${style.bgColor}`}
+            >
+              <Ionicons
+                name={style.iconName}
+                size={18}
+                color={style.iconColor}
+              />
+            </View>
+            <View className="ml-3 flex-1">
+              <Text className="font-medium text-gray-800" numberOfLines={1}>
+                {item.description}
+              </Text>
+              <Text className="text-sm text-gray-500 capitalize">
+                {item.type === "transfer"
+                  ? "Transfer"
+                  : item.type.replace("_", " ")}
+              </Text>
+            </View>
           </View>
-          <View className="ml-3 flex-1">
-            <Text className="font-medium text-gray-800" numberOfLines={1}>
-              {item.description}
+
+          <View className="items-end">
+            <Text className={`font-bold ${style.textColor}`}>
+              {item.type === "transfer" ? "" : style.prefix}
+              {getCurrencySymbol(item.currency)}
+              {item.amount.toLocaleString()}
             </Text>
-            <Text className="text-sm text-gray-500">{item.account_name}</Text>
+            {item.conversion_rate && item.conversion_rate !== 1 && (
+              <Text className="text-xs text-gray-500">
+                Rate: {item.conversion_rate}
+              </Text>
+            )}
           </View>
         </View>
-
-        <View className="items-end">
-          <Text
-            className={`font-bold ${
-              item.type === "income" ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {item.type === "income" ? "+" : "-"}
-            {getCurrencySymbol(item.currency)}
-            {item.amount.toLocaleString()}
+        <View className="flex-row items-center justify-between text-xs text-gray-500">
+          <Text>
+            {new Date(item.date).toLocaleDateString()}{" "}
+            {new Date(item.date).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </Text>
-          <Text className="text-xs text-gray-500">{formatDate(item.date)}</Text>
+          {item.note && (
+            <Text className="ml-4 max-w-48 truncate" numberOfLines={1}>
+              {item.note}
+            </Text>
+          )}
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -234,7 +365,7 @@ export function RecentTransactions({ accounts, onRefresh: externalOnRefresh, ref
           No transactions found
         </Text>
         <Text className="text-gray-400 text-center text-sm">
-          Income and expense transactions will appear here
+          Income, expense, and transfer transactions will appear here
         </Text>
       </View>
     );
@@ -249,7 +380,9 @@ export function RecentTransactions({ accounts, onRefresh: externalOnRefresh, ref
       contentContainerStyle={{ paddingBottom: 20 }}
       refreshControl={
         <RefreshControl
-          refreshing={externalRefreshing !== undefined ? externalRefreshing : refreshing}
+          refreshing={Boolean(
+            externalRefreshing !== undefined ? externalRefreshing : refreshing
+          )}
           onRefresh={externalOnRefresh || (() => fetchTransactions(true))}
           colors={["#3B82F6"]}
         />

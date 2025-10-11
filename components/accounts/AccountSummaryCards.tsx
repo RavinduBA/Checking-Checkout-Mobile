@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
 
+// This Componennt shows the top 3 card and no problems
+
 interface Account {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ interface Account {
   created_at: string;
 }
 
+// Extends Account to include a currentBalance property.
 type AccountWithBalance = Account & { currentBalance: number };
 
 interface AccountSummaryCardsProps {

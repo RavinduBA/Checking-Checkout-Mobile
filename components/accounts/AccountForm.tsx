@@ -10,12 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SUPPORTED_CURRENCIES, CurrencyType } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
 interface Account {
   id: string;
   name: string;
-  currency: "LKR" | "USD" | "EUR" | "GBP";
+  currency: "LKR" | "USD"; // Restricted to only LKR and USD
   current_balance: number;
   initial_balance: number;
   location_access: string[];
@@ -50,17 +51,10 @@ export function AccountForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    currency: "LKR" as "LKR" | "USD" | "EUR" | "GBP",
+    currency: "LKR" as CurrencyType,
     initial_balance: 0,
     location_access: [] as string[],
   });
-
-  const currencies = [
-    { value: "LKR", label: "LKR (Sri Lankan Rupee)", symbol: "Rs." },
-    { value: "USD", label: "USD (US Dollar)", symbol: "$" },
-    { value: "EUR", label: "EUR (Euro)", symbol: "€" },
-    { value: "GBP", label: "GBP (British Pound)", symbol: "£" },
-  ];
 
   useEffect(() => {
     if (editingAccount) {
@@ -213,49 +207,40 @@ export function AccountForm({
 
           {/* Currency Selection */}
           <View className="mb-6">
-            <Text className="text-sm font-medium text-gray-700 mb-3">
-              Currency
+            <Text className="text-sm font-medium text-gray-700 mb-2">
+              Currency *
             </Text>
-            <View className="space-y-2">
-              {currencies.map((currency) => (
-                <TouchableOpacity
-                  key={currency.value}
-                  onPress={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      currency: currency.value as any,
-                    }))
-                  }
-                  className={`bg-white border rounded-lg px-4 py-3 flex-row items-center justify-between ${
-                    formData.currency === currency.value
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <View>
-                    <Text
-                      className={`font-medium ${
-                        formData.currency === currency.value
-                          ? "text-blue-700"
-                          : "text-gray-800"
-                      }`}
-                    >
-                      {currency.value}
-                    </Text>
-                    <Text className="text-sm text-gray-500">
-                      {currency.label}
-                    </Text>
-                  </View>
-                  {formData.currency === currency.value && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={20}
-                      color="#3B82F6"
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TouchableOpacity
+              className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
+              onPress={() => {
+                Alert.alert(
+                  "Select Currency",
+                  "Choose your account currency",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    ...SUPPORTED_CURRENCIES.map((currency) => ({
+                      text: `${currency.symbol} ${currency.value} - ${currency.label}`,
+                      onPress: () => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          currency: currency.value,
+                        }));
+                      },
+                    })),
+                  ]
+                );
+              }}
+            >
+              <View className="flex-1">
+                <Text className="font-medium text-gray-800">
+                  {SUPPORTED_CURRENCIES.find(c => c.value === formData.currency)?.symbol} {formData.currency}
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  {SUPPORTED_CURRENCIES.find(c => c.value === formData.currency)?.label}
+                </Text>
+              </View>
+              <Ionicons name="chevron-down" size={20} color="#6B7280" />
+            </TouchableOpacity>
           </View>
 
           {/* Initial Balance */}

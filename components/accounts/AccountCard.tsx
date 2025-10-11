@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { getCurrencySymbol } from "../../lib/currencies";
 import { useAccountOperations } from "../../hooks/useAccountOperations";
 import { Account } from "../../lib/types";
 
@@ -18,21 +19,6 @@ export function AccountCard({
   onDelete,
 }: AccountCardProps) {
   const { deleteAccount } = useAccountOperations();
-
-  const getCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case "LKR":
-        return "Rs.";
-      case "USD":
-        return "$";
-      case "EUR":
-        return "€";
-      case "GBP":
-        return "£";
-      default:
-        return "$";
-    }
-  };
 
   const handleDelete = async () => {
     const deleted = await deleteAccount(account.id, account.name);

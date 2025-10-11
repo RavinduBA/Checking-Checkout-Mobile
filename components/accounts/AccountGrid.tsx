@@ -1,6 +1,10 @@
 import React from "react";
-import { FlatList, Text, View, RefreshControl } from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { AccountCard } from "./AccountCard";
+
+
+// no problems found
+
 
 interface Account {
   id: string;
@@ -23,7 +27,13 @@ interface AccountGridProps {
   refreshing?: boolean;
 }
 
-export function AccountGrid({ accounts, onEdit, onDelete, onRefresh, refreshing }: AccountGridProps) {
+export function AccountGrid({
+  accounts,
+  onEdit,
+  onDelete,
+  onRefresh,
+  refreshing,
+}: AccountGridProps) {
   if (accounts.length === 0) {
     return (
       <View className="flex-1 items-center justify-center py-16">

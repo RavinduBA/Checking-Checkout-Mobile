@@ -1,6 +1,8 @@
 import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
 
+// hook for account delete no problems
+
 export const useAccountOperations = () => {
   const deleteAccount = async (accountId: string, accountName: string) => {
     return new Promise<boolean>((resolve) => {
