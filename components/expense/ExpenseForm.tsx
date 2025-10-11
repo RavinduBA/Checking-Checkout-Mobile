@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Account, ExpenseType } from "../../hooks/useExpenseData";
+import { useUserProfile } from "../../hooks/useUserProfile";
 import { CurrencyType, getCurrencySymbol } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
@@ -32,6 +33,7 @@ export function ExpenseForm({
   tenantId,
   onSuccess,
 }: ExpenseFormProps) {
+  const { profile } = useUserProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMainCategoryDropdown, setShowMainCategoryDropdown] =
     useState(false);
@@ -66,6 +68,11 @@ export function ExpenseForm({
   };
 
   const handleSubmit = async () => {
+    if (!profile?.id) {
+      Alert.alert("Error", "User profile not loaded. Please try again.");
+      return;
+    }
+
     if (!selectedLocationId) {
       Alert.alert("Error", "Please select a location first");
       return;
@@ -90,21 +97,27 @@ export function ExpenseForm({
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("expenses").insert([
-        {
-          main_type: formData.mainCategory,
-          sub_type: formData.subCategory,
-          amount: parseFloat(formData.amount),
-          currency: formData.currency,
-          account_id: formData.accountId,
-          location_id: selectedLocationId,
-          date: formData.date,
-          note: formData.note || null,
-          tenant_id: tenantId,
-        },
-      ]);
+      const expenseData = {
+        main_type: formData.mainCategory,
+        sub_type: formData.subCategory,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        account_id: formData.accountId,
+        location_id: selectedLocationId,
+        date: formData.date,
+        note: formData.note || null,
+        tenant_id: tenantId,
+        created_by: profile?.id || null,
+      };
 
-      if (error) throw error;
+      console.log("Inserting expense data:", expenseData);
+
+      const { error } = await supabase.from("expenses").insert([expenseData]);
+
+      if (error) {
+        console.error("Expense insert error:", error);
+        throw error;
+      }
 
       Alert.alert("Success", "Expense added successfully");
       onSuccess();
