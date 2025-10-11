@@ -32,9 +32,15 @@ export const useExpenseTypes = (): UseExpenseTypesReturn => {
       setLoading(true);
       setError(null);
 
+      if (!profile?.tenant_id) {
+        setExpenseTypes([]);
+        return;
+      }
+
       const { data, error: fetchError } = await supabase
         .from("expense_types")
         .select("*")
+        .eq("tenant_id", profile.tenant_id)
         .order("main_type", { ascending: true })
         .order("sub_type", { ascending: true });
 
@@ -49,7 +55,7 @@ export const useExpenseTypes = (): UseExpenseTypesReturn => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profile?.tenant_id]);
 
   // Get unique main types
   const mainTypes = expenseTypes
@@ -67,11 +73,16 @@ export const useExpenseTypes = (): UseExpenseTypesReturn => {
   // Create new expense type
   const createExpenseType = useCallback(async (mainType: string, subType: string) => {
     try {
+      if (!profile?.tenant_id) {
+        throw new Error('No tenant ID available');
+      }
+
       const { error: createError } = await supabase
         .from("expense_types")
         .insert({
           main_type: mainType.toLowerCase().trim(),
           sub_type: subType.toLowerCase().trim(),
+          tenant_id: profile.tenant_id,
         });
 
       if (createError) {
@@ -84,7 +95,7 @@ export const useExpenseTypes = (): UseExpenseTypesReturn => {
       console.error("Error creating expense type:", err);
       throw err;
     }
-  }, [fetchExpenseTypes]);
+  }, [fetchExpenseTypes, profile?.tenant_id]);
 
   // Update expense type
   const updateExpenseType = useCallback(async (id: string, mainType: string, subType: string) => {
@@ -129,9 +140,54 @@ export const useExpenseTypes = (): UseExpenseTypesReturn => {
     }
   }, [fetchExpenseTypes]);
 
+  // Create default expense types for new tenants
+  const createDefaultExpenseTypes = useCallback(async () => {
+    if (!profile?.tenant_id) return;
+
+    const defaultTypes = [
+      { main_type: "staff", sub_type: "salary" },
+      { main_type: "staff", sub_type: "overtime" },
+      { main_type: "utilities", sub_type: "electricity" },
+      { main_type: "utilities", sub_type: "water" },
+      { main_type: "utilities", sub_type: "internet" },
+      { main_type: "maintenance", sub_type: "repairs" },
+      { main_type: "maintenance", sub_type: "cleaning" },
+      { main_type: "supplies", sub_type: "office" },
+      { main_type: "supplies", sub_type: "kitchen" },
+      { main_type: "transportation", sub_type: "fuel" },
+      { main_type: "marketing", sub_type: "advertising" },
+      { main_type: "other", sub_type: "miscellaneous" },
+    ];
+
+    try {
+      const { error } = await supabase
+        .from("expense_types")
+        .insert(
+          defaultTypes.map(type => ({
+            ...type,
+            tenant_id: profile.tenant_id
+          }))
+        );
+
+      if (error) throw error;
+      await fetchExpenseTypes();
+    } catch (err: any) {
+      console.error("Error creating default expense types:", err);
+    }
+  }, [profile?.tenant_id, fetchExpenseTypes]);
+
   useEffect(() => {
-    fetchExpenseTypes();
-  }, [fetchExpenseTypes]);
+    if (profile?.tenant_id) {
+      fetchExpenseTypes();
+    }
+  }, [fetchExpenseTypes, profile?.tenant_id]);
+
+  // Auto-create default types if none exist
+  useEffect(() => {
+    if (expenseTypes.length === 0 && !loading && profile?.tenant_id) {
+      createDefaultExpenseTypes();
+    }
+  }, [expenseTypes.length, loading, createDefaultExpenseTypes, profile?.tenant_id]);
 
   return {
     expenseTypes,

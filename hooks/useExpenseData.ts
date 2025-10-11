@@ -12,18 +12,17 @@ export interface Location {
   phone?: string;
   email?: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Account {
   id: string;
-  tenant_id: string;
   name: string;
-  type: string;
-  balance?: number;
-  is_active: boolean;
+  currency: "LKR" | "USD";
+  current_balance: number;
+  initial_balance: number;
+  location_access: string[];
+  tenant_id: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface ExpenseType {
@@ -35,15 +34,17 @@ export interface ExpenseType {
 
 export interface Expense {
   id: string;
-  tenant_id: string;
-  location_id?: string;
-  account_id?: string;
-  expense_type_id?: string;
+  main_type: string;
+  sub_type: string;
   amount: number;
-  description?: string;
-  expense_date: string;
+  currency: "LKR" | "USD";
+  account_id: string;
+  location_id: string;
+  date: string;
+  note: string | null;
+  tenant_id: string;
   created_at: string;
-  updated_at: string;
+  created_by: string | null;
 }
 
 interface UseExpenseDataReturn {
@@ -64,75 +65,65 @@ export const useExpenseData = (): UseExpenseDataReturn => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { profile } = useUserProfile();
+  const { profile, loading: profileLoading } = useUserProfile();
 
   const fetchData = useCallback(async () => {
-    if (!profile?.tenant_id) return;
+    if (profileLoading || !profile?.tenant_id) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch locations for this tenant
-      const locationsQuery = supabase
+      // Fetch locations
+      const { data: locationsData, error: locationsError } = await supabase
         .from("locations")
         .select("*")
         .eq("tenant_id", profile.tenant_id)
-        .eq("is_active", true)
-        .order("name");
+        .eq("is_active", true);
 
-      // Fetch accounts for this tenant
-      const accountsQuery = supabase
+      if (locationsError) throw locationsError;
+
+      // Fetch accounts
+      const { data: accountsData, error: accountsError } = await supabase
         .from("accounts")
         .select("*")
-        .eq("tenant_id", profile.tenant_id)
-        .order("name");
+        .eq("tenant_id", profile.tenant_id);
 
-      // Fetch expense types (global reference)
-      const expenseTypesQuery = supabase
+      if (accountsError) throw accountsError;
+
+      // Fetch expense types
+      const { data: expenseTypesData, error: expenseTypesError } = await supabase
         .from("expense_types")
         .select("*")
-        .order("main_type")
-        .order("sub_type");
+        .eq("tenant_id", profile.tenant_id)
+        .order("main_type");
 
-      // Fetch recent expenses for this tenant
-      const expensesQuery = supabase
+      if (expenseTypesError) throw expenseTypesError;
+
+      // Fetch recent expenses
+      const { data: expensesData, error: expensesError } = await supabase
         .from("expenses")
-        .select(`
-          *,
-          locations(name),
-          accounts(name),
-          expense_types(main_type, sub_type)
-        `)
+        .select("*")
         .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: false })
         .limit(10);
 
-      const [locationsRes, accountsRes, expenseTypesRes, expensesRes] =
-        await Promise.all([
-          locationsQuery,
-          accountsQuery,
-          expenseTypesQuery,
-          expensesQuery,
-        ]);
+      if (expensesError) throw expensesError;
 
-      // Handle errors
-      if (locationsRes.error) throw locationsRes.error;
-      if (accountsRes.error) throw accountsRes.error;
-      if (expenseTypesRes.error) throw expenseTypesRes.error;
-      if (expensesRes.error) throw expensesRes.error;
-
-      setLocations(locationsRes.data || []);
-      setAccounts(accountsRes.data || []);
-      setExpenseTypes(expenseTypesRes.data || []);
-      setRecentExpenses(expensesRes.data || []);
+      setLocations(locationsData || []);
+      setAccounts(accountsData || []);
+      setExpenseTypes(expenseTypesData || []);
+      setRecentExpenses(expensesData || []);
     } catch (err: any) {
       console.error("Error fetching expense data:", err);
       setError(err.message || "Failed to fetch expense data");
     } finally {
       setLoading(false);
     }
-  }, [profile?.tenant_id]);
+  }, [profile?.tenant_id, profileLoading]);
 
   useEffect(() => {
     fetchData();
