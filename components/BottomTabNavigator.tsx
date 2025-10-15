@@ -150,16 +150,7 @@ function MainTabs() {
       >
         {() => <ScreenWithTopBar component={AccountsScreen} />}
       </Tab.Screen>
-      <Tab.Screen
-        name="Booking Channels"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="globe" size={25} color={color} />
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={BookingChannelsScreen} />}
-      </Tab.Screen>
+      
       <Tab.Screen
         name="Reports"
         options={{
