@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { CurrencySelector } from "../common/CurrencySelector";
 import type { Database } from "../../integrations/supabase/types";
+import { CurrencySelector } from "../common/CurrencySelector";
 
 type Currency = Database["public"]["Enums"]["currency_type"];
 

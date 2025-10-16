@@ -10,6 +10,8 @@ import {
   View,
 } from "react-native";
 import { useFormFieldPreferences } from "../../hooks/useFormFieldPreferences";
+import { useUserProfile } from "../../hooks/useUserProfile";
+import { verifyFormFieldPreferences } from "../../utils/verifyFormFieldPreferences";
 
 export default function FormFieldPreferences() {
   const {
@@ -18,6 +20,8 @@ export default function FormFieldPreferences() {
     loading: formPreferencesLoading,
     error,
   } = useFormFieldPreferences();
+
+  const { profile } = useUserProfile();
 
   // Local state for pending changes
   const [localPreferences, setLocalPreferences] = useState<any>({});
@@ -45,11 +49,39 @@ export default function FormFieldPreferences() {
   const handleSaveChanges = async () => {
     try {
       setSaving(true);
-      await updateFormPreferences(localPreferences);
+      console.log("=== SAVING PREFERENCES ===");
+      console.log(
+        "Full local preferences:",
+        JSON.stringify(localPreferences, null, 2)
+      );
+
+      // Filter out read-only fields that shouldn't be updated
+      const { id, tenant_id, created_at, updated_at, ...updateFields } =
+        localPreferences;
+      console.log(
+        "Filtered update fields:",
+        JSON.stringify(updateFields, null, 2)
+      );
+
+      // Validate that we have valid data
+      if (Object.keys(updateFields).length === 0) {
+        throw new Error("No valid fields to update");
+      }
+
+      const result = await updateFormPreferences(updateFields);
+      console.log("Save result:", JSON.stringify(result, null, 2));
+
       setHasChanges(false);
       Alert.alert("Success", "Form field preferences updated successfully!");
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to save preferences");
+      console.error("=== SAVE ERROR ===");
+      console.error("Error details:", error);
+      console.error("Error message:", error.message);
+      console.error("Error code:", error.code);
+      Alert.alert(
+        "Error",
+        `Failed to save preferences: ${error.message || "Unknown error"}`
+      );
     } finally {
       setSaving(false);
     }
@@ -60,6 +92,31 @@ export default function FormFieldPreferences() {
     if (formPreferences) {
       setLocalPreferences(formPreferences);
       setHasChanges(false);
+    }
+  };
+
+  // Verify what's actually in the database
+  const handleVerifyDatabase = async () => {
+    if (!profile?.tenant_id) {
+      Alert.alert("Error", "No tenant ID found");
+      return;
+    }
+
+    try {
+      const dbData = await verifyFormFieldPreferences(profile.tenant_id);
+      if (dbData) {
+        Alert.alert(
+          "Database Verification",
+          `Found preferences in database:\n\nEmail: ${dbData.show_guest_email}\nPhone: ${dbData.show_guest_phone}\nAddress: ${dbData.show_guest_address}\nNationality: ${dbData.show_guest_nationality}\nPassport: ${dbData.show_guest_passport_number}\n\nCheck console for full details.`
+        );
+      } else {
+        Alert.alert(
+          "Database Verification",
+          "No preferences found in database or error occurred"
+        );
+      }
+    } catch (error: any) {
+      Alert.alert("Error", `Verification failed: ${error.message}`);
     }
   };
 
@@ -312,6 +369,19 @@ export default function FormFieldPreferences() {
             </View>
           </View>
         )}
+
+        {/* Debug/Verification Section */}
+        <View className="bg-white mt-4 mx-4 rounded-xl p-4 shadow-sm">
+          <TouchableOpacity
+            onPress={handleVerifyDatabase}
+            className="flex-row justify-center items-center py-3 px-4 rounded-lg bg-yellow-500"
+          >
+            <Ionicons name="search" size={20} color="white" />
+            <Text className="text-white font-semibold ml-2">
+              Verify Database
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Note Section */}
         <View className="m-4 p-4 bg-blue-50 rounded-2xl border-l-4 border-blue-500">

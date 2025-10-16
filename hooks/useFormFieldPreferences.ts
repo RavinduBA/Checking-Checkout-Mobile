@@ -41,21 +41,27 @@ export const useFormFieldPreferences = () => {
         return;
       }
 
+      console.log("Fetching preferences for tenant:", profile.tenant_id);
+
       const { data, error: fetchError } = await supabase
         .from("form_field_preferences")
         .select("*")
         .eq("tenant_id", profile.tenant_id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
       if (fetchError) {
-        if (fetchError.code === "PGRST116") {
-          // No preferences found, create default ones
-          await createDefaultPreferences();
-        } else {
-          throw fetchError;
-        }
+        console.error("Fetch error:", fetchError);
+        throw fetchError;
+      }
+
+      if (!data) {
+        console.log("No preferences found, creating default ones");
+        // No preferences found, create default ones
+        await createDefaultPreferences();
       } else {
+        console.log("Found existing preferences:", data);
         setPreferences(data);
+        setError(null); // Clear any previous errors
       }
     } catch (err: any) {
       console.error("Error fetching form field preferences:", err);
@@ -71,6 +77,8 @@ export const useFormFieldPreferences = () => {
       if (!profile?.tenant_id) {
         throw new Error("No tenant ID found");
       }
+
+      console.log("Creating default preferences for tenant:", profile.tenant_id);
 
       const defaultPreferences: Partial<FormFieldPreferences> = {
         tenant_id: profile.tenant_id,
@@ -100,10 +108,27 @@ export const useFormFieldPreferences = () => {
         .single();
 
       if (createError) {
+        console.error("Error creating default preferences:", createError);
+        // If it's a duplicate key error, fetch the existing preferences
+        if (createError.code === '23505') {
+          console.log("Preferences already exist, fetching them...");
+          const { data: existingData, error: fetchError } = await supabase
+            .from("form_field_preferences")
+            .select("*")
+            .eq("tenant_id", profile.tenant_id)
+            .single();
+          
+          if (existingData && !fetchError) {
+            setPreferences(existingData);
+            return;
+          }
+        }
         throw createError;
       }
 
+      console.log("Default preferences created successfully:", data);
       setPreferences(data);
+      setError(null); // Clear any previous errors
     } catch (err: any) {
       console.error("Error creating default preferences:", err);
       setError(err.message || "Failed to create default preferences");
@@ -113,25 +138,40 @@ export const useFormFieldPreferences = () => {
   // Update specific preferences
   const updatePreferences = async (updates: Partial<FormFieldPreferences>) => {
     try {
-      if (!preferences?.id) {
-        throw new Error("No preferences found to update");
+      if (!preferences?.id || !profile?.tenant_id) {
+        throw new Error("No preferences found to update or missing tenant_id");
       }
+
+      console.log("Updating preferences with:", {
+        id: preferences.id,
+        tenant_id: profile.tenant_id,
+        updates
+      });
+
+      // Clean the updates object - remove any undefined values
+      const cleanUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([_, value]) => value !== undefined)
+      );
 
       const { data, error: updateError } = await supabase
         .from("form_field_preferences")
         .update({
-          ...updates,
+          ...cleanUpdates,
           updated_at: new Date().toISOString(),
         })
         .eq("id", preferences.id)
+        .eq("tenant_id", profile.tenant_id) // Add tenant_id constraint for security
         .select()
         .single();
 
       if (updateError) {
+        console.error("Database update error:", updateError);
         throw updateError;
       }
 
+      console.log("Update successful, new data:", data);
       setPreferences(data);
+      setError(null); // Clear any previous errors
       return data;
     } catch (err: any) {
       console.error("Error updating preferences:", err);

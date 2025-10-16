@@ -8,17 +8,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Database } from "../../integrations/supabase/types";
 import { useLocationContext } from "../../hooks/useLocationContext";
 import { useTenant } from "../../hooks/useTenant";
+import { Database } from "../../integrations/supabase/types";
+import type { CurrencyRate } from "../../utils/currency";
+import {
+  getCurrencyConversionSearchUrl,
+  getCurrencyDetails,
+} from "../../utils/currency";
 
 type CurrencyType = Database["public"]["Enums"]["currency_type"];
-
-interface CurrencyRate {
-  currency_code: string;
-  usd_rate: number;
-  is_custom: boolean;
-}
 
 interface CurrencySelectorProps {
   currency: CurrencyType;
@@ -42,32 +41,18 @@ export const CurrencySelector = ({
   useEffect(() => {
     const loadCurrencies = async () => {
       if (!tenant?.id || !selectedLocation) {
-        // Default currencies for mobile
-        setCurrencies([
-          { currency_code: "USD", usd_rate: 1, is_custom: false },
-          { currency_code: "LKR", usd_rate: 300, is_custom: false },
-          { currency_code: "EUR", usd_rate: 0.85, is_custom: false },
-          { currency_code: "GBP", usd_rate: 0.75, is_custom: false },
-        ]);
         setLoading(false);
         return;
       }
 
       try {
-        // For now, use default currencies. In future, implement getCurrencyDetails for mobile
-        setCurrencies([
-          { currency_code: "USD", usd_rate: 1, is_custom: false },
-          { currency_code: "LKR", usd_rate: 300, is_custom: false },
-          { currency_code: "EUR", usd_rate: 0.85, is_custom: false },
-          { currency_code: "GBP", usd_rate: 0.75, is_custom: false },
-        ]);
+        const currencyDetails = await getCurrencyDetails(
+          tenant.id,
+          selectedLocation
+        );
+        setCurrencies(currencyDetails);
       } catch (error) {
         console.error("Error loading currencies:", error);
-        // Fallback to default currencies
-        setCurrencies([
-          { currency_code: "USD", usd_rate: 1, is_custom: false },
-          { currency_code: "LKR", usd_rate: 300, is_custom: false },
-        ]);
       } finally {
         setLoading(false);
       }
@@ -79,8 +64,11 @@ export const CurrencySelector = ({
   const selectedCurrency = currencies.find((c) => c.currency_code === currency);
 
   const handleGoogleSearchClick = () => {
-    // TODO: Implement mobile browser opening for currency conversion
-    console.log("Opening currency conversion search for:", currency);
+    if (currency && currency !== "USD") {
+      const searchUrl = getCurrencyConversionSearchUrl(currency);
+      // In React Native, you could use Linking.openURL(searchUrl) to open the browser
+      console.log("Opening currency conversion search URL:", searchUrl);
+    }
   };
 
   const selectCurrency = (currencyCode: string) => {
@@ -150,7 +138,9 @@ export const CurrencySelector = ({
             {currencies.map((curr) => (
               <TouchableOpacity
                 key={curr.currency_code}
-                onPress={() => selectCurrency(curr.currency_code)}
+                onPress={() =>
+                  curr.currency_code && selectCurrency(curr.currency_code)
+                }
                 className={`px-4 py-4 border-b border-gray-100 flex-row items-center justify-between ${
                   currency === curr.currency_code ? "bg-blue-50" : ""
                 }`}
@@ -165,12 +155,6 @@ export const CurrencySelector = ({
                         ? "US Dollar"
                         : curr.is_custom
                         ? "Custom Currency"
-                        : curr.currency_code === "LKR"
-                        ? "Sri Lankan Rupee"
-                        : curr.currency_code === "EUR"
-                        ? "Euro"
-                        : curr.currency_code === "GBP"
-                        ? "British Pound"
                         : curr.currency_code}
                     </Text>
                   </View>
