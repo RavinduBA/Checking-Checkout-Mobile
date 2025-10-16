@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -8,14 +9,13 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
-import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useLocationContext } from "../../hooks/useLocationContext";
+import { useRoomAvailability } from "../../hooks/useRoomAvailability";
 import { useTenant } from "../../hooks/useTenant";
 import { useToast } from "../../hooks/useToast";
-import { useRoomAvailability } from "../../hooks/useRoomAvailability";
+import { supabase } from "../../lib/supabase";
 import { convertCurrency } from "../../utils/currency";
 
 interface Room {
@@ -187,9 +187,12 @@ export function NewReservationDialog({
 
   const generateReservationNumber = async (): Promise<string> => {
     try {
-      const { data, error } = await supabase.rpc("generate_reservation_number", {
-        p_tenant_id: tenant?.id,
-      });
+      const { data, error } = await supabase.rpc(
+        "generate_reservation_number",
+        {
+          p_tenant_id: tenant?.id,
+        }
+      );
 
       if (error) throw error;
       return data || `RES${Date.now()}`;
@@ -261,7 +264,7 @@ export function NewReservationDialog({
       // Create reservation data for each room
       for (const selection of roomSelections) {
         const reservationNumber = await generateReservationNumber();
-        
+
         const reservationData = {
           reservation_number: reservationNumber,
           tenant_id: tenant.id,
@@ -283,7 +286,8 @@ export function NewReservationDialog({
           total_amount: selection.total_amount,
           advance_amount: paymentData.advance_amount || 0,
           paid_amount: paymentData.advance_amount || 0,
-          balance_amount: selection.total_amount - (paymentData.advance_amount || 0),
+          balance_amount:
+            selection.total_amount - (paymentData.advance_amount || 0),
           currency: selection.currency,
           status: "tentative",
           special_requests: guestData.special_requests || null,
@@ -296,15 +300,20 @@ export function NewReservationDialog({
       }
 
       // Insert all reservations in a single transaction
-      const { error } = await supabase.from("reservations").insert(reservations);
+      const { error } = await supabase
+        .from("reservations")
+        .insert(reservations);
 
       if (error) throw error;
 
       const reservationNumbers = reservations
         .map((r) => r.reservation_number)
         .join(", ");
-      
-      Alert.alert("Success", `Reservation(s) ${reservationNumbers} created successfully`);
+
+      Alert.alert(
+        "Success",
+        `Reservation(s) ${reservationNumbers} created successfully`
+      );
 
       // Reset form and close dialog
       resetForm();
@@ -355,17 +364,30 @@ export function NewReservationDialog({
     setRoomSelections([...roomSelections, newSelection]);
   };
 
-  const updateRoomSelection = (index: number, field: keyof RoomSelection, value: any) => {
+  const updateRoomSelection = (
+    index: number,
+    field: keyof RoomSelection,
+    value: any
+  ) => {
     const updated = [...roomSelections];
     updated[index] = { ...updated[index], [field]: value };
 
     // Auto-calculate nights and total when dates or rate change
-    if (field === "check_in_date" || field === "check_out_date" || field === "room_rate") {
+    if (
+      field === "check_in_date" ||
+      field === "check_out_date" ||
+      field === "room_rate"
+    ) {
       const selection = updated[index];
       if (selection.check_in_date && selection.check_out_date) {
         const checkIn = new Date(selection.check_in_date);
         const checkOut = new Date(selection.check_out_date);
-        const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+        const nights = Math.max(
+          1,
+          Math.ceil(
+            (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+          )
+        );
         updated[index].nights = nights;
         updated[index].total_amount = nights * selection.room_rate;
       }
@@ -373,13 +395,14 @@ export function NewReservationDialog({
 
     // Update room details when room is selected
     if (field === "room_id" && value) {
-      const selectedRoom = rooms.find(r => r.id === value);
+      const selectedRoom = rooms.find((r) => r.id === value);
       if (selectedRoom) {
         updated[index].room_number = selectedRoom.room_number;
         updated[index].room_type = selectedRoom.room_type;
         updated[index].room_rate = selectedRoom.base_price;
         updated[index].currency = selectedRoom.currency;
-        updated[index].total_amount = updated[index].nights * selectedRoom.base_price;
+        updated[index].total_amount =
+          updated[index].nights * selectedRoom.base_price;
       }
     }
 
@@ -392,11 +415,15 @@ export function NewReservationDialog({
 
   const renderGuestStep = () => (
     <View className="space-y-4">
-      <Text className="text-lg font-semibold text-gray-900 mb-4">Guest Information</Text>
-      
+      <Text className="text-lg font-semibold text-gray-900 mb-4">
+        Guest Information
+      </Text>
+
       <View className="space-y-4">
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">Guest Name *</Text>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Guest Name *
+          </Text>
           <TextInput
             className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
             value={guestData.guest_name}
@@ -428,21 +455,29 @@ export function NewReservationDialog({
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">Nationality</Text>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Nationality
+          </Text>
           <TextInput
             className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
             value={guestData.guest_nationality}
-            onChangeText={(text) => handleGuestDataChange("guest_nationality", text)}
+            onChangeText={(text) =>
+              handleGuestDataChange("guest_nationality", text)
+            }
             placeholder="Enter nationality"
           />
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-2">Special Requests</Text>
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Special Requests
+          </Text>
           <TextInput
             className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
             value={guestData.special_requests}
-            onChangeText={(text) => handleGuestDataChange("special_requests", text)}
+            onChangeText={(text) =>
+              handleGuestDataChange("special_requests", text)
+            }
             placeholder="Any special requests"
             multiline
             numberOfLines={3}
@@ -455,7 +490,9 @@ export function NewReservationDialog({
   const renderRoomsStep = () => (
     <View className="space-y-4">
       <View className="flex-row items-center justify-between">
-        <Text className="text-lg font-semibold text-gray-900">Room Selection</Text>
+        <Text className="text-lg font-semibold text-gray-900">
+          Room Selection
+        </Text>
         <TouchableOpacity
           onPress={addRoomSelection}
           className="bg-blue-600 px-3 py-1 rounded flex-row items-center"
@@ -467,12 +504,17 @@ export function NewReservationDialog({
 
       {roomSelections.length === 0 && (
         <View className="bg-gray-50 p-4 rounded-lg">
-          <Text className="text-gray-600 text-center">No rooms selected. Tap "Add Room" to get started.</Text>
+          <Text className="text-gray-600 text-center">
+            No rooms selected. Tap "Add Room" to get started.
+          </Text>
         </View>
       )}
 
       {roomSelections.map((selection, index) => (
-        <View key={index} className="bg-white p-4 rounded-lg border border-gray-200">
+        <View
+          key={index}
+          className="bg-white p-4 rounded-lg border border-gray-200"
+        >
           <View className="flex-row items-center justify-between mb-3">
             <Text className="font-semibold">Room {index + 1}</Text>
             <TouchableOpacity
@@ -485,7 +527,9 @@ export function NewReservationDialog({
 
           {/* Room Selection */}
           <View className="mb-3">
-            <Text className="text-sm font-medium text-gray-700 mb-2">Select Room</Text>
+            <Text className="text-sm font-medium text-gray-700 mb-2">
+              Select Room
+            </Text>
             <View className="border border-gray-300 rounded-lg">
               {rooms.map((room) => (
                 <TouchableOpacity
@@ -495,8 +539,12 @@ export function NewReservationDialog({
                     selection.room_id === room.id ? "bg-blue-50" : ""
                   }`}
                 >
-                  <Text className="font-medium">{room.room_number} - {room.room_type}</Text>
-                  <Text className="text-sm text-gray-600">{room.currency} {room.base_price}/night</Text>
+                  <Text className="font-medium">
+                    {room.room_number} - {room.room_type}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {room.currency} {room.base_price}/night
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -505,20 +553,28 @@ export function NewReservationDialog({
           {/* Dates */}
           <View className="flex-row gap-3 mb-3">
             <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">Check-in</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Check-in
+              </Text>
               <TextInput
                 className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
                 value={selection.check_in_date}
-                onChangeText={(text) => updateRoomSelection(index, "check_in_date", text)}
+                onChangeText={(text) =>
+                  updateRoomSelection(index, "check_in_date", text)
+                }
                 placeholder="YYYY-MM-DD"
               />
             </View>
             <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">Check-out</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Check-out
+              </Text>
               <TextInput
                 className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
                 value={selection.check_out_date}
-                onChangeText={(text) => updateRoomSelection(index, "check_out_date", text)}
+                onChangeText={(text) =>
+                  updateRoomSelection(index, "check_out_date", text)
+                }
                 placeholder="YYYY-MM-DD"
               />
             </View>
@@ -527,20 +583,28 @@ export function NewReservationDialog({
           {/* Guests */}
           <View className="flex-row gap-3 mb-3">
             <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">Adults</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Adults
+              </Text>
               <TextInput
                 className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
                 value={selection.adults.toString()}
-                onChangeText={(text) => updateRoomSelection(index, "adults", parseInt(text) || 1)}
+                onChangeText={(text) =>
+                  updateRoomSelection(index, "adults", parseInt(text) || 1)
+                }
                 keyboardType="numeric"
               />
             </View>
             <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">Children</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Children
+              </Text>
               <TextInput
                 className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
                 value={selection.children.toString()}
-                onChangeText={(text) => updateRoomSelection(index, "children", parseInt(text) || 0)}
+                onChangeText={(text) =>
+                  updateRoomSelection(index, "children", parseInt(text) || 0)
+                }
                 keyboardType="numeric"
               />
             </View>
@@ -550,7 +614,9 @@ export function NewReservationDialog({
           {selection.nights > 0 && (
             <View className="bg-gray-50 p-3 rounded">
               <Text className="text-sm text-gray-600">
-                {selection.nights} nights × {selection.currency} {selection.room_rate} = {selection.currency} {selection.total_amount}
+                {selection.nights} nights × {selection.currency}{" "}
+                {selection.room_rate} = {selection.currency}{" "}
+                {selection.total_amount}
               </Text>
             </View>
           )}
@@ -561,33 +627,47 @@ export function NewReservationDialog({
 
   const renderPricingStep = () => (
     <View className="space-y-4">
-      <Text className="text-lg font-semibold text-gray-900 mb-4">Pricing Summary</Text>
-      
+      <Text className="text-lg font-semibold text-gray-900 mb-4">
+        Pricing Summary
+      </Text>
+
       {roomSelections.map((selection, index) => (
         <View key={index} className="bg-gray-50 p-4 rounded border">
-          <Text className="font-medium mb-2">Room {index + 1}: {selection.room_number}</Text>
+          <Text className="font-medium mb-2">
+            Room {index + 1}: {selection.room_number}
+          </Text>
           <Text className="text-sm text-gray-600">
-            {selection.nights} nights × {selection.currency} {selection.room_rate} = {selection.currency} {selection.total_amount}
+            {selection.nights} nights × {selection.currency}{" "}
+            {selection.room_rate} = {selection.currency}{" "}
+            {selection.total_amount}
           </Text>
         </View>
       ))}
 
       <View className="bg-blue-50 p-4 rounded border border-blue-200">
-        <Text className="font-semibold">Grand Total: {paymentData.currency} {convertedTotal.toFixed(2)}</Text>
+        <Text className="font-semibold">
+          Grand Total: {paymentData.currency} {convertedTotal.toFixed(2)}
+        </Text>
       </View>
     </View>
   );
 
   const renderPaymentStep = () => (
     <View className="space-y-4">
-      <Text className="text-lg font-semibold text-gray-900 mb-4">Payment Information</Text>
-      
+      <Text className="text-lg font-semibold text-gray-900 mb-4">
+        Payment Information
+      </Text>
+
       <View>
-        <Text className="text-sm font-medium text-gray-700 mb-2">Advance Amount</Text>
+        <Text className="text-sm font-medium text-gray-700 mb-2">
+          Advance Amount
+        </Text>
         <TextInput
           className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
           value={paymentData.advance_amount.toString()}
-          onChangeText={(text) => handlePaymentDataChange("advance_amount", parseFloat(text) || 0)}
+          onChangeText={(text) =>
+            handlePaymentDataChange("advance_amount", parseFloat(text) || 0)
+          }
           placeholder="Enter advance amount"
           keyboardType="numeric"
         />
@@ -595,17 +675,27 @@ export function NewReservationDialog({
 
       <View className="bg-blue-50 p-4 rounded border border-blue-200">
         <Text className="font-semibold mb-2">Payment Summary</Text>
-        <Text>Total Amount: {paymentData.currency} {convertedTotal.toFixed(2)}</Text>
-        <Text>Advance: {paymentData.currency} {paymentData.advance_amount.toFixed(2)}</Text>
-        <Text>Balance: {paymentData.currency} {(convertedTotal - paymentData.advance_amount).toFixed(2)}</Text>
+        <Text>
+          Total Amount: {paymentData.currency} {convertedTotal.toFixed(2)}
+        </Text>
+        <Text>
+          Advance: {paymentData.currency}{" "}
+          {paymentData.advance_amount.toFixed(2)}
+        </Text>
+        <Text>
+          Balance: {paymentData.currency}{" "}
+          {(convertedTotal - paymentData.advance_amount).toFixed(2)}
+        </Text>
       </View>
     </View>
   );
 
   const renderConfirmationStep = () => (
     <View className="space-y-4">
-      <Text className="text-lg font-semibold text-gray-900 mb-4">Confirmation</Text>
-      
+      <Text className="text-lg font-semibold text-gray-900 mb-4">
+        Confirmation
+      </Text>
+
       <View className="bg-gray-50 p-4 rounded">
         <Text className="font-semibold mb-2">Guest Information</Text>
         <Text>Name: {guestData.guest_name}</Text>
@@ -614,18 +704,29 @@ export function NewReservationDialog({
       </View>
 
       <View className="bg-gray-50 p-4 rounded">
-        <Text className="font-semibold mb-2">Room Selections ({roomSelections.length})</Text>
+        <Text className="font-semibold mb-2">
+          Room Selections ({roomSelections.length})
+        </Text>
         {roomSelections.map((selection, index) => (
           <Text key={index} className="mb-1">
-            {selection.room_number} - {selection.check_in_date} to {selection.check_out_date} ({selection.nights} nights)
+            {selection.room_number} - {selection.check_in_date} to{" "}
+            {selection.check_out_date} ({selection.nights} nights)
           </Text>
         ))}
       </View>
 
       <View className="bg-blue-50 p-4 rounded border border-blue-200">
-        <Text className="font-semibold">Total: {paymentData.currency} {convertedTotal.toFixed(2)}</Text>
-        <Text>Advance: {paymentData.currency} {paymentData.advance_amount.toFixed(2)}</Text>
-        <Text>Balance: {paymentData.currency} {(convertedTotal - paymentData.advance_amount).toFixed(2)}</Text>
+        <Text className="font-semibold">
+          Total: {paymentData.currency} {convertedTotal.toFixed(2)}
+        </Text>
+        <Text>
+          Advance: {paymentData.currency}{" "}
+          {paymentData.advance_amount.toFixed(2)}
+        </Text>
+        <Text>
+          Balance: {paymentData.currency}{" "}
+          {(convertedTotal - paymentData.advance_amount).toFixed(2)}
+        </Text>
       </View>
     </View>
   );
@@ -662,9 +763,12 @@ export function NewReservationDialog({
         {/* Header */}
         <View className="bg-blue-600 px-4 py-3 pt-12 flex-row items-center justify-between">
           <View>
-            <Text className="text-white text-lg font-semibold">New Reservation</Text>
+            <Text className="text-white text-lg font-semibold">
+              New Reservation
+            </Text>
             <Text className="text-blue-100 text-sm">
-              Step {currentStepIndex + 1} of {STEPS.length}: {STEPS[currentStepIndex].title}
+              Step {currentStepIndex + 1} of {STEPS.length}:{" "}
+              {STEPS[currentStepIndex].title}
             </Text>
           </View>
           <TouchableOpacity onPress={onClose} className="p-1">
@@ -675,9 +779,11 @@ export function NewReservationDialog({
         {/* Progress Bar */}
         <View className="bg-white px-4 py-2">
           <View className="bg-gray-200 h-1 rounded-full">
-            <View 
+            <View
               className="bg-blue-600 h-1 rounded-full"
-              style={{ width: `${((currentStepIndex + 1) / STEPS.length) * 100}%` }}
+              style={{
+                width: `${((currentStepIndex + 1) / STEPS.length) * 100}%`,
+              }}
             />
           </View>
         </View>
@@ -721,7 +827,9 @@ export function NewReservationDialog({
                   <Text className="text-white font-medium">
                     {isLastStep ? "Create Reservation" : "Next"}
                   </Text>
-                  {!isLastStep && <Ionicons name="chevron-forward" size={16} color="white" />}
+                  {!isLastStep && (
+                    <Ionicons name="chevron-forward" size={16} color="white" />
+                  )}
                 </>
               )}
             </TouchableOpacity>

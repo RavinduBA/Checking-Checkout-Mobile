@@ -61,3 +61,28 @@ export async function convertCurrencyAdvanced(
   // For mobile app, use simplified conversion for now
   return convertCurrency(amount, fromCurrency, toCurrency);
 }
+
+// Additional utility functions to match web app
+export interface CurrencyRate {
+  currency_code: string;
+  usd_rate: number;
+  is_custom: boolean;
+}
+
+export async function getCurrencyDetails(
+  tenantId: string,
+  locationId: string
+): Promise<CurrencyRate[]> {
+  // For mobile app, return default currencies
+  // In future, this could fetch from Supabase
+  return [
+    { currency_code: "USD", usd_rate: 1, is_custom: false },
+    { currency_code: "LKR", usd_rate: 300, is_custom: false },
+    { currency_code: "EUR", usd_rate: 0.85, is_custom: false },
+    { currency_code: "GBP", usd_rate: 0.75, is_custom: false },
+  ];
+}
+
+export function getCurrencyConversionSearchUrl(currency: string): string {
+  return `https://www.google.com/search?q=USD+to+${currency}+conversion+rate`;
+}

@@ -7,25 +7,37 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { CurrencySelector } from "../common/CurrencySelector";
+import type { Database } from "../../integrations/supabase/types";
+
+type Currency = Database["public"]["Enums"]["currency_type"];
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 interface ReservationsFiltersProps {
+  locations?: Location[];
+  selectedLocation?: string;
+  onLocationChange?: (value: string) => void;
   searchQuery: string;
-  setSearchQuery: (q: string) => void;
+  onSearchChange: (value: string) => void;
   statusFilter: string;
-  setStatusFilter: (s: string) => void;
-  selectedCurrency: "LKR" | "USD";
-  setSelectedCurrency: (currency: "LKR" | "USD") => void;
+  onStatusFilterChange: (value: string) => void;
+  selectedCurrency: Currency;
+  onCurrencyChange: (currency: Currency) => void;
   onNewReservation: () => void;
-  onNewCompactReservation: () => void;
+  onNewCompactReservation?: () => void;
 }
 
 export function ReservationsFilters({
   searchQuery,
-  setSearchQuery,
+  onSearchChange,
   statusFilter,
-  setStatusFilter,
+  onStatusFilterChange,
   selectedCurrency,
-  setSelectedCurrency,
+  onCurrencyChange,
   onNewReservation,
   onNewCompactReservation,
 }: ReservationsFiltersProps) {
@@ -44,7 +56,7 @@ export function ReservationsFilters({
             className="bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-gray-700"
             placeholder="Search by guest name, room, or confirmation #"
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={onSearchChange}
           />
         </View>
 
@@ -70,7 +82,7 @@ export function ReservationsFilters({
               ? "bg-blue-100 border-blue-300"
               : "bg-white border-gray-200"
           }`}
-          onPress={() => setStatusFilter("all")}
+          onPress={() => onStatusFilterChange("all")}
         >
           <Text
             className={`text-sm font-medium ${
@@ -87,7 +99,7 @@ export function ReservationsFilters({
               ? "bg-yellow-100 border-yellow-300"
               : "bg-white border-gray-200"
           }`}
-          onPress={() => setStatusFilter("tentative")}
+          onPress={() => onStatusFilterChange("tentative")}
         >
           <Text
             className={`text-sm font-medium ${
@@ -104,7 +116,7 @@ export function ReservationsFilters({
               ? "bg-green-100 border-green-300"
               : "bg-white border-gray-200"
           }`}
-          onPress={() => setStatusFilter("confirmed")}
+          onPress={() => onStatusFilterChange("confirmed")}
         >
           <Text
             className={`text-sm font-medium ${
@@ -121,7 +133,7 @@ export function ReservationsFilters({
               ? "bg-blue-100 border-blue-300"
               : "bg-white border-gray-200"
           }`}
-          onPress={() => setStatusFilter("checked_in")}
+          onPress={() => onStatusFilterChange("checked_in")}
         >
           <Text
             className={`text-sm font-medium ${
@@ -138,7 +150,7 @@ export function ReservationsFilters({
               ? "bg-gray-100 border-gray-300"
               : "bg-white border-gray-200"
           }`}
-          onPress={() => setStatusFilter("checked_out")}
+          onPress={() => onStatusFilterChange("checked_out")}
         >
           <Text
             className={`text-sm font-medium ${
@@ -155,7 +167,7 @@ export function ReservationsFilters({
               ? "bg-red-100 border-red-300"
               : "bg-white border-gray-200"
           }`}
-          onPress={() => setStatusFilter("cancelled")}
+          onPress={() => onStatusFilterChange("cancelled")}
         >
           <Text
             className={`text-sm font-medium ${
@@ -167,49 +179,25 @@ export function ReservationsFilters({
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Currency Selector */}
-      <View className="px-4 pb-3 flex-row items-center gap-2">
-        <Text className="text-sm text-gray-600">Currency:</Text>
-        <TouchableOpacity
-          className={`px-3 py-1 rounded border ${
-            selectedCurrency === "LKR"
-              ? "bg-blue-100 border-blue-300"
-              : "bg-white border-gray-200"
-          }`}
-          onPress={() => setSelectedCurrency("LKR")}
-        >
-          <Text
-            className={`text-xs font-medium ${
-              selectedCurrency === "LKR" ? "text-blue-700" : "text-gray-600"
-            }`}
-          >
-            LKR
-          </Text>
-        </TouchableOpacity>
+      {/* Currency Selector and Quick Add */}
+      <View className="px-4 pb-3 flex-row items-center gap-3">
+        <View className="flex-1">
+          <CurrencySelector
+            currency={selectedCurrency}
+            onCurrencyChange={onCurrencyChange}
+            label="Currency"
+            showGoogleSearchLink={false}
+          />
+        </View>
 
-        <TouchableOpacity
-          className={`px-3 py-1 rounded border ${
-            selectedCurrency === "USD"
-              ? "bg-blue-100 border-blue-300"
-              : "bg-white border-gray-200"
-          }`}
-          onPress={() => setSelectedCurrency("USD")}
-        >
-          <Text
-            className={`text-xs font-medium ${
-              selectedCurrency === "USD" ? "text-blue-700" : "text-gray-600"
-            }`}
+        {onNewCompactReservation && (
+          <TouchableOpacity
+            onPress={onNewCompactReservation}
+            className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-2"
           >
-            USD
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={onNewCompactReservation}
-          className="ml-auto bg-gray-100 rounded px-3 py-1"
-        >
-          <Text className="text-gray-700 text-xs font-medium">Quick Add</Text>
-        </TouchableOpacity>
+            <Text className="text-gray-700 text-sm font-medium">Quick Add</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

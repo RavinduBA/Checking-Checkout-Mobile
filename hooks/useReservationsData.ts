@@ -239,3 +239,60 @@ export function useReservationFinancials() {
     refetch: fetchFinancials,
   };
 }
+
+// Income data hook for payments and income tracking
+export function useIncomeData() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const { selectedLocation } = useLocationContext();
+  const [incomeRecords, setIncomeRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchIncomeData = async () => {
+    if (!tenant?.id || !selectedLocation) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: incomeError } = await supabase
+        .from("income")
+        .select(`
+          *,
+          reservations (
+            id,
+            reservation_number,
+            guest_name,
+            check_in_date,
+            check_out_date
+          )
+        `)
+        .eq("tenant_id", tenant.id)
+        .eq("location_id", selectedLocation)
+        .order("date", { ascending: false });
+
+      if (incomeError) throw incomeError;
+
+      setIncomeRecords(data || []);
+    } catch (error) {
+      console.error("Error fetching income data:", error);
+      setError(error instanceof Error ? error.message : "Failed to fetch income data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncomeData();
+  }, [tenant?.id, selectedLocation]);
+
+  return {
+    incomeRecords,
+    loading,
+    error,
+    refetch: fetchIncomeData,
+  };
+}

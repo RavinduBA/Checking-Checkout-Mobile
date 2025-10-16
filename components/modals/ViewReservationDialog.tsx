@@ -1,17 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
-import { supabase } from "../../lib/supabase";
 import { useToast } from "../../hooks/useToast";
-import { convertCurrency } from "../../utils/currency";
+import { supabase } from "../../lib/supabase";
 
 interface Reservation {
   id: string;
@@ -101,7 +100,8 @@ export function ViewReservationDialog({
       const [reservationRes, incomeRes] = await Promise.all([
         supabase
           .from("reservations")
-          .select(`
+          .select(
+            `
             *,
             locations (
               id,
@@ -129,12 +129,14 @@ export function ViewReservationDialog({
               phone,
               email
             )
-          `)
+          `
+          )
           .eq("id", simpleReservation.id)
           .single(),
         supabase
           .from("income")
-          .select(`
+          .select(
+            `
             id,
             booking_id,
             amount,
@@ -142,7 +144,8 @@ export function ViewReservationDialog({
             currency,
             date,
             note
-          `)
+          `
+          )
           .eq("booking_id", simpleReservation.id),
       ]);
 
@@ -180,7 +183,10 @@ export function ViewReservationDialog({
             if (income.currency !== reservation.currency) {
               if (income.currency === "LKR" && reservation.currency === "USD") {
                 convertedAmount = convertedAmount / 300; // Simple LKR to USD
-              } else if (income.currency === "USD" && reservation.currency === "LKR") {
+              } else if (
+                income.currency === "USD" &&
+                reservation.currency === "LKR"
+              ) {
                 convertedAmount = convertedAmount * 300; // Simple USD to LKR
               }
             }
@@ -227,13 +233,16 @@ export function ViewReservationDialog({
       checked_out: "bg-gray-100 border-gray-300 text-gray-800",
       cancelled: "bg-red-100 border-red-300 text-red-800",
     };
-    return colors[status as keyof typeof colors] || "bg-gray-100 border-gray-300 text-gray-800";
+    return (
+      colors[status as keyof typeof colors] ||
+      "bg-gray-100 border-gray-300 text-gray-800"
+    );
   };
 
   const getStatusText = (status: string) => {
     const statusMap = {
       confirmed: "Confirmed",
-      tentative: "Tentative", 
+      tentative: "Tentative",
       pending: "Pending",
       checked_in: "Checked In",
       checked_out: "Checked Out",
@@ -261,7 +270,9 @@ export function ViewReservationDialog({
         {/* Header */}
         <View className="bg-blue-600 px-4 py-3 pt-12 flex-row items-center justify-between">
           <View className="flex-1">
-            <Text className="text-white text-lg font-semibold">Reservation Details</Text>
+            <Text className="text-white text-lg font-semibold">
+              Reservation Details
+            </Text>
             <Text className="text-blue-100 text-sm">
               #{reservation?.reservation_number || simpleReservation?.id}
             </Text>
@@ -274,7 +285,9 @@ export function ViewReservationDialog({
         {loading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#0066cc" />
-            <Text className="mt-2 text-gray-600">Loading reservation details...</Text>
+            <Text className="mt-2 text-gray-600">
+              Loading reservation details...
+            </Text>
           </View>
         ) : !reservation ? (
           <View className="flex-1 justify-center items-center">
@@ -285,18 +298,27 @@ export function ViewReservationDialog({
             {/* Status and Basic Info */}
             <View className="mb-6">
               <View className="flex-row items-center justify-between mb-3">
-                <View className={`px-3 py-1 rounded-full border ${getStatusColor(reservation.status)}`}>
-                  <Text className="text-xs font-medium">{getStatusText(reservation.status)}</Text>
+                <View
+                  className={`px-3 py-1 rounded-full border ${getStatusColor(
+                    reservation.status
+                  )}`}
+                >
+                  <Text className="text-xs font-medium">
+                    {getStatusText(reservation.status)}
+                  </Text>
                 </View>
                 <Text className="text-sm text-gray-500">
-                  Created: {new Date(reservation.created_at).toLocaleDateString()}
+                  Created:{" "}
+                  {new Date(reservation.created_at).toLocaleDateString()}
                 </Text>
               </View>
-              
+
               {reservation.locations && (
                 <View className="flex-row items-center">
                   <Ionicons name="location" size={16} color="#6B7280" />
-                  <Text className="text-sm text-gray-600 ml-1">{reservation.locations.name}</Text>
+                  <Text className="text-sm text-gray-600 ml-1">
+                    {reservation.locations.name}
+                  </Text>
                 </View>
               )}
             </View>
@@ -305,41 +327,65 @@ export function ViewReservationDialog({
             <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
               <View className="flex-row items-center mb-3">
                 <Ionicons name="person" size={20} color="#374151" />
-                <Text className="text-lg font-semibold ml-2">Guest Information</Text>
+                <Text className="text-lg font-semibold ml-2">
+                  Guest Information
+                </Text>
               </View>
-              
+
               <View className="space-y-2">
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">Name:</Text>
-                  <Text className="text-sm text-gray-900 flex-1">{reservation.guest_name}</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-20">
+                    Name:
+                  </Text>
+                  <Text className="text-sm text-gray-900 flex-1">
+                    {reservation.guest_name}
+                  </Text>
                 </View>
-                
+
                 {reservation.guest_email && (
                   <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">Email:</Text>
-                    <Text className="text-sm text-gray-900 flex-1">{reservation.guest_email}</Text>
+                    <Text className="text-sm font-medium text-gray-700 w-20">
+                      Email:
+                    </Text>
+                    <Text className="text-sm text-gray-900 flex-1">
+                      {reservation.guest_email}
+                    </Text>
                   </View>
                 )}
-                
+
                 {reservation.guest_phone && (
                   <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">Phone:</Text>
-                    <Text className="text-sm text-gray-900 flex-1">{reservation.guest_phone}</Text>
+                    <Text className="text-sm font-medium text-gray-700 w-20">
+                      Phone:
+                    </Text>
+                    <Text className="text-sm text-gray-900 flex-1">
+                      {reservation.guest_phone}
+                    </Text>
                   </View>
                 )}
-                
+
                 {reservation.guest_nationality && (
                   <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">Nationality:</Text>
-                    <Text className="text-sm text-gray-900 flex-1">{reservation.guest_nationality}</Text>
+                    <Text className="text-sm font-medium text-gray-700 w-20">
+                      Nationality:
+                    </Text>
+                    <Text className="text-sm text-gray-900 flex-1">
+                      {reservation.guest_nationality}
+                    </Text>
                   </View>
                 )}
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">Guests:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-20">
+                    Guests:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
-                    {reservation.adults} adult{reservation.adults > 1 ? "s" : ""}
-                    {reservation.children > 0 && `, ${reservation.children} child${reservation.children > 1 ? "ren" : ""}`}
+                    {reservation.adults} adult
+                    {reservation.adults > 1 ? "s" : ""}
+                    {reservation.children > 0 &&
+                      `, ${reservation.children} child${
+                        reservation.children > 1 ? "ren" : ""
+                      }`}
                   </Text>
                 </View>
               </View>
@@ -351,31 +397,43 @@ export function ViewReservationDialog({
                 <Ionicons name="calendar" size={20} color="#374151" />
                 <Text className="text-lg font-semibold ml-2">Stay Details</Text>
               </View>
-              
+
               <View className="space-y-2">
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Check-in:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Check-in:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
                     {new Date(reservation.check_in_date).toLocaleDateString()}
                   </Text>
                 </View>
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Check-out:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Check-out:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
                     {new Date(reservation.check_out_date).toLocaleDateString()}
                   </Text>
                 </View>
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Nights:</Text>
-                  <Text className="text-sm text-gray-900 flex-1">{reservation.nights}</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Nights:
+                  </Text>
+                  <Text className="text-sm text-gray-900 flex-1">
+                    {reservation.nights}
+                  </Text>
                 </View>
-                
+
                 {reservation.arrival_time && (
                   <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-24">Arrival:</Text>
-                    <Text className="text-sm text-gray-900 flex-1">{reservation.arrival_time}</Text>
+                    <Text className="text-sm font-medium text-gray-700 w-24">
+                      Arrival:
+                    </Text>
+                    <Text className="text-sm text-gray-900 flex-1">
+                      {reservation.arrival_time}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -385,35 +443,48 @@ export function ViewReservationDialog({
             <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
               <View className="flex-row items-center mb-3">
                 <Ionicons name="bed" size={20} color="#374151" />
-                <Text className="text-lg font-semibold ml-2">Room Information</Text>
+                <Text className="text-lg font-semibold ml-2">
+                  Room Information
+                </Text>
               </View>
-              
+
               <View className="space-y-2">
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">Room:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-20">
+                    Room:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
                     {reservation.rooms?.room_number || "N/A"}
                   </Text>
                 </View>
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">Type:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-20">
+                    Type:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
                     {reservation.rooms?.room_type || "N/A"}
                   </Text>
                 </View>
-                
+
                 {reservation.rooms?.bed_type && (
                   <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">Bed:</Text>
-                    <Text className="text-sm text-gray-900 flex-1">{reservation.rooms.bed_type}</Text>
+                    <Text className="text-sm font-medium text-gray-700 w-20">
+                      Bed:
+                    </Text>
+                    <Text className="text-sm text-gray-900 flex-1">
+                      {reservation.rooms.bed_type}
+                    </Text>
                   </View>
                 )}
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">Rate:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-20">
+                    Rate:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}{reservation.room_rate}/night
+                    {getCurrencySymbol(reservation.currency)}
+                    {reservation.room_rate}/night
                   </Text>
                 </View>
               </View>
@@ -423,35 +494,49 @@ export function ViewReservationDialog({
             <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
               <View className="flex-row items-center mb-3">
                 <Ionicons name="card" size={20} color="#374151" />
-                <Text className="text-lg font-semibold ml-2">Payment Information</Text>
+                <Text className="text-lg font-semibold ml-2">
+                  Payment Information
+                </Text>
               </View>
-              
+
               <View className="space-y-2">
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Total:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Total:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}{reservation.total_amount}
+                    {getCurrencySymbol(reservation.currency)}
+                    {reservation.total_amount}
                   </Text>
                 </View>
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Paid:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Paid:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}{reservation.paid_amount || 0}
+                    {getCurrencySymbol(reservation.currency)}
+                    {reservation.paid_amount || 0}
                   </Text>
                 </View>
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Expenses:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Expenses:
+                  </Text>
                   <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}{convertedAmounts.totalExpenses}
+                    {getCurrencySymbol(reservation.currency)}
+                    {convertedAmounts.totalExpenses}
                   </Text>
                 </View>
-                
+
                 <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">Balance:</Text>
+                  <Text className="text-sm font-medium text-gray-700 w-24">
+                    Balance:
+                  </Text>
                   <Text className="text-sm font-semibold text-red-600 flex-1">
-                    {getCurrencySymbol(reservation.currency)}{getTotalBalance().toFixed(2)}
+                    {getCurrencySymbol(reservation.currency)}
+                    {getTotalBalance().toFixed(2)}
                   </Text>
                 </View>
               </View>
@@ -461,10 +546,18 @@ export function ViewReservationDialog({
             {reservation.special_requests && (
               <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                 <View className="flex-row items-center mb-2">
-                  <Ionicons name="chatbubble-ellipses" size={20} color="#D97706" />
-                  <Text className="text-lg font-semibold ml-2 text-yellow-800">Special Requests</Text>
+                  <Ionicons
+                    name="chatbubble-ellipses"
+                    size={20}
+                    color="#D97706"
+                  />
+                  <Text className="text-lg font-semibold ml-2 text-yellow-800">
+                    Special Requests
+                  </Text>
                 </View>
-                <Text className="text-sm text-yellow-700">{reservation.special_requests}</Text>
+                <Text className="text-sm text-yellow-700">
+                  {reservation.special_requests}
+                </Text>
               </View>
             )}
 
@@ -473,21 +566,31 @@ export function ViewReservationDialog({
               <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                 <View className="flex-row items-center mb-3">
                   <Ionicons name="receipt" size={20} color="#374151" />
-                  <Text className="text-lg font-semibold ml-2">Payment History</Text>
+                  <Text className="text-lg font-semibold ml-2">
+                    Payment History
+                  </Text>
                 </View>
-                
+
                 {incomeRecords.map((income) => (
-                  <View key={income.id} className="flex-row justify-between items-center py-2 border-b border-gray-100">
+                  <View
+                    key={income.id}
+                    className="flex-row justify-between items-center py-2 border-b border-gray-100"
+                  >
                     <View className="flex-1">
                       <Text className="text-sm font-medium text-gray-900">
-                        {getCurrencySymbol(income.currency)}{income.amount}
+                        {getCurrencySymbol(income.currency)}
+                        {income.amount}
                       </Text>
                       <Text className="text-xs text-gray-500">
-                        {new Date(income.date).toLocaleDateString()} • {income.payment_method}
+                        {new Date(income.date).toLocaleDateString()} •{" "}
+                        {income.payment_method}
                       </Text>
                     </View>
                     {income.note && (
-                      <Text className="text-xs text-gray-500 ml-2" numberOfLines={1}>
+                      <Text
+                        className="text-xs text-gray-500 ml-2"
+                        numberOfLines={1}
+                      >
                         {income.note}
                       </Text>
                     )}
@@ -501,23 +604,33 @@ export function ViewReservationDialog({
               <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                 <View className="flex-row items-center mb-3">
                   <Ionicons name="people" size={20} color="#374151" />
-                  <Text className="text-lg font-semibold ml-2">Commission Details</Text>
+                  <Text className="text-lg font-semibold ml-2">
+                    Commission Details
+                  </Text>
                 </View>
-                
+
                 {reservation.guides && (
                   <View className="mb-2">
-                    <Text className="text-sm font-medium text-gray-700">Guide: {reservation.guides.name}</Text>
+                    <Text className="text-sm font-medium text-gray-700">
+                      Guide: {reservation.guides.name}
+                    </Text>
                     {reservation.guides.phone && (
-                      <Text className="text-xs text-gray-500">{reservation.guides.phone}</Text>
+                      <Text className="text-xs text-gray-500">
+                        {reservation.guides.phone}
+                      </Text>
                     )}
                   </View>
                 )}
-                
+
                 {reservation.agents && (
                   <View>
-                    <Text className="text-sm font-medium text-gray-700">Agent: {reservation.agents.name}</Text>
+                    <Text className="text-sm font-medium text-gray-700">
+                      Agent: {reservation.agents.name}
+                    </Text>
                     {reservation.agents.phone && (
-                      <Text className="text-xs text-gray-500">{reservation.agents.phone}</Text>
+                      <Text className="text-xs text-gray-500">
+                        {reservation.agents.phone}
+                      </Text>
                     )}
                   </View>
                 )}

@@ -1,24 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState, useEffect, useCallback } from "react";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
-  ActivityIndicator,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
+import { useGuides } from "../../hooks/useGuides";
 import { useLocationContext } from "../../hooks/useLocationContext";
 import { useRooms } from "../../hooks/useRooms";
-import { useGuides } from "../../hooks/useGuides";
 import { useToast } from "../../hooks/useToast";
 import { CURRENCIES } from "../../lib/currencies";
+import { supabase } from "../../lib/supabase";
 
 interface Room {
   id: string;
@@ -137,14 +137,17 @@ export function EditReservationDialog({
   };
 
   const calculateTotalAmount = () => {
-    const nights = calculateNights(formData.check_in_date, formData.check_out_date);
+    const nights = calculateNights(
+      formData.check_in_date,
+      formData.check_out_date
+    );
     return nights * formData.room_rate;
   };
 
   const handleRoomChange = (roomId: string) => {
-    const selectedRoom = rooms?.find(room => room.id === roomId);
+    const selectedRoom = rooms?.find((room) => room.id === roomId);
     if (selectedRoom) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         room_id: roomId,
         room_rate: selectedRoom.base_rate,
@@ -153,17 +156,20 @@ export function EditReservationDialog({
     }
   };
 
-  const handleDateChange = (field: 'check_in_date' | 'check_out_date', date: Date) => {
-    setFormData(prev => {
+  const handleDateChange = (
+    field: "check_in_date" | "check_out_date",
+    date: Date
+  ) => {
+    setFormData((prev) => {
       const newData = { ...prev, [field]: date };
-      
+
       // Ensure check-out is after check-in
-      if (field === 'check_in_date' && date >= prev.check_out_date) {
+      if (field === "check_in_date" && date >= prev.check_out_date) {
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 1);
         newData.check_out_date = nextDay;
       }
-      
+
       return newData;
     });
   };
@@ -189,9 +195,15 @@ export function EditReservationDialog({
       return false;
     }
 
-    const nights = calculateNights(formData.check_in_date, formData.check_out_date);
+    const nights = calculateNights(
+      formData.check_in_date,
+      formData.check_out_date
+    );
     if (nights <= 0) {
-      Alert.alert("Validation Error", "Check-out date must be after check-in date");
+      Alert.alert(
+        "Validation Error",
+        "Check-out date must be after check-in date"
+      );
       return false;
     }
 
@@ -203,7 +215,10 @@ export function EditReservationDialog({
 
     setLoading(true);
     try {
-      const nights = calculateNights(formData.check_in_date, formData.check_out_date);
+      const nights = calculateNights(
+        formData.check_in_date,
+        formData.check_out_date
+      );
       const totalAmount = calculateTotalAmount();
 
       const updateData = {
@@ -213,8 +228,8 @@ export function EditReservationDialog({
         guest_nationality: formData.guest_nationality?.trim() || null,
         adults: formData.adults,
         children: formData.children,
-        check_in_date: formData.check_in_date.toISOString().split('T')[0],
-        check_out_date: formData.check_out_date.toISOString().split('T')[0],
+        check_in_date: formData.check_in_date.toISOString().split("T")[0],
+        check_out_date: formData.check_out_date.toISOString().split("T")[0],
         nights,
         room_id: formData.room_id,
         room_rate: formData.room_rate,
@@ -276,8 +291,12 @@ export function EditReservationDialog({
         {/* Header */}
         <View className="bg-blue-600 px-4 py-3 pt-12 flex-row items-center justify-between">
           <View className="flex-1">
-            <Text className="text-white text-lg font-semibold">Edit Reservation</Text>
-            <Text className="text-blue-100 text-sm">#{reservation?.reservation_number}</Text>
+            <Text className="text-white text-lg font-semibold">
+              Edit Reservation
+            </Text>
+            <Text className="text-blue-100 text-sm">
+              #{reservation?.reservation_number}
+            </Text>
           </View>
           <TouchableOpacity onPress={onClose} className="p-1">
             <Ionicons name="close" size={24} color="white" />
@@ -287,23 +306,33 @@ export function EditReservationDialog({
         <ScrollView className="flex-1 px-4 py-4">
           {/* Guest Information */}
           <View className="mb-6">
-            <Text className="text-lg font-semibold mb-3">Guest Information</Text>
-            
+            <Text className="text-lg font-semibold mb-3">
+              Guest Information
+            </Text>
+
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Guest Name *</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Guest Name *
+              </Text>
               <TextInput
                 value={formData.guest_name}
-                onChangeText={(text) => setFormData(prev => ({...prev, guest_name: text}))}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, guest_name: text }))
+                }
                 placeholder="Enter guest name"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-base"
               />
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Email</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Email
+              </Text>
               <TextInput
                 value={formData.guest_email}
-                onChangeText={(text) => setFormData(prev => ({...prev, guest_email: text}))}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, guest_email: text }))
+                }
                 placeholder="Enter email address"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -312,10 +341,14 @@ export function EditReservationDialog({
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Phone Number</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </Text>
               <TextInput
                 value={formData.guest_phone}
-                onChangeText={(text) => setFormData(prev => ({...prev, guest_phone: text}))}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, guest_phone: text }))
+                }
                 placeholder="Enter phone number"
                 keyboardType="phone-pad"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-base"
@@ -323,10 +356,14 @@ export function EditReservationDialog({
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Nationality</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Nationality
+              </Text>
               <TextInput
                 value={formData.guest_nationality}
-                onChangeText={(text) => setFormData(prev => ({...prev, guest_nationality: text}))}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, guest_nationality: text }))
+                }
                 placeholder="Enter nationality"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-base"
               />
@@ -334,30 +371,46 @@ export function EditReservationDialog({
 
             <View className="flex-row space-x-3">
               <View className="flex-1">
-                <Text className="text-sm font-medium text-gray-700 mb-1">Adults *</Text>
+                <Text className="text-sm font-medium text-gray-700 mb-1">
+                  Adults *
+                </Text>
                 <View className="border border-gray-300 rounded-lg">
                   <Picker
                     selectedValue={formData.adults}
-                    onValueChange={(value) => setFormData(prev => ({...prev, adults: value}))}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, adults: value }))
+                    }
                     style={{ height: 50 }}
                   >
-                    {[1,2,3,4,5,6,7,8].map(num => (
-                      <Picker.Item key={num} label={num.toString()} value={num} />
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      <Picker.Item
+                        key={num}
+                        label={num.toString()}
+                        value={num}
+                      />
                     ))}
                   </Picker>
                 </View>
               </View>
 
               <View className="flex-1">
-                <Text className="text-sm font-medium text-gray-700 mb-1">Children</Text>
+                <Text className="text-sm font-medium text-gray-700 mb-1">
+                  Children
+                </Text>
                 <View className="border border-gray-300 rounded-lg">
                   <Picker
                     selectedValue={formData.children}
-                    onValueChange={(value) => setFormData(prev => ({...prev, children: value}))}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, children: value }))
+                    }
                     style={{ height: 50 }}
                   >
-                    {[0,1,2,3,4,5,6].map(num => (
-                      <Picker.Item key={num} label={num.toString()} value={num} />
+                    {[0, 1, 2, 3, 4, 5, 6].map((num) => (
+                      <Picker.Item
+                        key={num}
+                        label={num.toString()}
+                        value={num}
+                      />
                     ))}
                   </Picker>
                 </View>
@@ -368,9 +421,11 @@ export function EditReservationDialog({
           {/* Stay Details */}
           <View className="mb-6">
             <Text className="text-lg font-semibold mb-3">Stay Details</Text>
-            
+
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Check-in Date *</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Check-in Date *
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowCheckInPicker(true)}
                 className="border border-gray-300 rounded-lg px-3 py-3"
@@ -382,7 +437,9 @@ export function EditReservationDialog({
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Check-out Date *</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Check-out Date *
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowCheckOutPicker(true)}
                 className="border border-gray-300 rounded-lg px-3 py-3"
@@ -394,10 +451,14 @@ export function EditReservationDialog({
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Arrival Time</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Arrival Time
+              </Text>
               <TextInput
                 value={formData.arrival_time}
-                onChangeText={(text) => setFormData(prev => ({...prev, arrival_time: text}))}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, arrival_time: text }))
+                }
                 placeholder="e.g., 2:00 PM"
                 className="border border-gray-300 rounded-lg px-3 py-3 text-base"
               />
@@ -405,7 +466,11 @@ export function EditReservationDialog({
 
             <View className="bg-blue-50 rounded-lg p-3">
               <Text className="text-sm text-blue-800">
-                Nights: {calculateNights(formData.check_in_date, formData.check_out_date)}
+                Nights:{" "}
+                {calculateNights(
+                  formData.check_in_date,
+                  formData.check_out_date
+                )}
               </Text>
             </View>
           </View>
@@ -413,9 +478,11 @@ export function EditReservationDialog({
           {/* Room & Pricing */}
           <View className="mb-6">
             <Text className="text-lg font-semibold mb-3">Room & Pricing</Text>
-            
+
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Room *</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Room *
+              </Text>
               <View className="border border-gray-300 rounded-lg">
                 <Picker
                   selectedValue={formData.room_id}
@@ -435,12 +502,19 @@ export function EditReservationDialog({
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Room Rate *</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Room Rate *
+              </Text>
               <View className="flex-row">
                 <View className="flex-1 mr-2">
                   <TextInput
                     value={formData.room_rate.toString()}
-                    onChangeText={(text) => setFormData(prev => ({...prev, room_rate: parseFloat(text) || 0}))}
+                    onChangeText={(text) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        room_rate: parseFloat(text) || 0,
+                      }))
+                    }
                     placeholder="0.00"
                     keyboardType="numeric"
                     className="border border-gray-300 rounded-lg px-3 py-3 text-base"
@@ -450,7 +524,9 @@ export function EditReservationDialog({
                   <View className="border border-gray-300 rounded-lg">
                     <Picker
                       selectedValue={formData.currency}
-                      onValueChange={(value) => setFormData(prev => ({...prev, currency: value}))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, currency: value }))
+                      }
                       style={{ height: 50 }}
                     >
                       {Object.entries(CURRENCIES).map(([code, name]) => (
@@ -464,53 +540,76 @@ export function EditReservationDialog({
 
             <View className="bg-green-50 rounded-lg p-3">
               <Text className="text-sm font-medium text-green-800">
-                Total Amount: {getCurrencySymbol(formData.currency)}{calculateTotalAmount().toFixed(2)}
+                Total Amount: {getCurrencySymbol(formData.currency)}
+                {calculateTotalAmount().toFixed(2)}
               </Text>
             </View>
           </View>
 
           {/* Commission & Status */}
           <View className="mb-6">
-            <Text className="text-lg font-semibold mb-3">Commission & Status</Text>
-            
+            <Text className="text-lg font-semibold mb-3">
+              Commission & Status
+            </Text>
+
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Guide</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Guide
+              </Text>
               <View className="border border-gray-300 rounded-lg">
                 <Picker
                   selectedValue={formData.guide_id}
-                  onValueChange={(value) => setFormData(prev => ({...prev, guide_id: value}))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, guide_id: value }))
+                  }
                   style={{ height: 50 }}
                 >
                   <Picker.Item label="Select guide (optional)" value="" />
                   {guides?.map((guide) => (
-                    <Picker.Item key={guide.id} label={guide.name} value={guide.id} />
+                    <Picker.Item
+                      key={guide.id}
+                      label={guide.name}
+                      value={guide.id}
+                    />
                   ))}
                 </Picker>
               </View>
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Agent</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Agent
+              </Text>
               <View className="border border-gray-300 rounded-lg">
                 <Picker
                   selectedValue={formData.agent_id}
-                  onValueChange={(value) => setFormData(prev => ({...prev, agent_id: value}))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, agent_id: value }))
+                  }
                   style={{ height: 50 }}
                 >
                   <Picker.Item label="Select agent (optional)" value="" />
                   {agents.map((agent) => (
-                    <Picker.Item key={agent.id} label={agent.name} value={agent.id} />
+                    <Picker.Item
+                      key={agent.id}
+                      label={agent.name}
+                      value={agent.id}
+                    />
                   ))}
                 </Picker>
               </View>
             </View>
 
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Status</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Status
+              </Text>
               <View className="border border-gray-300 rounded-lg">
                 <Picker
                   selectedValue={formData.status}
-                  onValueChange={(value) => setFormData(prev => ({...prev, status: value}))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, status: value }))
+                  }
                   style={{ height: 50 }}
                 >
                   <Picker.Item label="Tentative" value="tentative" />
@@ -525,13 +624,19 @@ export function EditReservationDialog({
 
           {/* Special Requests */}
           <View className="mb-6">
-            <Text className="text-lg font-semibold mb-3">Additional Information</Text>
-            
+            <Text className="text-lg font-semibold mb-3">
+              Additional Information
+            </Text>
+
             <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-1">Special Requests</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">
+                Special Requests
+              </Text>
               <TextInput
                 value={formData.special_requests}
-                onChangeText={(text) => setFormData(prev => ({...prev, special_requests: text}))}
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, special_requests: text }))
+                }
                 placeholder="Any special requests or notes..."
                 multiline
                 numberOfLines={3}
@@ -551,7 +656,7 @@ export function EditReservationDialog({
             <Ionicons name="close" size={16} color="white" />
             <Text className="text-white font-medium ml-2">Cancel</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={handleSave}
             disabled={loading}
@@ -562,7 +667,9 @@ export function EditReservationDialog({
             ) : (
               <>
                 <Ionicons name="save" size={16} color="white" />
-                <Text className="text-white font-medium ml-2">Save Changes</Text>
+                <Text className="text-white font-medium ml-2">
+                  Save Changes
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -578,7 +685,7 @@ export function EditReservationDialog({
             onChange={(event, selectedDate) => {
               setShowCheckInPicker(false);
               if (selectedDate) {
-                handleDateChange('check_in_date', selectedDate);
+                handleDateChange("check_in_date", selectedDate);
               }
             }}
           />
@@ -593,7 +700,7 @@ export function EditReservationDialog({
             onChange={(event, selectedDate) => {
               setShowCheckOutPicker(false);
               if (selectedDate) {
-                handleDateChange('check_out_date', selectedDate);
+                handleDateChange("check_out_date", selectedDate);
               }
             }}
           />
