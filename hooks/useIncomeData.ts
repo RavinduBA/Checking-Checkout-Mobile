@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./useAuth";
-import { useLocationContext } from "./useLocationContext";
+import { useLocationContext } from "../contexts/LocationContext";
 
 export interface IncomeRecord {
   id: string;

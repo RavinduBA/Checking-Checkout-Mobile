@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { convertCurrency } from "../utils/currency";
 import { useAuth } from "./useAuth";
-import { useLocationContext } from "./useLocationContext";
+import { useLocationContext } from "../contexts/LocationContext";
 import { useTenant } from "./useTenant";
 
 interface ReservationFinancials {
@@ -97,11 +97,13 @@ export function useReservationFinancials() {
 
         // Calculate room amount (convert if needed)
         let roomAmount = reservation.total_amount || 0;
-        if (reservation.currency !== targetCurrency) {
+        if (reservation.currency !== targetCurrency && tenant?.id && selectedLocation) {
           roomAmount = await convertCurrency(
             roomAmount,
             reservation.currency as "USD" | "LKR",
-            targetCurrency
+            targetCurrency,
+            tenant.id,
+            selectedLocation
           );
         }
 
@@ -110,11 +112,13 @@ export function useReservationFinancials() {
         if (expenseRecords && expenseRecords.length > 0) {
           for (const expense of expenseRecords) {
             let convertedAmount = expense.amount;
-            if (expense.currency !== targetCurrency) {
+            if (expense.currency !== targetCurrency && tenant?.id && selectedLocation) {
               convertedAmount = await convertCurrency(
                 expense.amount,
                 expense.currency as "USD" | "LKR",
-                targetCurrency
+                targetCurrency,
+                tenant.id,
+                selectedLocation
               );
             }
             expensesAmount += convertedAmount;
@@ -126,11 +130,13 @@ export function useReservationFinancials() {
         if (incomeRecords && incomeRecords.length > 0) {
           for (const income of incomeRecords) {
             let convertedAmount = income.amount;
-            if (income.currency !== targetCurrency) {
+            if (income.currency !== targetCurrency && tenant?.id && selectedLocation) {
               convertedAmount = await convertCurrency(
                 income.amount,
                 income.currency as "USD" | "LKR",
-                targetCurrency
+                targetCurrency,
+                tenant.id,
+                selectedLocation
               );
             }
             paidAmount += convertedAmount;
