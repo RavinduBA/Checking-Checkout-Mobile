@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useFormFieldPreferences } from "../../hooks/useFormFieldPreferences";
 import { useUserProfile } from "../../hooks/useUserProfile";
-import { verifyFormFieldPreferences } from "../../utils/verifyFormFieldPreferences";
 
 export default function FormFieldPreferences() {
   const {
@@ -92,31 +91,6 @@ export default function FormFieldPreferences() {
     if (formPreferences) {
       setLocalPreferences(formPreferences);
       setHasChanges(false);
-    }
-  };
-
-  // Verify what's actually in the database
-  const handleVerifyDatabase = async () => {
-    if (!profile?.tenant_id) {
-      Alert.alert("Error", "No tenant ID found");
-      return;
-    }
-
-    try {
-      const dbData = await verifyFormFieldPreferences(profile.tenant_id);
-      if (dbData) {
-        Alert.alert(
-          "Database Verification",
-          `Found preferences in database:\n\nEmail: ${dbData.show_guest_email}\nPhone: ${dbData.show_guest_phone}\nAddress: ${dbData.show_guest_address}\nNationality: ${dbData.show_guest_nationality}\nPassport: ${dbData.show_guest_passport_number}\n\nCheck console for full details.`
-        );
-      } else {
-        Alert.alert(
-          "Database Verification",
-          "No preferences found in database or error occurred"
-        );
-      }
-    } catch (error: any) {
-      Alert.alert("Error", `Verification failed: ${error.message}`);
     }
   };
 
@@ -369,19 +343,6 @@ export default function FormFieldPreferences() {
             </View>
           </View>
         )}
-
-        {/* Debug/Verification Section */}
-        <View className="bg-white mt-4 mx-4 rounded-xl p-4 shadow-sm">
-          <TouchableOpacity
-            onPress={handleVerifyDatabase}
-            className="flex-row justify-center items-center py-3 px-4 rounded-lg bg-yellow-500"
-          >
-            <Ionicons name="search" size={20} color="white" />
-            <Text className="text-white font-semibold ml-2">
-              Verify Database
-            </Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Note Section */}
         <View className="m-4 p-4 bg-blue-50 rounded-2xl border-l-4 border-blue-500">

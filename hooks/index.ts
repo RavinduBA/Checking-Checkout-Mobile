@@ -9,7 +9,6 @@ export { useFormFieldPreferences } from './useFormFieldPreferences';
 export { useGuides } from './useGuides';
 export { useIncomeData } from './useIncomeData';
 export { useIncomeTypes } from './useIncomeTypes';
-export { useLocationContext } from './useLocationContext';
 export { useLocations } from './useLocations';
 export { usePermissions } from './usePermissions';
 export { useProfile } from './useProfile';
