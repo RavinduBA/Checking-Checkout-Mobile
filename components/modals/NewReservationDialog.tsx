@@ -9,27 +9,24 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { type RoomSelection } from "../reservation/MultiRoomSelector";
+import { ConfirmationStep } from "../reservation/new/ConfirmationStep";
+import {
+  type GuestData,
+  GuestInformationStep,
+} from "../reservation/new/GuestInformationStep";
+import { type PaymentData, PaymentStep } from "../reservation/new/PaymentStep";
+import { PricingStep } from "../reservation/new/PricingStep";
+import { RoomSelectionStep } from "../reservation/new/RoomSelectionStep";
 import { useLocationContext } from "../../contexts/LocationContext";
-import { useAuth } from "../../hooks/useAuth";
 import { useRoomAvailability } from "../../hooks/useRoomAvailability";
 import { useTenant } from "../../hooks/useTenant";
 import { useToast } from "../../hooks/useToast";
+import { useUserProfile } from "../../hooks/useUserProfile";
 import { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
 import { convertCurrency } from "../../utils/currency";
-import { ConfirmationStep } from "../reservation/new/ConfirmationStep";
-import {
-  GuestData,
-  GuestInformationStep,
-} from "../reservation/new/GuestInformationStep";
-import { PaymentData, PaymentStep } from "../reservation/new/PaymentStep";
-import { PricingStep } from "../reservation/new/PricingStep";
-import {
-  RoomSelection,
-  RoomSelectionStep,
-} from "../reservation/new/RoomSelectionStep";
 
-type CurrencyType = Database["public"]["Enums"]["currency_type"];
 type Room = Database["public"]["Tables"]["rooms"]["Row"];
 
 interface NewReservationDialogProps {
@@ -53,10 +50,10 @@ export function NewReservationDialog({
   onClose,
   onReservationCreated,
 }: NewReservationDialogProps) {
-  const { user } = useAuth();
+  const { toast } = useToast();
+  const { profile } = useUserProfile();
   const { tenant } = useTenant();
   const { selectedLocation } = useLocationContext();
-  const { toast } = useToast();
   const { isRangeAvailable } = useRoomAvailability();
 
   const [currentStep, setCurrentStep] = useState<StepId>("guest");
@@ -85,7 +82,7 @@ export function NewReservationDialog({
   // Sync payment currency with the first room selection's currency
   useEffect(() => {
     if (roomSelections.length > 0 && roomSelections[0].currency) {
-      const newCurrency = roomSelections[0].currency as CurrencyType;
+      const newCurrency = roomSelections[0].currency;
       if (newCurrency !== paymentData.currency) {
         setPaymentData((prev) => ({ ...prev, currency: newCurrency }));
       }
@@ -100,14 +97,14 @@ export function NewReservationDialog({
         total += selection.total_amount;
       } else {
         try {
-          const converted = await convertCurrency(
+          const convertedAmount = await convertCurrency(
             selection.total_amount,
-            selection.currency as any,
+            selection.currency,
             paymentData.currency,
             tenant?.id!,
             selectedLocation!
           );
-          total += converted;
+          total += convertedAmount;
         } catch (error) {
           console.error("Currency conversion error:", error);
           total += selection.total_amount; // Fallback to original amount
@@ -147,11 +144,15 @@ export function NewReservationDialog({
       setRooms(data || []);
     } catch (error) {
       console.error("Error fetching rooms:", error);
-      Alert.alert("Error", "Failed to fetch rooms");
+      toast({
+        title: "Error",
+        description: "Failed to fetch rooms",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  }, [selectedLocation, tenant?.id]);
+  }, [selectedLocation, tenant?.id, toast]);
 
   // Fetch rooms when dialog opens
   useEffect(() => {
@@ -190,7 +191,11 @@ export function NewReservationDialog({
     switch (currentStep) {
       case "guest": {
         if (!guestData.guest_name.trim()) {
-          Alert.alert("Validation Error", "Guest name is required");
+          toast({
+            title: "Validation Error",
+            description: "Guest name is required",
+            variant: "destructive",
+          });
           return false;
         }
         return true;
@@ -198,7 +203,11 @@ export function NewReservationDialog({
 
       case "rooms": {
         if (roomSelections.length === 0) {
-          Alert.alert("Validation Error", "Please select at least one room");
+          toast({
+            title: "Validation Error",
+            description: "Please select at least one room",
+            variant: "destructive",
+          });
           return false;
         }
         // Validate that all room selections have room_id
@@ -206,10 +215,11 @@ export function NewReservationDialog({
           (selection) => !selection.room_id
         );
         if (invalidSelections.length > 0) {
-          Alert.alert(
-            "Validation Error",
-            "Please select a room for all room selections"
-          );
+          toast({
+            title: "Validation Error",
+            description: "Please select a room for all room selections",
+            variant: "destructive",
+          });
           return false;
         }
         // Validate that all room selections have dates
@@ -217,10 +227,12 @@ export function NewReservationDialog({
           (selection) => !selection.check_in_date || !selection.check_out_date
         );
         if (missingDatesSelections.length > 0) {
-          Alert.alert(
-            "Validation Error",
-            "Please select check-in and check-out dates for all room selections"
-          );
+          toast({
+            title: "Validation Error",
+            description:
+              "Please select check-in and check-out dates for all room selections",
+            variant: "destructive",
+          });
           return false;
         }
         // Validate room availability for all selections
@@ -230,10 +242,12 @@ export function NewReservationDialog({
           return !isRangeAvailable(checkIn, checkOut, selection.room_id);
         });
         if (unavailableSelections.length > 0) {
-          Alert.alert(
-            "Room Unavailable",
-            "One or more selected rooms are not available for the chosen dates. Please adjust your selection."
-          );
+          toast({
+            title: "Room Unavailable",
+            description:
+              "One or more selected rooms are not available for the chosen dates. Please adjust your selection.",
+            variant: "destructive",
+          });
           return false;
         }
         return true;
@@ -268,8 +282,12 @@ export function NewReservationDialog({
   const handleSubmit = async () => {
     if (!validateCurrentStep()) return;
 
-    if (!tenant?.id || !user?.id || !selectedLocation) {
-      Alert.alert("Error", "Missing required information");
+    if (!tenant?.id || !profile?.id || !selectedLocation) {
+      toast({
+        title: "Error",
+        description: "Missing required information",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -284,27 +302,9 @@ export function NewReservationDialog({
       for (const selection of roomSelections) {
         const reservationNumber = await generateReservationNumber();
 
-        // Convert room amount to payment currency
-        let convertedRoomAmount = selection.total_amount;
-        let convertedAdvanceAmount = paymentData.advance_amount;
-
-        if (selection.currency !== paymentData.currency) {
-          try {
-            convertedRoomAmount = await convertCurrency(
-              selection.total_amount,
-              selection.currency as any,
-              paymentData.currency,
-              tenant.id,
-              selectedLocation
-            );
-          } catch (error) {
-            console.error("Currency conversion error:", error);
-          }
-        }
-
         const reservationData = {
           reservation_number: reservationNumber,
-          tenant_id: tenant.id,
+          booking_group_id: roomSelections.length > 1 ? bookingGroupId : null,
           location_id: selectedLocation,
           room_id: selection.room_id,
           guest_name: guestData.guest_name,
@@ -320,16 +320,17 @@ export function NewReservationDialog({
           check_out_date: selection.check_out_date,
           nights: selection.nights,
           room_rate: selection.room_rate,
-          total_amount: convertedRoomAmount,
-          advance_amount: convertedAdvanceAmount || 0,
-          paid_amount: convertedAdvanceAmount || 0,
-          balance_amount: convertedRoomAmount - (convertedAdvanceAmount || 0),
-          currency: paymentData.currency,
-          status: "tentative",
+          total_amount: selection.total_amount,
+          advance_amount: paymentData.advance_amount / roomSelections.length, // Split advance across rooms
+          paid_amount: 0, // Will be updated by trigger when payment is recorded
+          balance_amount: selection.total_amount, // Full amount unpaid initially
+          currency: selection.currency as any,
+          status: "tentative" as const,
+          arrival_time: selection.arrival_time || null,
           special_requests: guestData.special_requests || null,
           booking_source: guestData.booking_source,
-          created_by: user.id,
-          booking_group_id: roomSelections.length > 1 ? bookingGroupId : null,
+          created_by: profile.id,
+          tenant_id: tenant.id,
         };
 
         reservations.push(reservationData);
@@ -345,11 +346,10 @@ export function NewReservationDialog({
       const reservationNumbers = reservations
         .map((r) => r.reservation_number)
         .join(", ");
-
-      Alert.alert(
-        "Success",
-        `Reservation(s) ${reservationNumbers} created successfully`
-      );
+      toast({
+        title: "Success",
+        description: `Reservation(s) ${reservationNumbers} created successfully`,
+      });
 
       // Reset form and close dialog
       resetForm();
@@ -357,7 +357,11 @@ export function NewReservationDialog({
       onClose();
     } catch (error) {
       console.error("Error creating reservation:", error);
-      Alert.alert("Error", "Failed to create reservation");
+      toast({
+        title: "Error",
+        description: "Failed to create reservation",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
