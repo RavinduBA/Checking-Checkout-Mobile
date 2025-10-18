@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
-import { RoomSelection } from "./RoomSelectionStep";
+import { type RoomSelection } from "../MultiRoomSelector";
 
 interface PricingStepProps {
   roomSelections: RoomSelection[];
@@ -73,9 +73,6 @@ export function PricingStep({
                   <Text className="font-medium text-gray-900">
                     Room Selection {index + 1}
                   </Text>
-                  <Text className="text-sm text-gray-600 mt-1">
-                    {selection.room_number} - {selection.room_type}
-                  </Text>
                   <Text className="text-sm text-gray-600">
                     {new Date(selection.check_in_date).toLocaleDateString()} -{" "}
                     {new Date(selection.check_out_date).toLocaleDateString()}
@@ -107,15 +104,10 @@ export function PricingStep({
         {/* Total Summary */}
         <View className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <View className="flex-row justify-between items-center">
-            <View>
-              <Text className="font-semibold text-gray-900">
-                Grand Total ({roomSelections.length} room
-                {roomSelections.length > 1 ? "s" : ""})
-              </Text>
-              <Text className="text-sm text-gray-600">
-                All amounts converted to {paymentCurrency}
-              </Text>
-            </View>
+            <Text className="font-semibold text-gray-900">
+              Grand Total ({roomSelections.length} room
+              {roomSelections.length > 1 ? "s" : ""}):
+            </Text>
             <Text className="text-xl font-bold text-blue-700">
               {getCurrencySymbol(paymentCurrency)}
               {convertedTotal.toFixed(2)}
