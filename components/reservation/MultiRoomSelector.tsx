@@ -78,7 +78,7 @@ export function MultiRoomSelector({
       showRoomDropdown: false,
     };
     // Close all other dropdowns when adding a new room
-    const updatedSelections = roomSelections.map(s => ({
+    const updatedSelections = roomSelections.map((s) => ({
       ...s,
       showRoomDropdown: false,
     }));
@@ -369,12 +369,13 @@ export function MultiRoomSelector({
   );
 
   return (
-    <ScrollView 
-      className="flex-1" 
+    <ScrollView
+      className="flex-1"
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
+      style={{ overflow: 'visible' }}
     >
-      <View className="space-y-4">
+      <View className="space-y-4" style={{ overflow: 'visible' }}>
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center">
             <Ionicons name="bed" size={24} color="#3B82F6" />
@@ -404,6 +405,7 @@ export function MultiRoomSelector({
           <View
             key={selection.id}
             className="bg-white border border-gray-300 rounded-lg p-4 space-y-4"
+            style={{ overflow: 'visible' }}
           >
             <View className="flex-row items-center justify-between">
               <Text className="text-base font-semibold text-gray-900">
@@ -420,11 +422,14 @@ export function MultiRoomSelector({
             </View>
 
             {/* Room Selection */}
-            <View className="space-y-2" style={{ zIndex: roomSelections.length - index }}>
+            <View
+              className="space-y-2"
+              style={{ zIndex: roomSelections.length - index, overflow: 'visible' }}
+            >
               <Text className="text-sm font-medium text-gray-700">
                 Select Room *
               </Text>
-              <View style={{ zIndex: 2 }}>
+              <View style={{ zIndex: 2, overflow: 'visible' }}>
                 {/* Dropdown toggle button */}
                 <TouchableOpacity
                   className="bg-white border border-gray-300 rounded-lg px-4 py-3 flex-row items-center justify-between"
@@ -476,9 +481,9 @@ export function MultiRoomSelector({
 
                 {/* Dropdown list */}
                 {selection.showRoomDropdown && (
-                  <View 
-                    style={{ 
-                      position: 'absolute',
+                  <View
+                    style={{
+                      position: "absolute",
                       top: 56,
                       left: 0,
                       right: 0,
