@@ -3,6 +3,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  Modal,
   ScrollView,
   Text,
   TextInput,
@@ -78,7 +79,7 @@ export function MultiRoomSelector({
       showRoomDropdown: false,
     };
     // Close all other dropdowns when adding a new room
-    const updatedSelections = roomSelections.map((s) => ({
+    const updatedSelections = roomSelections.map(s => ({
       ...s,
       showRoomDropdown: false,
     }));
@@ -369,13 +370,12 @@ export function MultiRoomSelector({
   );
 
   return (
-    <ScrollView
-      className="flex-1"
+    <ScrollView 
+      className="flex-1" 
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
-      style={{ overflow: 'visible' }}
     >
-      <View className="space-y-4" style={{ overflow: 'visible' }}>
+      <View className="space-y-4">
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center">
             <Ionicons name="bed" size={24} color="#3B82F6" />
@@ -405,7 +405,6 @@ export function MultiRoomSelector({
           <View
             key={selection.id}
             className="bg-white border border-gray-300 rounded-lg p-4 space-y-4"
-            style={{ overflow: 'visible' }}
           >
             <View className="flex-row items-center justify-between">
               <Text className="text-base font-semibold text-gray-900">
@@ -422,111 +421,133 @@ export function MultiRoomSelector({
             </View>
 
             {/* Room Selection */}
-            <View
-              className="space-y-2"
-              style={{ zIndex: roomSelections.length - index, overflow: 'visible' }}
-            >
+            <View className="space-y-2">
               <Text className="text-sm font-medium text-gray-700">
                 Select Room *
               </Text>
-              <View style={{ zIndex: 2, overflow: 'visible' }}>
-                {/* Dropdown toggle button */}
+              <TouchableOpacity
+                className="bg-white border border-gray-300 rounded-lg px-4 py-3 flex-row items-center justify-between"
+                onPress={() => {
+                  // Close all others before opening this
+                  onRoomSelectionsChange(
+                    roomSelections.map((s) => ({
+                      ...s,
+                      showRoomDropdown: s.id === selection.id ? !s.showRoomDropdown : false,
+                    }))
+                  );
+                }}
+              >
+                <Text
+                  className={
+                    selection.room_id
+                      ? "text-gray-800 font-medium"
+                      : "text-gray-500"
+                  }
+                >
+                  {selection.room_id
+                    ? (() => {
+                        const selectedRoom = rooms.find(
+                          (room) => room.id === selection.room_id
+                        );
+                        if (!selectedRoom) return "Select a room";
+                        return `${selectedRoom.room_number} - ${
+                          selectedRoom.room_type
+                        } (${getCurrencySymbol(
+                          selectedRoom.currency || "LKR"
+                        )}${selectedRoom.base_price})`;
+                      })()
+                    : "Select a room"}
+                </Text>
+                <Ionicons
+                  name={
+                    selection.showRoomDropdown ? "chevron-up" : "chevron-down"
+                  }
+                  size={20}
+                  color="#6B7280"
+                />
+              </TouchableOpacity>
+
+              {/* Modal Dropdown */}
+              <Modal
+                visible={selection.showRoomDropdown || false}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => {
+                  updateRoomSelection(selection.id, {
+                    showRoomDropdown: false,
+                  });
+                }}
+              >
                 <TouchableOpacity
-                  className="bg-white border border-gray-300 rounded-lg px-4 py-3 flex-row items-center justify-between"
+                  className="flex-1 bg-black/50"
+                  activeOpacity={1}
                   onPress={() => {
-                    if (selection.showRoomDropdown) {
-                      updateRoomSelection(selection.id, {
-                        showRoomDropdown: false,
-                      });
-                    } else {
-                      // Close all others before opening this
-                      onRoomSelectionsChange(
-                        roomSelections.map((s) => ({
-                          ...s,
-                          showRoomDropdown: s.id === selection.id,
-                        }))
-                      );
-                    }
+                    updateRoomSelection(selection.id, {
+                      showRoomDropdown: false,
+                    });
                   }}
                 >
-                  <Text
-                    className={
-                      selection.room_id
-                        ? "text-gray-800 font-medium"
-                        : "text-gray-500"
-                    }
-                  >
-                    {selection.room_id
-                      ? (() => {
-                          const selectedRoom = rooms.find(
-                            (room) => room.id === selection.room_id
+                  <View className="flex-1 justify-center items-center px-4">
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      className="bg-white rounded-lg w-full max-w-md max-h-96"
+                      onPress={(e) => e.stopPropagation()}
+                    >
+                      <View className="border-b border-gray-200 px-4 py-3 flex-row justify-between items-center">
+                        <Text className="text-lg font-semibold text-gray-900">
+                          Select Room
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => {
+                            updateRoomSelection(selection.id, {
+                              showRoomDropdown: false,
+                            });
+                          }}
+                          className="p-1"
+                        >
+                          <Ionicons name="close" size={24} color="#6B7280" />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView className="max-h-80">
+                        {rooms.map((room) => {
+                          const isAvailable = isRoomAvailableForSelection(
+                            room.id,
+                            selection
                           );
-                          if (!selectedRoom) return "Select a room";
-                          return `${selectedRoom.room_number} - ${
-                            selectedRoom.room_type
-                          } (${getCurrencySymbol(
-                            selectedRoom.currency || "LKR"
-                          )}${selectedRoom.base_price})`;
-                        })()
-                      : "Select a room"}
-                  </Text>
-                  <Ionicons
-                    name={
-                      selection.showRoomDropdown ? "chevron-up" : "chevron-down"
-                    }
-                    size={20}
-                    color="#6B7280"
-                  />
-                </TouchableOpacity>
-
-                {/* Dropdown list */}
-                {selection.showRoomDropdown && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      top: 56,
-                      left: 0,
-                      right: 0,
-                      zIndex: 1000,
-                      elevation: 10,
-                      maxHeight: 224,
-                    }}
-                    className="bg-white border border-gray-300 rounded-lg shadow-lg"
-                  >
-                    <ScrollView nestedScrollEnabled>
-                      {rooms.map((room) => {
-                        const isAvailable = isRoomAvailableForSelection(
-                          room.id,
-                          selection
-                        );
-                        return (
-                          <TouchableOpacity
-                            key={room.id}
-                            className={`px-4 py-3 border-b border-gray-200 ${
-                              !isAvailable ? "opacity-50" : "opacity-100"
-                            }`}
-                            disabled={!isAvailable}
-                            onPress={() => {
-                              handleRoomChange(selection.id, room.id);
-                              updateRoomSelection(selection.id, {
-                                showRoomDropdown: false,
-                              });
-                            }}
-                          >
-                            <Text className="text-gray-800">
-                              {`${room.room_number} - ${
-                                room.room_type
-                              } (${getCurrencySymbol(room.currency || "LKR")}${
-                                room.base_price
-                              }${!isAvailable ? " - Unavailable" : ""})`}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
+                          return (
+                            <TouchableOpacity
+                              key={room.id}
+                              className={`px-4 py-3 border-b border-gray-200 ${
+                                !isAvailable ? "opacity-50" : "opacity-100"
+                              }`}
+                              disabled={!isAvailable}
+                              onPress={() => {
+                                handleRoomChange(selection.id, room.id);
+                                updateRoomSelection(selection.id, {
+                                  showRoomDropdown: false,
+                                });
+                              }}
+                            >
+                              <Text className="text-gray-800">
+                                {`${room.room_number} - ${
+                                  room.room_type
+                                } (${getCurrencySymbol(room.currency || "LKR")}${
+                                  room.base_price
+                                })`}
+                              </Text>
+                              {!isAvailable && (
+                                <Text className="text-xs text-red-500 mt-1">
+                                  Unavailable
+                                </Text>
+                              )}
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </TouchableOpacity>
                   </View>
-                )}
-              </View>
+                </TouchableOpacity>
+              </Modal>
 
               {selection.room_id &&
                 !isRoomAvailableForSelection(selection.room_id, selection) && (
