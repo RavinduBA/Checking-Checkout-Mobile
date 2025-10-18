@@ -1,12 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import {
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { CurrencyType, SUPPORTED_CURRENCIES } from "../../lib/currencies";
 
 interface CurrencySelectorProps {
@@ -24,7 +18,9 @@ export const CurrencySelector = ({
 }: CurrencySelectorProps) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const selectedCurrencyOption = SUPPORTED_CURRENCIES.find((c) => c.value === currency);
+  const selectedCurrencyOption = SUPPORTED_CURRENCIES.find(
+    (c) => c.value === currency
+  );
 
   const handleGoogleSearchClick = () => {
     if (currency && currency !== "USD") {
@@ -98,12 +94,8 @@ export const CurrencySelector = ({
                     <Text className="font-medium text-gray-900 min-w-[48px]">
                       {curr.value}
                     </Text>
-                    <Text className="text-gray-600 flex-1">
-                      {curr.label}
-                    </Text>
-                    <Text className="text-sm text-gray-500">
-                      {curr.symbol}
-                    </Text>
+                    <Text className="text-gray-600 flex-1">{curr.label}</Text>
+                    <Text className="text-sm text-gray-500">{curr.symbol}</Text>
                   </View>
                 </View>
                 {currency === curr.value && (

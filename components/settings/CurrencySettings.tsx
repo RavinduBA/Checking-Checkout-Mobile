@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLocationContext } from "../../contexts/LocationContext";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import { supabase } from "../../lib/supabase";
 
@@ -20,6 +21,8 @@ interface CurrencyRate {
   currency_code: string;
   usd_rate: number;
   is_custom: boolean;
+  tenant_id: string;
+  location_id: string;
   from_currency?: string;
   to_currency?: string;
   rate?: number;
@@ -41,16 +44,26 @@ export default function CurrencySettings() {
   const [editRate, setEditRate] = useState("");
   const [saving, setSaving] = useState(false);
   const { profile } = useUserProfile();
+  const { selectedLocation } = useLocationContext();
 
-  // Fetch currency rates (global reference table)
+  // Fetch currency rates (filtered by tenant and location)
   const fetchCurrencyRates = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
+      // Check if we have required data
+      if (!profile?.tenant_id || !selectedLocation) {
+        setCurrencyRates([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error: fetchError } = await supabase
         .from("currency_rates")
         .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("location_id", selectedLocation)
         .order("currency_code", { ascending: true });
 
       if (fetchError) {
@@ -64,7 +77,7 @@ export default function CurrencySettings() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profile?.tenant_id, selectedLocation]);
 
   // Add new currency
   const addCurrency = useCallback(async () => {
@@ -74,14 +87,30 @@ export default function CurrencySettings() {
         return;
       }
 
+      // Check if we have required data
+      if (!profile?.tenant_id || !selectedLocation) {
+        Alert.alert("Error", "Tenant or location information not available");
+        return;
+      }
+
+      // Validate currency code (3-5 uppercase letters)
+      if (!/^[A-Z]{3,5}$/.test(newCurrencyCode.trim().toUpperCase())) {
+        Alert.alert("Error", "Currency code must be 3-5 uppercase letters");
+        return;
+      }
+
       setSaving(true);
 
       const { error: createError } = await supabase
         .from("currency_rates")
-        .insert({
+        .upsert({
           currency_code: newCurrencyCode.trim().toUpperCase(),
           usd_rate: parseFloat(newCurrencyRate),
           is_custom: true,
+          tenant_id: profile.tenant_id,
+          location_id: selectedLocation,
+        }, {
+          onConflict: "tenant_id,location_id,currency_code",
         });
 
       if (createError) {
@@ -99,13 +128,19 @@ export default function CurrencySettings() {
     } finally {
       setSaving(false);
     }
-  }, [newCurrencyCode, newCurrencyRate, fetchCurrencyRates]);
+  }, [newCurrencyCode, newCurrencyRate, profile?.tenant_id, selectedLocation, fetchCurrencyRates]);
 
   // Update currency rate
   const updateCurrency = useCallback(async () => {
     try {
       if (!editingCurrency || parseFloat(editRate) <= 0) {
         Alert.alert("Error", "Please provide a valid rate");
+        return;
+      }
+
+      // Check if we have required data
+      if (!profile?.tenant_id || !selectedLocation) {
+        Alert.alert("Error", "Tenant or location information not available");
         return;
       }
 
@@ -117,7 +152,9 @@ export default function CurrencySettings() {
           usd_rate: parseFloat(editRate),
           updated_at: new Date().toISOString(),
         })
-        .eq("id", editingCurrency.id);
+        .eq("id", editingCurrency.id)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("location_id", selectedLocation);
 
       if (updateError) {
         throw updateError;
@@ -134,7 +171,7 @@ export default function CurrencySettings() {
     } finally {
       setSaving(false);
     }
-  }, [editingCurrency, editRate, fetchCurrencyRates]);
+  }, [editingCurrency, editRate, profile?.tenant_id, selectedLocation, fetchCurrencyRates]);
 
   // Delete currency
   const deleteCurrency = useCallback(
@@ -149,10 +186,18 @@ export default function CurrencySettings() {
             style: "destructive",
             onPress: async () => {
               try {
+                // Check if we have required data
+                if (!profile?.tenant_id || !selectedLocation) {
+                  Alert.alert("Error", "Tenant or location information not available");
+                  return;
+                }
+
                 const { error: deleteError } = await supabase
                   .from("currency_rates")
                   .delete()
-                  .eq("id", currency.id);
+                  .eq("id", currency.id)
+                  .eq("tenant_id", profile.tenant_id)
+                  .eq("location_id", selectedLocation);
 
                 if (deleteError) {
                   throw deleteError;
@@ -172,7 +217,7 @@ export default function CurrencySettings() {
         ]
       );
     },
-    [fetchCurrencyRates]
+    [profile?.tenant_id, selectedLocation, fetchCurrencyRates]
   );
 
   // Open search for currency rate
@@ -302,6 +347,31 @@ export default function CurrencySettings() {
     );
   }
 
+  // Check if required data is available
+  if (!profile?.tenant_id || !selectedLocation) {
+    return (
+      <View className="flex-1 bg-gray-50">
+        <View className="p-5 bg-white border-b border-gray-200">
+          <Text className="text-xl font-bold text-gray-900 mb-2">
+            Currency Settings
+          </Text>
+          <Text className="text-sm text-gray-600">
+            Configure currency preferences and exchange rates
+          </Text>
+        </View>
+        <View className="flex-1 justify-center items-center p-5">
+          <Ionicons name="business-outline" size={64} color="#9CA3AF" />
+          <Text className="text-lg font-semibold text-gray-600 mt-4 text-center">
+            Location Required
+          </Text>
+          <Text className="text-sm text-gray-500 text-center mt-2">
+            Please select a location to manage currency settings.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
@@ -337,7 +407,7 @@ export default function CurrencySettings() {
           <Text className="text-sm text-blue-700">
             All currency conversions are based on USD exchange rates. Add custom
             currencies with their USD rates for automatic cross-currency
-            conversions.
+            conversions. Currencies are managed per location.
           </Text>
         </View>
 

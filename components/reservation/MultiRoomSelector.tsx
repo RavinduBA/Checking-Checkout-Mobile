@@ -283,7 +283,7 @@ export function MultiRoomSelector({
   const handleDateChangeWeb = (
     selectionId: string,
     checkIn: string,
-    checkOut: string,
+    checkOut: string
   ) => {
     const selection = roomSelections.find((s) => s.id === selectionId);
     if (!selection) return;
