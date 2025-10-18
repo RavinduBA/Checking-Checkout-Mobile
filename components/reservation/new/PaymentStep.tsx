@@ -51,7 +51,7 @@ export function PaymentStep({
         </View>
 
         {/* Advance Amount */}
-        {fieldPreferences?.show_advance_amount !== false && (
+        {fieldPreferences?.show_advance_amount && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Advance Amount
@@ -87,7 +87,9 @@ export function PaymentStep({
               {paymentData.advance_amount > 0 && (
                 <>
                   <View className="flex-row justify-between items-center">
-                    <Text className="text-sm text-gray-600">Advance Amount:</Text>
+                    <Text className="text-sm text-gray-600">
+                      Advance Amount:
+                    </Text>
                     <Text className="text-sm font-medium text-gray-900">
                       {getCurrencySymbol(paymentData.currency)}
                       {paymentData.advance_amount.toFixed(2)}

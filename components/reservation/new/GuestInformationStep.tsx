@@ -1,13 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import React from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { useFormFieldPreferences } from "../../../hooks/useFormFieldPreferences";
 
 interface GuestData {
@@ -73,7 +67,7 @@ export function GuestInformationStep({
         </View>
 
         {/* Email - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_email !== false && (
+        {fieldPreferences?.show_guest_email && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">Email</Text>
             <TextInput
@@ -89,7 +83,7 @@ export function GuestInformationStep({
         )}
 
         {/* Phone - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_phone !== false && (
+        {fieldPreferences?.show_guest_phone && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">Phone</Text>
             <TextInput
@@ -104,7 +98,7 @@ export function GuestInformationStep({
         )}
 
         {/* Nationality - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_nationality !== false && (
+        {fieldPreferences?.show_guest_nationality && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Nationality
@@ -122,7 +116,7 @@ export function GuestInformationStep({
         )}
 
         {/* Passport Number - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_passport_number !== false && (
+        {fieldPreferences?.show_guest_passport_number && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Passport Number
@@ -140,7 +134,7 @@ export function GuestInformationStep({
         )}
 
         {/* ID Number - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_id_number !== false && (
+        {fieldPreferences?.show_guest_id_number && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">ID Number</Text>
             <TextInput
@@ -156,7 +150,7 @@ export function GuestInformationStep({
         )}
 
         {/* Address - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_address !== false && (
+        {fieldPreferences?.show_guest_address && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">Address</Text>
             <TextInput
@@ -175,7 +169,7 @@ export function GuestInformationStep({
         )}
 
         {/* Booking Source - Conditional based on preferences */}
-        {fieldPreferences?.show_booking_source !== false && (
+        {fieldPreferences?.show_booking_source && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Booking Source
@@ -201,7 +195,7 @@ export function GuestInformationStep({
         )}
 
         {/* Special Requests - Conditional based on preferences */}
-        {fieldPreferences?.show_special_requests !== false && (
+        {fieldPreferences?.show_special_requests && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Special Requests

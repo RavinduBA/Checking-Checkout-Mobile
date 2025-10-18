@@ -41,8 +41,6 @@ export const useFormFieldPreferences = () => {
         return;
       }
 
-      console.log("Fetching preferences for tenant:", profile.tenant_id);
-
       const { data, error: fetchError } = await supabase
         .from("form_field_preferences")
         .select("*")
@@ -50,16 +48,13 @@ export const useFormFieldPreferences = () => {
         .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
       if (fetchError) {
-        console.error("Fetch error:", fetchError);
         throw fetchError;
       }
 
       if (!data) {
-        console.log("No preferences found, creating default ones");
         // No preferences found, create default ones
         await createDefaultPreferences();
       } else {
-        console.log("Found existing preferences:", data);
         setPreferences(data);
         setError(null); // Clear any previous errors
       }
