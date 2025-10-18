@@ -159,7 +159,8 @@ export function NewReservationDialog({
       fetchRooms();
       setCurrentStep("guest"); // Reset to first step
     }
-  }, [isOpen, fetchRooms]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const handleGuestDataChange = (field: string, value: any) => {
     setGuestData((prev) => ({ ...prev, [field]: value }));
@@ -263,22 +264,11 @@ export function NewReservationDialog({
   };
 
   const handleNext = () => {
-    console.log("handleNext called, currentStep:", currentStep);
-    console.log("guestData:", guestData);
-    
-    if (!validateCurrentStep()) {
-      console.log("Validation failed");
-      return;
-    }
+    if (!validateCurrentStep()) return;
 
-    console.log("Validation passed");
     const currentIndex = STEPS.findIndex((step) => step.id === currentStep);
-    console.log("currentIndex:", currentIndex, "STEPS.length:", STEPS.length);
-    
     if (currentIndex < STEPS.length - 1) {
-      const nextStep = STEPS[currentIndex + 1].id;
-      console.log("Moving to next step:", nextStep);
-      setCurrentStep(nextStep);
+      setCurrentStep(STEPS[currentIndex + 1].id);
     }
   };
 
