@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
+import { useFormFieldPreferences } from "../../../hooks/useFormFieldPreferences";
 import { Database } from "../../../integrations/supabase/types";
 import { CurrencySelector } from "../../common/CurrencySelector";
-import { RoomSelection } from "./RoomSelectionStep";
+import { type RoomSelection } from "../MultiRoomSelector";
 
 type CurrencyType = Database["public"]["Enums"]["currency_type"];
 
@@ -25,6 +26,8 @@ export function PaymentStep({
   roomSelections,
   convertedTotal,
 }: PaymentStepProps) {
+  const { preferences: fieldPreferences } = useFormFieldPreferences();
+
   // Get currency symbol helper
   const getCurrencySymbol = (currency: string) => {
     switch (currency) {
@@ -67,21 +70,23 @@ export function PaymentStep({
         </View>
 
         {/* Advance Amount */}
-        <View className="space-y-2">
-          <Text className="text-sm font-medium text-gray-700">
-            Advance Amount
-          </Text>
-          <TextInput
-            className="bg-white border border-gray-300 rounded-lg px-3 py-3 text-gray-900"
-            value={paymentData.advance_amount.toString()}
-            onChangeText={(value) =>
-              onPaymentDataChange("advance_amount", parseFloat(value) || 0)
-            }
-            placeholder="Enter advance amount"
-            placeholderTextColor="#9CA3AF"
-            keyboardType="numeric"
-          />
-        </View>
+        {fieldPreferences?.show_advance_amount !== false && (
+          <View className="space-y-2">
+            <Text className="text-sm font-medium text-gray-700">
+              Advance Amount
+            </Text>
+            <TextInput
+              className="bg-white border border-gray-300 rounded-lg px-3 py-3 text-gray-900"
+              value={paymentData.advance_amount.toString()}
+              onChangeText={(value) =>
+                onPaymentDataChange("advance_amount", parseFloat(value) || 0)
+              }
+              placeholder="Enter advance amount"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
+            />
+          </View>
+        )}
 
         {/* Total Summary */}
         {roomSelections.length > 0 && (

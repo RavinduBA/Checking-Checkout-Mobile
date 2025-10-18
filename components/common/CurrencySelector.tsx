@@ -1,6 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { Linking, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Linking,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useLocationContext } from "../../contexts/LocationContext";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import { supabase } from "../../lib/supabase";
@@ -93,24 +100,27 @@ export const CurrencySelector = ({
       >
         <View className="flex-row items-center gap-2">
           <Text className="font-medium text-gray-900">
-            {selectedCurrencyRate ? selectedCurrencyRate.currency_code : currency}
+            {selectedCurrencyRate
+              ? selectedCurrencyRate.currency_code
+              : currency}
           </Text>
           <Text className="text-sm text-gray-500">
-            {selectedCurrencyRate ? (
-              selectedCurrencyRate.currency_code === "USD"
+            {selectedCurrencyRate
+              ? selectedCurrencyRate.currency_code === "USD"
                 ? "US Dollar"
                 : selectedCurrencyRate.is_custom
-                  ? "Custom Currency"
-                  : selectedCurrencyRate.currency_code
-            ) : (
-              loading ? "Loading..." : currency
-            )}
+                ? "Custom Currency"
+                : selectedCurrencyRate.currency_code
+              : loading
+              ? "Loading..."
+              : currency}
           </Text>
-          {selectedCurrencyRate && selectedCurrencyRate.currency_code !== "USD" && (
-            <Text className="text-xs text-gray-500">
-              (Rate: {selectedCurrencyRate.usd_rate})
-            </Text>
-          )}
+          {selectedCurrencyRate &&
+            selectedCurrencyRate.currency_code !== "USD" && (
+              <Text className="text-xs text-gray-500">
+                (Rate: {selectedCurrencyRate.usd_rate})
+              </Text>
+            )}
         </View>
         <Ionicons name="chevron-down" size={16} color="#6B7280" />
       </TouchableOpacity>
@@ -170,8 +180,8 @@ export const CurrencySelector = ({
                         {curr.currency_code === "USD"
                           ? "US Dollar"
                           : curr.is_custom
-                            ? "Custom Currency"
-                            : curr.currency_code}
+                          ? "Custom Currency"
+                          : curr.currency_code}
                       </Text>
                       {curr.currency_code !== "USD" && (
                         <Text className="text-sm text-gray-500">
