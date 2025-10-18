@@ -187,6 +187,15 @@ export function NewReservationDialog({
     }
   };
 
+  // Generate a UUID compatible with React Native
+  const generateUUID = (): string => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
   const validateCurrentStep = (): boolean => {
     switch (currentStep) {
       case "guest": {
@@ -295,7 +304,7 @@ export function NewReservationDialog({
 
     try {
       // Generate a group ID for multiple rooms
-      const bookingGroupId = crypto.randomUUID();
+      const bookingGroupId = generateUUID();
       const reservations = [];
 
       // Create reservation data for each room
