@@ -75,8 +75,14 @@ export function MultiRoomSelector({
       arrival_time: "",
       nights: 1,
       total_amount: 0,
+      showRoomDropdown: false,
     };
-    onRoomSelectionsChange([...roomSelections, newSelection]);
+    // Close all other dropdowns when adding a new room
+    const updatedSelections = roomSelections.map(s => ({
+      ...s,
+      showRoomDropdown: false,
+    }));
+    onRoomSelectionsChange([...updatedSelections, newSelection]);
   }, [generateId, roomSelections, onRoomSelectionsChange, defaultCurrency]);
 
   // Add first room if none exist
@@ -363,7 +369,11 @@ export function MultiRoomSelector({
   );
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      className="flex-1" 
+      showsVerticalScrollIndicator={false}
+      nestedScrollEnabled
+    >
       <View className="space-y-4">
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center">
@@ -410,11 +420,11 @@ export function MultiRoomSelector({
             </View>
 
             {/* Room Selection */}
-            <View className="space-y-2">
+            <View className="space-y-2" style={{ zIndex: roomSelections.length - index }}>
               <Text className="text-sm font-medium text-gray-700">
                 Select Room *
               </Text>
-              <View className="relative">
+              <View style={{ zIndex: 2 }}>
                 {/* Dropdown toggle button */}
                 <TouchableOpacity
                   className="bg-white border border-gray-300 rounded-lg px-4 py-3 flex-row items-center justify-between"
@@ -466,8 +476,19 @@ export function MultiRoomSelector({
 
                 {/* Dropdown list */}
                 {selection.showRoomDropdown && (
-                  <View className="absolute top-14 left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-56">
-                    <ScrollView>
+                  <View 
+                    style={{ 
+                      position: 'absolute',
+                      top: 56,
+                      left: 0,
+                      right: 0,
+                      zIndex: 1000,
+                      elevation: 10,
+                      maxHeight: 224,
+                    }}
+                    className="bg-white border border-gray-300 rounded-lg shadow-lg"
+                  >
+                    <ScrollView nestedScrollEnabled>
                       {rooms.map((room) => {
                         const isAvailable = isRoomAvailableForSelection(
                           room.id,
