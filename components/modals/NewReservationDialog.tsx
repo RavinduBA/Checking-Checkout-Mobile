@@ -176,6 +176,7 @@ export function NewReservationDialog({
         "generate_reservation_number",
         {
           p_tenant_id: tenant?.id,
+          p_location_id: selectedLocation,
         }
       );
 
@@ -297,16 +298,8 @@ export function NewReservationDialog({
         description: "Missing required information",
         variant: "destructive",
       });
-      console.log("Missing data:", { tenant: tenant?.id, profile: profile?.id, selectedLocation });
       return;
     }
-
-    console.log("Creating reservation with:", { 
-      tenantId: tenant.id, 
-      profileId: profile.id, 
-      locationId: selectedLocation,
-      roomSelections: roomSelections.length 
-    });
 
     setSubmitting(true);
 
@@ -352,8 +345,6 @@ export function NewReservationDialog({
 
         reservations.push(reservationData);
       }
-
-      console.log("Inserting reservations:", JSON.stringify(reservations, null, 2));
 
       // Insert all reservations in a single transaction
       const { error } = await supabase
