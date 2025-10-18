@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
-import { GuestData } from "./GuestInformationStep";
-import { PaymentData } from "./PaymentStep";
-import { RoomSelection } from "./RoomSelectionStep";
+import { type RoomSelection } from "../MultiRoomSelector";
+import { type GuestData } from "./GuestInformationStep";
+import { type PaymentData } from "./PaymentStep";
 
 interface ConfirmationStepProps {
   guestData: GuestData;
@@ -112,9 +112,6 @@ export function ConfirmationStep({
                       Room Selection {index + 1}
                     </Text>
                     <Text className="text-sm text-gray-600 mt-1">
-                      {selection.room_number} - {selection.room_type}
-                    </Text>
-                    <Text className="text-sm text-gray-600">
                       {selection.nights} night{selection.nights > 1 ? "s" : ""}{" "}
                       • {selection.adults} adult
                       {selection.adults > 1 ? "s" : ""}

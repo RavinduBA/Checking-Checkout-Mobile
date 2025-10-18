@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useFormFieldPreferences } from "../../../hooks/useFormFieldPreferences";
 
-export interface GuestData {
+interface GuestData {
   guest_name: string;
   guest_email: string;
   guest_phone: string;
@@ -233,3 +233,5 @@ export function GuestInformationStep({
     </ScrollView>
   );
 }
+
+export type { GuestData };
