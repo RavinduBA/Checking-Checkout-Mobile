@@ -31,17 +31,8 @@ export function GuestInformationStep({
   guestData,
   onGuestDataChange,
 }: GuestInformationStepProps) {
-  const { preferences: fieldPreferences, loading } = useFormFieldPreferences();
+  const { preferences: fieldPreferences } = useFormFieldPreferences();
 
-  // Show loading spinner while preferences are being fetched
-  if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-2 text-gray-600">Loading preferences...</Text>
-      </View>
-    );
-  }
   const bookingSources = [
     { value: "direct", label: "Direct" },
     { value: "airbnb", label: "Airbnb" },

@@ -2,13 +2,20 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLocationContext } from "../../contexts/LocationContext";
+import { useRoomAvailability } from "../../hooks/useRoomAvailability";
+import { useTenant } from "../../hooks/useTenant";
+import { useToast } from "../../hooks/useToast";
+import { useUserProfile } from "../../hooks/useUserProfile";
+import { Database } from "../../integrations/supabase/types";
+import { supabase } from "../../lib/supabase";
+import { convertCurrency } from "../../utils/currency";
 import { type RoomSelection } from "../reservation/MultiRoomSelector";
 import { ConfirmationStep } from "../reservation/new/ConfirmationStep";
 import {
@@ -18,14 +25,6 @@ import {
 import { type PaymentData, PaymentStep } from "../reservation/new/PaymentStep";
 import { PricingStep } from "../reservation/new/PricingStep";
 import { RoomSelectionStep } from "../reservation/new/RoomSelectionStep";
-import { useLocationContext } from "../../contexts/LocationContext";
-import { useRoomAvailability } from "../../hooks/useRoomAvailability";
-import { useTenant } from "../../hooks/useTenant";
-import { useToast } from "../../hooks/useToast";
-import { useUserProfile } from "../../hooks/useUserProfile";
-import { Database } from "../../integrations/supabase/types";
-import { supabase } from "../../lib/supabase";
-import { convertCurrency } from "../../utils/currency";
 
 type Room = Database["public"]["Tables"]["rooms"]["Row"];
 
@@ -504,7 +503,7 @@ export function NewReservationDialog({
             className="flex-1 px-4 py-4"
             showsVerticalScrollIndicator={false}
           >
-            {loading ? (
+            {loading && currentStep === "rooms" ? (
               <View className="flex-1 justify-center items-center py-20">
                 <ActivityIndicator size="large" color="#3B82F6" />
                 <Text className="mt-4 text-gray-600">Loading rooms...</Text>
