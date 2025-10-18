@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
+import { useLocationContext } from "../contexts/LocationContext";
 import { supabase } from "../lib/supabase";
 import { convertCurrency } from "../utils/currency";
 import { useAuth } from "./useAuth";
-import { useLocationContext } from "../contexts/LocationContext";
 import { useTenant } from "./useTenant";
 
 interface ReservationFinancials {

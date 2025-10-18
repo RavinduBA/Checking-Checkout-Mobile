@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
 import { useLocationContext } from "../contexts/LocationContext";
+import { supabase } from "../lib/supabase";
 import { useTenant } from "./useTenant";
 
 interface UseRoomAvailabilityOptions {

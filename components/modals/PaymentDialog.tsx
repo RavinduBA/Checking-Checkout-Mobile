@@ -14,9 +14,9 @@ import {
 } from "react-native";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useAuth } from "../../hooks/useAuth";
-import { useLocationContext } from "../../hooks/useLocationContext";
+// import { useLocationContext } from "../../hooks/useLocationContext";
 import { useToast } from "../../hooks/useToast";
-import { CURRENCIES } from "../../lib/currencies";
+// import { CURRENCIES } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
 interface PaymentDialogProps {

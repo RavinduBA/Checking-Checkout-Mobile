@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
+import { useLocationContext } from "../contexts/LocationContext";
 import { Database } from "../integrations/supabase/types";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./useAuth";
-import { useLocationContext } from "../contexts/LocationContext";
 import { useTenant } from "./useTenant";
 
 type CurrencyType = Database["public"]["Enums"]["currency_type"];

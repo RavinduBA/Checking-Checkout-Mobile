@@ -12,19 +12,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLocationContext } from "../../contexts/LocationContext";
 import { useAuth } from "../../hooks/useAuth";
 import { useGuides } from "../../hooks/useGuides";
-import { useLocationContext } from "../../hooks/useLocationContext";
 import { useRooms } from "../../hooks/useRooms";
+import { useTenant } from "../../hooks/useTenant";
 import { useToast } from "../../hooks/useToast";
-import { CURRENCIES } from "../../lib/currencies";
+import { CurrencyType, SUPPORTED_CURRENCIES } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
 interface Room {
   id: string;
   room_number: string;
   room_type: string;
-  base_rate: number;
+  base_price: number;
   currency: string;
 }
 
@@ -51,10 +52,11 @@ export function EditReservationDialog({
   onClose,
   onSuccess,
 }: EditReservationDialogProps) {
-  const { user, tenant } = useAuth();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const { selectedLocation } = useLocationContext();
-  const { data: rooms } = useRooms();
-  const { data: guides } = useGuides();
+  const { rooms } = useRooms();
+  const { guides } = useGuides();
   const { toast } = useToast();
 
   // Form state
@@ -69,7 +71,7 @@ export function EditReservationDialog({
     check_out_date: new Date(),
     room_id: "",
     room_rate: 0,
-    currency: "LKR" as keyof typeof CURRENCIES,
+    currency: "LKR" as CurrencyType,
     guide_id: "",
     agent_id: "",
     special_requests: "",
@@ -111,10 +113,10 @@ export function EditReservationDialog({
 
   // Load agents
   useEffect(() => {
-    if (visible && tenant?.id && selectedLocation?.id) {
+    if (visible && tenant?.id && selectedLocation) {
       loadAgents();
     }
-  }, [visible, tenant?.id, selectedLocation?.id]);
+  }, [visible, tenant?.id, selectedLocation]);
 
   const loadAgents = async () => {
     try {
@@ -122,7 +124,7 @@ export function EditReservationDialog({
         .from("agents")
         .select("id, name")
         .eq("tenant_id", tenant?.id)
-        .eq("location_id", selectedLocation?.id);
+        .eq("location_id", selectedLocation);
 
       if (error) throw error;
       setAgents(data || []);
@@ -150,8 +152,8 @@ export function EditReservationDialog({
       setFormData((prev) => ({
         ...prev,
         room_id: roomId,
-        room_rate: selectedRoom.base_rate,
-        currency: selectedRoom.currency,
+        room_rate: selectedRoom.base_price,
+        currency: selectedRoom.currency as CurrencyType,
       }));
     }
   };
@@ -255,7 +257,6 @@ export function EditReservationDialog({
       toast({
         title: "Success",
         description: "Reservation updated successfully",
-        type: "success",
       });
 
       onSuccess?.();
@@ -529,8 +530,12 @@ export function EditReservationDialog({
                       }
                       style={{ height: 50 }}
                     >
-                      {Object.entries(CURRENCIES).map(([code, name]) => (
-                        <Picker.Item key={code} label={code} value={code} />
+                      {SUPPORTED_CURRENCIES.map((currency) => (
+                        <Picker.Item
+                          key={currency.value}
+                          label={currency.label}
+                          value={currency.value}
+                        />
                       ))}
                     </Picker>
                   </View>
