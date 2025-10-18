@@ -144,14 +144,14 @@ export function MultiRoomSelector({
     if (!selectedRoom || !selection) return;
 
     const roomCurrency = selectedRoom.currency || "LKR";
-    let roomRate = selectedRoom.base_rate || 0;
+    let roomRate = selectedRoom.base_price || 0;
     const tenantId = selectedRoom.tenant_id;
 
     // Convert room price to selection currency if they differ
     if (roomCurrency !== selection.currency) {
       try {
         roomRate = await convertCurrency(
-          selectedRoom.base_rate || 0,
+          selectedRoom.base_price || 0,
           roomCurrency,
           selection.currency,
           tenantId,
@@ -194,13 +194,13 @@ export function MultiRoomSelector({
     }
 
     const roomCurrency = selectedRoom.currency || "LKR";
-    let newRoomRate = selectedRoom.base_rate || 0;
+    let newRoomRate = selectedRoom.base_price || 0;
 
     // Convert room price to new currency if they differ
     if (roomCurrency !== newCurrency) {
       try {
         newRoomRate = await convertCurrency(
-          selectedRoom.base_rate || 0,
+          selectedRoom.base_price || 0,
           roomCurrency,
           newCurrency,
           selectedRoom.tenant_id,
@@ -451,7 +451,7 @@ export function MultiRoomSelector({
                             selectedRoom.room_type
                           } (${getCurrencySymbol(
                             selectedRoom.currency || "LKR"
-                          )}${selectedRoom.base_rate})`;
+                          )}${selectedRoom.base_price})`;
                         })()
                       : "Select a room"}
                   </Text>
@@ -491,7 +491,7 @@ export function MultiRoomSelector({
                               {`${room.room_number} - ${
                                 room.room_type
                               } (${getCurrencySymbol(room.currency || "LKR")}${
-                                room.base_rate
+                                room.base_price
                               }${!isAvailable ? " - Unavailable" : ""})`}
                             </Text>
                           </TouchableOpacity>

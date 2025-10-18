@@ -85,7 +85,7 @@ export interface Database {
           room_type: string;
           bed_type?: string;
           description?: string;
-          base_rate: number;
+          base_price: number;
           currency: CurrencyType;
           is_active: boolean;
           location_id: string;

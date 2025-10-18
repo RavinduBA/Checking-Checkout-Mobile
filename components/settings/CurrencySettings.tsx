@@ -70,7 +70,36 @@ export default function CurrencySettings() {
         throw fetchError;
       }
 
-      setCurrencyRates(data || []);
+      let rates = data || [];
+
+      // Ensure USD exists as base currency
+      const usdExists = rates.some((rate) => rate.currency_code === "USD");
+      if (!usdExists) {
+        // Add USD as base currency
+        const { error: insertError } = await supabase
+          .from("currency_rates")
+          .insert({
+            currency_code: "USD",
+            usd_rate: 1,
+            is_custom: false,
+            tenant_id: profile.tenant_id,
+            location_id: selectedLocation,
+          });
+
+        if (!insertError) {
+          // Refetch to get the USD record
+          const { data: refetchData } = await supabase
+            .from("currency_rates")
+            .select("*")
+            .eq("tenant_id", profile.tenant_id)
+            .eq("location_id", selectedLocation)
+            .order("currency_code", { ascending: true });
+
+          rates = refetchData || [];
+        }
+      }
+
+      setCurrencyRates(rates);
     } catch (err: any) {
       console.error("Error fetching currency rates:", err);
       setError(err.message || "Failed to fetch currency rates");
@@ -99,18 +128,28 @@ export default function CurrencySettings() {
         return;
       }
 
+      const currencyCode = newCurrencyCode.trim().toUpperCase();
+
+      // Check if currency already exists
+      const existingCurrency = currencyRates.find(
+        (rate) => rate.currency_code === currencyCode
+      );
+
+      if (existingCurrency) {
+        Alert.alert("Error", `Currency ${currencyCode} already exists`);
+        return;
+      }
+
       setSaving(true);
 
       const { error: createError } = await supabase
         .from("currency_rates")
-        .upsert({
-          currency_code: newCurrencyCode.trim().toUpperCase(),
+        .insert({
+          currency_code: currencyCode,
           usd_rate: parseFloat(newCurrencyRate),
           is_custom: true,
           tenant_id: profile.tenant_id,
           location_id: selectedLocation,
-        }, {
-          onConflict: "tenant_id,location_id,currency_code",
         });
 
       if (createError) {
@@ -128,7 +167,14 @@ export default function CurrencySettings() {
     } finally {
       setSaving(false);
     }
-  }, [newCurrencyCode, newCurrencyRate, profile?.tenant_id, selectedLocation, fetchCurrencyRates]);
+  }, [
+    newCurrencyCode,
+    newCurrencyRate,
+    profile?.tenant_id,
+    selectedLocation,
+    currencyRates,
+    fetchCurrencyRates,
+  ]);
 
   // Update currency rate
   const updateCurrency = useCallback(async () => {
@@ -141,6 +187,18 @@ export default function CurrencySettings() {
       // Check if we have required data
       if (!profile?.tenant_id || !selectedLocation) {
         Alert.alert("Error", "Tenant or location information not available");
+        return;
+      }
+
+      // Don't allow updating USD rate from 1
+      if (
+        editingCurrency.currency_code === "USD" &&
+        parseFloat(editRate) !== 1
+      ) {
+        Alert.alert(
+          "Error",
+          "USD is the base currency and must have a rate of 1"
+        );
         return;
       }
 
@@ -171,11 +229,29 @@ export default function CurrencySettings() {
     } finally {
       setSaving(false);
     }
-  }, [editingCurrency, editRate, profile?.tenant_id, selectedLocation, fetchCurrencyRates]);
+  }, [
+    editingCurrency,
+    editRate,
+    profile?.tenant_id,
+    selectedLocation,
+    fetchCurrencyRates,
+  ]);
 
   // Delete currency
   const deleteCurrency = useCallback(
     async (currency: CurrencyRate) => {
+      // Don't allow deleting USD
+      if (currency.currency_code === "USD") {
+        Alert.alert("Error", "USD is the base currency and cannot be deleted");
+        return;
+      }
+
+      // Only allow deleting custom currencies
+      if (!currency.is_custom) {
+        Alert.alert("Error", "Only custom currencies can be deleted");
+        return;
+      }
+
       Alert.alert(
         "Delete Currency",
         `Are you sure you want to delete ${currency.currency_code}? This action cannot be undone.`,
@@ -188,7 +264,10 @@ export default function CurrencySettings() {
               try {
                 // Check if we have required data
                 if (!profile?.tenant_id || !selectedLocation) {
-                  Alert.alert("Error", "Tenant or location information not available");
+                  Alert.alert(
+                    "Error",
+                    "Tenant or location information not available"
+                  );
                   return;
                 }
 
