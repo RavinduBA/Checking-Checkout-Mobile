@@ -263,11 +263,22 @@ export function NewReservationDialog({
   };
 
   const handleNext = () => {
-    if (!validateCurrentStep()) return;
+    console.log("handleNext called, currentStep:", currentStep);
+    console.log("guestData:", guestData);
+    
+    if (!validateCurrentStep()) {
+      console.log("Validation failed");
+      return;
+    }
 
+    console.log("Validation passed");
     const currentIndex = STEPS.findIndex((step) => step.id === currentStep);
+    console.log("currentIndex:", currentIndex, "STEPS.length:", STEPS.length);
+    
     if (currentIndex < STEPS.length - 1) {
-      setCurrentStep(STEPS[currentIndex + 1].id);
+      const nextStep = STEPS[currentIndex + 1].id;
+      console.log("Moving to next step:", nextStep);
+      setCurrentStep(nextStep);
     }
   };
 
