@@ -3,7 +3,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
-  Modal,
   ScrollView,
   Text,
   TextInput,
@@ -20,7 +19,7 @@ import { CurrencySelector } from "../common/CurrencySelector";
 type Room = Database["public"]["Tables"]["rooms"]["Row"];
 
 export interface RoomSelection {
-  id: string; // Unique identifier for this room selection
+  id: string;
   room_id: string;
   room_rate: number;
   check_in_date: string;
@@ -53,7 +52,6 @@ export function MultiRoomSelector({
   const [showCheckOutPicker, setShowCheckOutPicker] = useState<string | null>(
     null
   );
-
   const { toast } = useToast();
   const { isRangeAvailable } = useRoomAvailability();
   const { selectedLocation } = useLocationContext();
@@ -68,8 +66,8 @@ export function MultiRoomSelector({
       id: generateId(),
       room_id: "",
       room_rate: 0,
-      check_in_date: "", // Start with empty dates so user can select room first
-      check_out_date: "", // Then pick available dates
+      check_in_date: "",
+      check_out_date: "",
       adults: 1,
       children: 0,
       currency: defaultCurrency,
@@ -79,7 +77,7 @@ export function MultiRoomSelector({
       showRoomDropdown: false,
     };
     // Close all other dropdowns when adding a new room
-    const updatedSelections = roomSelections.map(s => ({
+    const updatedSelections = roomSelections.map((s) => ({
       ...s,
       showRoomDropdown: false,
     }));
@@ -102,7 +100,6 @@ export function MultiRoomSelector({
       });
       return;
     }
-
     Alert.alert(
       "Remove Room",
       "Are you sure you want to remove this room selection?",
@@ -147,7 +144,6 @@ export function MultiRoomSelector({
   const handleRoomChange = async (selectionId: string, roomId: string) => {
     const selectedRoom = rooms.find((room) => room.id === roomId);
     const selection = roomSelections.find((s) => s.id === selectionId);
-
     if (!selectedRoom || !selection) return;
 
     const roomCurrency = selectedRoom.currency || "LKR";
@@ -185,6 +181,7 @@ export function MultiRoomSelector({
       room_rate: Math.round(roomRate * 100) / 100,
       nights,
       total_amount: total,
+      showRoomDropdown: false, // Close dropdown after selection
     });
   };
 
@@ -286,43 +283,6 @@ export function MultiRoomSelector({
     });
   };
 
-  // Web app compatible date handler
-  const handleDateChangeWeb = (
-    selectionId: string,
-    checkIn: string,
-    checkOut: string
-  ) => {
-    const selection = roomSelections.find((s) => s.id === selectionId);
-    if (!selection) return;
-
-    const nights = calculateNights(checkIn, checkOut);
-    const total = Math.round(selection.room_rate * nights * 100) / 100;
-
-    // Check if the currently selected room is still available for the new dates
-    if (
-      selection.room_id &&
-      !isRoomAvailableForSelection(selection.room_id, {
-        ...selection,
-        check_in_date: checkIn,
-        check_out_date: checkOut,
-      })
-    ) {
-      toast({
-        title: "Room Unavailable",
-        description:
-          "The selected room is not available for these dates. Please select a different room.",
-        variant: "destructive",
-      });
-    }
-
-    updateRoomSelection(selectionId, {
-      check_in_date: checkIn,
-      check_out_date: checkOut,
-      nights,
-      total_amount: total,
-    });
-  };
-
   const handleFieldChange = (
     selectionId: string,
     field: keyof RoomSelection,
@@ -352,12 +312,11 @@ export function MultiRoomSelector({
     roomId: string,
     selection: RoomSelection
   ): boolean => {
-    if (!selection.check_in_date || !selection.check_out_date) return true; // No dates selected yet
+    if (!selection.check_in_date || !selection.check_out_date) return true;
 
     const checkIn = new Date(selection.check_in_date);
     const checkOut = new Date(selection.check_out_date);
 
-    // Check if dates are valid
     if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) return true;
 
     return isRangeAvailable(checkIn, checkOut, roomId);
@@ -370,8 +329,8 @@ export function MultiRoomSelector({
   );
 
   return (
-    <ScrollView 
-      className="flex-1" 
+    <ScrollView
+      className="flex-1"
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled
     >
@@ -421,133 +380,103 @@ export function MultiRoomSelector({
             </View>
 
             {/* Room Selection */}
-            <View className="space-y-2">
+            <View
+              className="space-y-2"
+              style={{ zIndex: 1000 + (roomSelections.length - index) * 10 }}
+            >
               <Text className="text-sm font-medium text-gray-700">
                 Select Room *
               </Text>
-              <TouchableOpacity
-                className="bg-white border border-gray-300 rounded-lg px-4 py-3 flex-row items-center justify-between"
-                onPress={() => {
-                  // Close all others before opening this
-                  onRoomSelectionsChange(
-                    roomSelections.map((s) => ({
-                      ...s,
-                      showRoomDropdown: s.id === selection.id ? !s.showRoomDropdown : false,
-                    }))
-                  );
-                }}
-              >
-                <Text
-                  className={
-                    selection.room_id
-                      ? "text-gray-800 font-medium"
-                      : "text-gray-500"
-                  }
-                >
-                  {selection.room_id
-                    ? (() => {
-                        const selectedRoom = rooms.find(
-                          (room) => room.id === selection.room_id
-                        );
-                        if (!selectedRoom) return "Select a room";
-                        return `${selectedRoom.room_number} - ${
-                          selectedRoom.room_type
-                        } (${getCurrencySymbol(
-                          selectedRoom.currency || "LKR"
-                        )}${selectedRoom.base_price})`;
-                      })()
-                    : "Select a room"}
-                </Text>
-                <Ionicons
-                  name={
-                    selection.showRoomDropdown ? "chevron-up" : "chevron-down"
-                  }
-                  size={20}
-                  color="#6B7280"
-                />
-              </TouchableOpacity>
-
-              {/* Modal Dropdown */}
-              <Modal
-                visible={selection.showRoomDropdown || false}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => {
-                  updateRoomSelection(selection.id, {
-                    showRoomDropdown: false,
-                  });
-                }}
-              >
+              <View style={{ zIndex: 1000 + (roomSelections.length - index) * 10 }}>
+                {/* Dropdown toggle button */}
                 <TouchableOpacity
-                  className="flex-1 bg-black/50"
-                  activeOpacity={1}
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-3 flex-row items-center justify-between"
                   onPress={() => {
-                    updateRoomSelection(selection.id, {
-                      showRoomDropdown: false,
-                    });
+                    if (selection.showRoomDropdown) {
+                      updateRoomSelection(selection.id, {
+                        showRoomDropdown: false,
+                      });
+                    } else {
+                      // Close all others before opening this
+                      onRoomSelectionsChange(
+                        roomSelections.map((s) => ({
+                          ...s,
+                          showRoomDropdown: s.id === selection.id,
+                        }))
+                      );
+                    }
                   }}
                 >
-                  <View className="flex-1 justify-center items-center px-4">
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      className="bg-white rounded-lg w-full max-w-md max-h-96"
-                      onPress={(e) => e.stopPropagation()}
-                    >
-                      <View className="border-b border-gray-200 px-4 py-3 flex-row justify-between items-center">
-                        <Text className="text-lg font-semibold text-gray-900">
-                          Select Room
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() => {
-                            updateRoomSelection(selection.id, {
-                              showRoomDropdown: false,
-                            });
-                          }}
-                          className="p-1"
-                        >
-                          <Ionicons name="close" size={24} color="#6B7280" />
-                        </TouchableOpacity>
-                      </View>
-                      <ScrollView className="max-h-80">
-                        {rooms.map((room) => {
-                          const isAvailable = isRoomAvailableForSelection(
-                            room.id,
-                            selection
+                  <Text
+                    className={
+                      selection.room_id
+                        ? "text-gray-800 font-medium"
+                        : "text-gray-500"
+                    }
+                  >
+                    {selection.room_id
+                      ? (() => {
+                          const selectedRoom = rooms.find(
+                            (room) => room.id === selection.room_id
                           );
-                          return (
-                            <TouchableOpacity
-                              key={room.id}
-                              className={`px-4 py-3 border-b border-gray-200 ${
-                                !isAvailable ? "opacity-50" : "opacity-100"
-                              }`}
-                              disabled={!isAvailable}
-                              onPress={() => {
-                                handleRoomChange(selection.id, room.id);
-                                updateRoomSelection(selection.id, {
-                                  showRoomDropdown: false,
-                                });
-                              }}
-                            >
-                              <Text className="text-gray-800">
-                                {`${room.room_number} - ${
-                                  room.room_type
-                                } (${getCurrencySymbol(room.currency || "LKR")}${
-                                  room.base_price
-                                })`}
-                              </Text>
-                              {!isAvailable && (
-                                <Text className="text-xs text-red-500 mt-1">
-                                  Unavailable
-                                </Text>
-                              )}
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </ScrollView>
-                    </TouchableOpacity>
-                  </View>
+                          if (!selectedRoom) return "Select a room";
+                          return `${selectedRoom.room_number} - ${
+                            selectedRoom.room_type
+                          } (${getCurrencySymbol(
+                            selectedRoom.currency || "LKR"
+                          )}${selectedRoom.base_price})`;
+                        })()
+                      : "Select a room"}
+                  </Text>
+                  <Ionicons
+                    name={
+                      selection.showRoomDropdown ? "chevron-up" : "chevron-down"
+                    }
+                    size={20}
+                    color="#6B7280"
+                  />
                 </TouchableOpacity>
-              </Modal>
+
+                {/* Dropdown list */}
+                {selection.showRoomDropdown && (
+                  <View
+                    className="absolute top-14 left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg max-h-56"
+                    style={{
+                      zIndex: 2000 + (roomSelections.length - index) * 10,
+                      elevation: 10,
+                    }}
+                  >
+                    <ScrollView nestedScrollEnabled={true}>
+                      {rooms.map((room) => {
+                        const isAvailable = isRoomAvailableForSelection(
+                          room.id,
+                          selection
+                        );
+                        return (
+                          <TouchableOpacity
+                            key={room.id}
+                            className={`px-4 py-3 border-b border-gray-200 ${
+                              !isAvailable ? "opacity-50" : "opacity-100"
+                            }`}
+                            disabled={!isAvailable}
+                            onPress={() => {
+                              handleRoomChange(selection.id, room.id);
+                            }}
+                          >
+                            <Text className="text-gray-800">
+                              {`${room.room_number} - ${
+                                room.room_type
+                              } (${getCurrencySymbol(room.currency || "LKR")}${
+                                room.base_price
+                              }${!isAvailable ? " - Unavailable" : ""})`}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
 
               {selection.room_id &&
                 !isRoomAvailableForSelection(selection.room_id, selection) && (
@@ -723,7 +652,7 @@ export function MultiRoomSelector({
                     Nights: {selection.nights}
                   </Text>
                   <Text className="text-base font-semibold text-blue-700">
-                    Total: {getCurrencySymbol(selection.currency)}
+                    Total: {getCurrencySymbol(selection.currency)}{" "}
                     {selection.total_amount.toFixed(2)}
                   </Text>
                 </View>
@@ -740,8 +669,7 @@ export function MultiRoomSelector({
                 Grand Total ({roomSelections.length} rooms):
               </Text>
               <Text className="text-xl font-bold text-blue-700">
-                {getCurrencySymbol(defaultCurrency)}
-                {grandTotal.toFixed(2)}
+                {getCurrencySymbol(defaultCurrency)} {grandTotal.toFixed(2)}
               </Text>
             </View>
           </View>
