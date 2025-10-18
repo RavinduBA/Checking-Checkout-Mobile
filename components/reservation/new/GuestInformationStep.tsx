@@ -67,7 +67,7 @@ export function GuestInformationStep({
         </View>
 
         {/* Email - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_email && (
+        {fieldPreferences?.show_guest_email !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">Email</Text>
             <TextInput
@@ -83,7 +83,7 @@ export function GuestInformationStep({
         )}
 
         {/* Phone - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_phone && (
+        {fieldPreferences?.show_guest_phone !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">Phone</Text>
             <TextInput
@@ -98,7 +98,7 @@ export function GuestInformationStep({
         )}
 
         {/* Nationality - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_nationality && (
+        {fieldPreferences?.show_guest_nationality !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Nationality
@@ -116,7 +116,7 @@ export function GuestInformationStep({
         )}
 
         {/* Passport Number - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_passport_number && (
+        {fieldPreferences?.show_guest_passport_number !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Passport Number
@@ -134,7 +134,7 @@ export function GuestInformationStep({
         )}
 
         {/* ID Number - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_id_number && (
+        {fieldPreferences?.show_guest_id_number !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">ID Number</Text>
             <TextInput
@@ -150,7 +150,7 @@ export function GuestInformationStep({
         )}
 
         {/* Address - Conditional based on preferences */}
-        {fieldPreferences?.show_guest_address && (
+        {fieldPreferences?.show_guest_address !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">Address</Text>
             <TextInput
@@ -169,7 +169,7 @@ export function GuestInformationStep({
         )}
 
         {/* Booking Source - Conditional based on preferences */}
-        {fieldPreferences?.show_booking_source && (
+        {fieldPreferences?.show_booking_source !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Booking Source
@@ -195,7 +195,7 @@ export function GuestInformationStep({
         )}
 
         {/* Special Requests - Conditional based on preferences */}
-        {fieldPreferences?.show_special_requests && (
+        {fieldPreferences?.show_special_requests !== false && (
           <View className="space-y-2">
             <Text className="text-sm font-medium text-gray-700">
               Special Requests

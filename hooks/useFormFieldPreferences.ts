@@ -73,8 +73,6 @@ export const useFormFieldPreferences = () => {
         throw new Error("No tenant ID found");
       }
 
-      console.log("Creating default preferences for tenant:", profile.tenant_id);
-
       const defaultPreferences: Partial<FormFieldPreferences> = {
         tenant_id: profile.tenant_id,
         show_guest_email: true,
@@ -106,7 +104,6 @@ export const useFormFieldPreferences = () => {
         console.error("Error creating default preferences:", createError);
         // If it's a duplicate key error, fetch the existing preferences
         if (createError.code === '23505') {
-          console.log("Preferences already exist, fetching them...");
           const { data: existingData, error: fetchError } = await supabase
             .from("form_field_preferences")
             .select("*")
@@ -121,7 +118,6 @@ export const useFormFieldPreferences = () => {
         throw createError;
       }
 
-      console.log("Default preferences created successfully:", data);
       setPreferences(data);
       setError(null); // Clear any previous errors
     } catch (err: any) {
@@ -136,12 +132,6 @@ export const useFormFieldPreferences = () => {
       if (!preferences?.id || !profile?.tenant_id) {
         throw new Error("No preferences found to update or missing tenant_id");
       }
-
-      console.log("Updating preferences with:", {
-        id: preferences.id,
-        tenant_id: profile.tenant_id,
-        updates
-      });
 
       // Clean the updates object - remove any undefined values
       const cleanUpdates = Object.fromEntries(
@@ -164,7 +154,6 @@ export const useFormFieldPreferences = () => {
         throw updateError;
       }
 
-      console.log("Update successful, new data:", data);
       setPreferences(data);
       setError(null); // Clear any previous errors
       return data;
