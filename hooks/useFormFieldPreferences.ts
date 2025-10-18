@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useUserProfile } from "./useUserProfile";
 
@@ -32,49 +32,11 @@ export const useFormFieldPreferences = () => {
   const [error, setError] = useState<string | null>(null);
   const { profile } = useUserProfile();
 
-  // Fetch preferences for the current tenant
-  const fetchPreferences = async () => {
-    try {
-      if (!profile?.tenant_id) {
-        setError("No tenant ID found");
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: fetchError } = await supabase
-        .from("form_field_preferences")
-        .select("*")
-        .eq("tenant_id", profile.tenant_id)
-        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      if (!data) {
-        // No preferences found, create default ones
-        await createDefaultPreferences();
-      } else {
-        setPreferences(data);
-        setError(null); // Clear any previous errors
-      }
-    } catch (err: any) {
-      console.error("Error fetching form field preferences:", err);
-      setError(err.message || "Failed to fetch preferences");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Create default preferences for the tenant
-  const createDefaultPreferences = async () => {
+  const createDefaultPreferences = useCallback(async (tenantId: string) => {
     try {
-      if (!profile?.tenant_id) {
-        throw new Error("No tenant ID found");
-      }
-
       const defaultPreferences: Partial<FormFieldPreferences> = {
-        tenant_id: profile.tenant_id,
+        tenant_id: tenantId,
         show_guest_email: true,
         show_guest_phone: true,
         show_guest_address: true,
@@ -107,7 +69,7 @@ export const useFormFieldPreferences = () => {
           const { data: existingData, error: fetchError } = await supabase
             .from("form_field_preferences")
             .select("*")
-            .eq("tenant_id", profile.tenant_id)
+            .eq("tenant_id", tenantId)
             .single();
           
           if (existingData && !fetchError) {
@@ -119,12 +81,47 @@ export const useFormFieldPreferences = () => {
       }
 
       setPreferences(data);
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (err: any) {
       console.error("Error creating default preferences:", err);
       setError(err.message || "Failed to create default preferences");
     }
-  };
+  }, []);
+
+  // Fetch preferences for the current tenant
+  const fetchPreferences = useCallback(async () => {
+    if (!profile?.tenant_id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data, error: fetchError } = await supabase
+        .from("form_field_preferences")
+        .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        // PGRST116 is "not found" error
+        throw fetchError;
+      }
+
+      if (data) {
+        setPreferences(data);
+        setError(null);
+      } else {
+        // No preferences found, create default ones
+        await createDefaultPreferences(profile.tenant_id);
+      }
+    } catch (err: any) {
+      console.error("Error fetching form field preferences:", err);
+      setError(err.message || "Failed to fetch preferences");
+    } finally {
+      setLoading(false);
+    }
+  }, [profile?.tenant_id, createDefaultPreferences]);
 
   // Update specific preferences
   const updatePreferences = async (updates: Partial<FormFieldPreferences>) => {
@@ -214,10 +211,8 @@ export const useFormFieldPreferences = () => {
 
   // Load preferences when profile is available
   useEffect(() => {
-    if (profile?.tenant_id) {
-      fetchPreferences();
-    }
-  }, [profile?.tenant_id]);
+    fetchPreferences();
+  }, [profile?.tenant_id, fetchPreferences]);
 
   return {
     preferences,
