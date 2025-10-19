@@ -76,7 +76,7 @@ export function useReservationFinancials() {
     for (const reservation of reservations) {
       try {
         // Fetch income records for this reservation
-        const { data: incomeRecords, error: incomeError } = await supabase
+        const { data: incomeRecords, error: incomeError} = await supabase
           .from("income")
           .select("amount, currency, payment_method")
           .eq("booking_id", reservation.id);
@@ -85,15 +85,9 @@ export function useReservationFinancials() {
           console.error("Error fetching income records:", incomeError);
         }
 
-        // Fetch expense records for this reservation
-        const { data: expenseRecords, error: expenseError } = await supabase
-          .from("expenses")
-          .select("amount, currency")
-          .eq("booking_id", reservation.id);
-
-        if (expenseError) {
-          console.error("Error fetching expense records:", expenseError);
-        }
+        // Note: Expenses are not tracked per reservation in this schema
+        // Expenses are general location-level expenses, not linked to bookings
+        const expenseRecords: any[] = [];
 
         // Calculate room amount (convert if needed)
         let roomAmount = reservation.total_amount || 0;

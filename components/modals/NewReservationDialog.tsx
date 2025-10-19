@@ -176,7 +176,6 @@ export function NewReservationDialog({
         "generate_reservation_number",
         {
           p_tenant_id: tenant?.id,
-          p_location_id: selectedLocation,
         }
       );
 

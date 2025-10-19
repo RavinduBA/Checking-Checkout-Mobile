@@ -10,13 +10,12 @@ type CurrencyType = Database["public"]["Enums"]["currency_type"];
 interface Account {
   id: string;
   name: string;
-  account_type: string;
   currency: string;
-  balance: number;
-  description?: string;
-  is_active: boolean;
+  current_balance: number;
+  initial_balance: number;
+  location_access: string[];
   created_at: string;
-  updated_at?: string;
+  updated_at?: string | null;
 }
 
 interface AccountData {
@@ -43,20 +42,23 @@ export function useAccountData(currency: CurrencyType = "USD") {
 
     try {
       // Fetch accounts for the current tenant and location
+      // Use location_access array (accounts table structure in both web and mobile)
       const { data: accounts, error: accountsError } = await supabase
         .from("accounts")
-        .select("*")
+        .select("id, name, currency, current_balance, initial_balance, location_access, created_at, updated_at")
         .eq("tenant_id", tenant.id)
-        .eq("location_id", selectedLocation)
-        .eq("is_active", true)
+        .contains("location_access", [selectedLocation])
         .order("name", { ascending: true });
 
-      if (accountsError) throw accountsError;
+      if (accountsError) {
+        console.error("Error fetching accounts:", accountsError);
+        throw accountsError;
+      }
 
       // Calculate totals
       const totalBalance = accounts?.reduce((sum, account) => {
         // Convert balance to target currency if needed
-        let balance = account.balance || 0;
+        let balance = account.current_balance || 0;
         if (account.currency !== currency) {
           // Simple conversion for mobile (replace with real conversion logic)
           if (account.currency === "LKR" && currency === "USD") {

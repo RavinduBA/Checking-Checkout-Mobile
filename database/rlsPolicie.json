@@ -1,0 +1,893 @@
+[
+  {
+    "schemaname": "auth",
+    "tablename": "audit_log_entries",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "flow_state",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "identities",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "instances",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "mfa_amr_claims",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "mfa_challenges",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "mfa_factors",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "oauth_authorizations",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "oauth_clients",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "oauth_consents",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "one_time_tokens",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "refresh_tokens",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "saml_providers",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "saml_relay_states",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "schema_migrations",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "sessions",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "sso_domains",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "sso_providers",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "auth",
+    "tablename": "users",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "account_transfers",
+    "rls_enabled": true,
+    "policyname": "account_transfers_update_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "account_transfers",
+    "rls_enabled": true,
+    "policyname": "account_transfers_delete_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "account_transfers",
+    "rls_enabled": true,
+    "policyname": "account_transfers_select_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "account_transfers",
+    "rls_enabled": true,
+    "policyname": "account_transfers_insert_policy",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "accounts",
+    "rls_enabled": true,
+    "policyname": "Users can update accounts in their tenant",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))",
+    "with_check": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "accounts",
+    "rls_enabled": true,
+    "policyname": "Users can view accounts in their tenant",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "accounts",
+    "rls_enabled": true,
+    "policyname": "Users can delete accounts in their tenant",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "accounts",
+    "rls_enabled": true,
+    "policyname": "Users can create accounts in their tenant",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "additional_services",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "agents",
+    "rls_enabled": true,
+    "policyname": "agents_insert_policy",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "agents",
+    "rls_enabled": true,
+    "policyname": "agents_update_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "agents",
+    "rls_enabled": true,
+    "policyname": "agents_select_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "agents",
+    "rls_enabled": true,
+    "policyname": "agents_delete_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "beds24_property_mappings",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "booking_payments",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "booking_sync_urls",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "bookings",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "channel_property_mappings",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "channel_room_mappings",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "currency_conversion_log",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "currency_rates",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to view currency rates",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "currency_rates",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to delete currency rates",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "currency_rates",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to update currency rates",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "currency_rates",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to insert currency rates",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(auth.role() = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expense_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to delete expense types",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expense_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to update expense types",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expense_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to insert expense types",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(auth.role() = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expense_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to view expense types",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expenses",
+    "rls_enabled": true,
+    "policyname": "Users can delete expenses in their tenant",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expenses",
+    "rls_enabled": true,
+    "policyname": "Users can view expenses in their tenant",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expenses",
+    "rls_enabled": true,
+    "policyname": "Users can update expenses in their tenant",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))",
+    "with_check": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "expenses",
+    "rls_enabled": true,
+    "policyname": "Users can create expenses in their tenant",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "external_bookings",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "financial_audit_log",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_field_preferences",
+    "rls_enabled": true,
+    "policyname": "Users can delete their tenant's form field preferences",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_field_preferences",
+    "rls_enabled": true,
+    "policyname": "Users can view their tenant's form field preferences",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_field_preferences",
+    "rls_enabled": true,
+    "policyname": "Users can create form field preferences for their tenant",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(tenant_id IN ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "form_field_preferences",
+    "rls_enabled": true,
+    "policyname": "Users can update their tenant's form field preferences",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": "(tenant_id IN ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "guides",
+    "rls_enabled": true,
+    "policyname": "guides_select_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "guides",
+    "rls_enabled": true,
+    "policyname": "guides_delete_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "guides",
+    "rls_enabled": true,
+    "policyname": "guides_update_policy",
+    "roles": "{public}",
+    "qual": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "guides",
+    "rls_enabled": true,
+    "policyname": "guides_insert_policy",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(tenant_id = ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "income",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "income_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to insert income types",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(auth.role() = 'authenticated'::text)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "income_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to update income types",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "income_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to delete income types",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "income_types",
+    "rls_enabled": true,
+    "policyname": "Allow authenticated users to view income types",
+    "roles": "{public}",
+    "qual": "(auth.role() = 'authenticated'::text)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "invoices",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "locations",
+    "rls_enabled": true,
+    "policyname": "Users can manage locations in their tenants",
+    "roles": "{authenticated}",
+    "qual": "(tenant_id IN ( SELECT tenants.id\n   FROM tenants\n  WHERE (tenants.owner_profile_id = auth.uid())\nUNION\n SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": "(tenant_id IN ( SELECT tenants.id\n   FROM tenants\n  WHERE (tenants.owner_profile_id = auth.uid())\nUNION\n SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "monthly_rent_payments",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "payments",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "plans",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "profiles",
+    "rls_enabled": true,
+    "policyname": "Users can update own profile",
+    "roles": "{public}",
+    "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "profiles",
+    "rls_enabled": true,
+    "policyname": "Users can view own profile",
+    "roles": "{public}",
+    "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "profiles",
+    "rls_enabled": true,
+    "policyname": "Users can view and update their own profile",
+    "roles": "{authenticated}",
+    "qual": "(id = auth.uid())",
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "profiles",
+    "rls_enabled": true,
+    "policyname": "Users can insert own profile",
+    "roles": "{public}",
+    "qual": null,
+    "with_check": "(auth.uid() = id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "reservation_financials",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "reservation_payment_history",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "reservations",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "room_pricing",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "rooms",
+    "rls_enabled": true,
+    "policyname": "Users can manage rooms in their tenants",
+    "roles": "{public}",
+    "qual": "(tenant_id IN ( SELECT tenants.id\n   FROM tenants\n  WHERE (tenants.owner_profile_id = auth.uid())\nUNION\n SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))",
+    "with_check": "(tenant_id IN ( SELECT tenants.id\n   FROM tenants\n  WHERE (tenants.owner_profile_id = auth.uid())\nUNION\n SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "subscriptions",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenant_limits",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants",
+    "rls_enabled": true,
+    "policyname": "Owners can delete their tenants",
+    "roles": "{authenticated}",
+    "qual": "(owner_profile_id = auth.uid())",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants",
+    "rls_enabled": true,
+    "policyname": "Owners can update their tenants",
+    "roles": "{authenticated}",
+    "qual": "(owner_profile_id = auth.uid())",
+    "with_check": "(owner_profile_id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants",
+    "rls_enabled": true,
+    "policyname": "Users can view their tenants",
+    "roles": "{authenticated}",
+    "qual": "((owner_profile_id = auth.uid()) OR (id IN ( SELECT profiles.tenant_id\n   FROM profiles\n  WHERE (profiles.id = auth.uid()))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "tenants",
+    "rls_enabled": true,
+    "policyname": "Users can create their own tenants",
+    "roles": "{authenticated}",
+    "qual": null,
+    "with_check": "(owner_profile_id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "unified_transaction_history",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_invitations",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "user_permissions",
+    "rls_enabled": true,
+    "policyname": "Users can manage their own permissions",
+    "roles": "{authenticated}",
+    "qual": "(user_id = auth.uid())",
+    "with_check": "(user_id = auth.uid())"
+  },
+  {
+    "schemaname": "realtime",
+    "tablename": "schema_migrations",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "realtime",
+    "tablename": "subscription",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "buckets",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "buckets_analytics",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "migrations",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "objects",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "prefixes",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "s3_multipart_uploads",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "storage",
+    "tablename": "s3_multipart_uploads_parts",
+    "rls_enabled": true,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  },
+  {
+    "schemaname": "vault",
+    "tablename": "secrets",
+    "rls_enabled": false,
+    "policyname": null,
+    "roles": null,
+    "qual": null,
+    "with_check": null
+  }
+]
