@@ -40,33 +40,45 @@ ui           -  Shared UI components (buttons, modals, inputs, etc.), often base
 users        -  Components for user management, such as user lists, user forms, and permission dialogs.
 
 
-Database tables
+diffence in databases 
 
-location - 4 co
+Tables
 
+Bookings            
+channel_property_mappings
+expenses    - my database dont have receipt_attachments column 
+user permissions - my database dont have access_reviews column
 
-commands in future 
-
-In top bar after logo it must show "CheckingCheckout" its the apps name also  in location dropdown it must show active locations name and below that in small font "active loaction" like
-
+Triggers
+Fucntions
 
 App info
 
 Tenant is based on Company/ hotel name , tenant id  is stored in tenant table and profile table 
 Slug - Identifies a company in the database or web app uniquely
 
-
-
 Things to verify 
-
 - totalRooms, propertyCount, and selectedFeatures are collected in the onboarding UI but are not stored in your database.
-- Teanat id not assigned to currency rates so it fetches all the data from that table
 
 
-things to fix
-- when new location added app must relod for add that to dropdown
+profile - 
+ "email":"ravindubandaraha@gmail.com",  id: 2811ee26-1475-4531-babd-18e86ba95b33"      "name":"ravindubandaraha"     "role":"staff"  
+ "tenant_id":"9f380865-42a2-4267-ba31-4a6ebf5e553d"    "tenant_role":"tenant_admin"      "is_tenant_admin":true
+
+tenants - 
+"name":"Jetwing",                    owner_profile_id":"2811ee26-1475-4531-babd-18e86ba95b33"        ,"hotel_name":"Jetwing",
+"subscription_status":"cancelled",  "trial_ends_at":null, 
+
+user permissions - 
+ "id":"cf0c735c-0b53-4a23-bf17-a9a5c3bdef4e"    "user_id":"2811ee26-1475-4531-babd-18e86ba95b33", "location_id":"a2bfc610-09d8-4d38-9b8c-3007462ff700",
+"tenant_id":"9f380865-42a2-4267-ba31-4a6ebf5e553d",     "tenant_role":"tenant_admin",   "is_tenant_admin":true,
+
+locations -
+"id":"a2bfc610-09d8-4d38-9b8c-3007462ff700",    "name":"Jetwing",            "tenant_id":"9f380865-42a2-4267-ba31-4a6ebf5e553d"
 
 
+Issues
+- Check why edge cant login with crednetials 
 
 
 
