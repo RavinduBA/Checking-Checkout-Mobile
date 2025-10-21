@@ -376,7 +376,7 @@ const generateReservationNumber = async (): Promise<string> => {
       reservationNumbers.push(reservationNumber);
     }
 
-    console.log("Generating reservations with numbers:", reservationNumbers);
+    
 
     // Create reservation data for each room
     for (let i = 0; i < roomSelections.length; i++) {
@@ -417,7 +417,6 @@ const generateReservationNumber = async (): Promise<string> => {
       reservations.push(reservationData);
     }
 
-    console.log("Inserting reservations:", reservations);
 
     // Insert all reservations in a single transaction
     const { error } = await supabase

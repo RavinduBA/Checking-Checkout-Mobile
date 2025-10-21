@@ -8,21 +8,18 @@ import { useToast } from "../../hooks/useToast";
 import { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
 import {
-  EditReservationDialog,
-  NewReservationDialog,
-  PaymentDialog,
-  ViewReservationDialog,
+	EditReservationDialog,
+	NewReservationDialog,
+	PaymentDialog,
+	ViewReservationDialog,
 } from "../modals";
 import { CompactReservationDialog } from "../reservation/CompactReservationDialog";
 import { ReservationsFilters } from "../reservation/ReservationsFilters";
 import { ReservationsHeader } from "../reservation/ReservationsHeader";
-import { Reservation, ReservationsList } from "../reservation/ReservationsList";
+import { ReservationsList } from "../reservation/ReservationsList";
+import { PaymentsTable } from "../reservation/PaymentsTable";
 
 type CurrencyType = Database["public"]["Enums"]["currency_type"];
-// TODO: Create mobile versions of these components
-// import { PaymentsTable } from "../reservation/PaymentsTable";
-// import { OTPVerification } from "../auth/OTPVerification";
-// import { AddIncomeDialog } from "../reservation/AddIncomeDialog";
 
 export default function ReservationsScreen() {
   const { refetch } = useReservationsData();
@@ -121,7 +118,7 @@ export default function ReservationsScreen() {
     setIsPaymentDialogOpen(true);
   };
 
-  // TODO: Implement OTP verified
+ // TODO: Implement OTP verification
 
   const handleAddIncome = (reservation: any) => {
     setSelectedReservation(reservation);
@@ -152,31 +149,19 @@ export default function ReservationsScreen() {
     setPaymentData(null);
   };
 
-  const handleDataUpdate = () => {
-    refetch();
-    refetchFinancials();
-  };
+	const handleDataUpdate = () => {
+		refetch();
+		refetchFinancials();
+	};
 
-  // Transform reservation data to match component interface
-  const transformedReservations: Reservation[] = reservations.map((res) => ({
-    id: res.id,
-    guestName: res.guest_name,
-    roomNumber: res.rooms?.room_number || "N/A",
-    status: res.status,
-    checkIn: res.check_in_date,
-    checkOut: res.check_out_date,
-  }));
-
-  // Filter logic
-  const filteredReservations = transformedReservations.filter((r) => {
-    const matchesSearch = r.guestName
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  // Remove this - using the new handleDataUpdate function below
+	// Filter logic
+	const filteredReservations = reservations.filter((r) => {
+		const matchesSearch = r.guest_name
+			.toLowerCase()
+			.includes(searchQuery.toLowerCase());
+		const matchesStatus = statusFilter === "all" || r.status === statusFilter;
+		return matchesSearch && matchesStatus;
+	});  // Remove this - using the new handleDataUpdate function below
 
   // New reservation creation logic
   const handleCreateReservation = async (reservationData: any) => {
@@ -230,27 +215,29 @@ export default function ReservationsScreen() {
         onNewReservation={() => setIsNewReservationDialogOpen(true)}
         onNewCompactReservation={() => setIsCompactReservationDialogOpen(true)}
       />
-      <ReservationsList
-        reservations={filteredReservations}
-        onView={handleViewReservation}
-        onEdit={handleEditReservation}
-        onPayment={(reservation) => {
-          // Find the full reservation data for payment calculation
-          const fullReservation = reservations.find(
-            (r) => r.id === reservation.id
-          );
-          if (fullReservation) {
-            const balance =
-              (fullReservation.total_amount || 0) -
-              (fullReservation.paid_amount || 0);
+
+      {/* Tab Content */}
+      {activeTab === "reservations" ? (
+        <ReservationsList
+          reservations={filteredReservations}
+          selectedCurrency={selectedCurrency}
+          onView={handleViewReservation}
+          onEdit={handleEditReservation}
+          onPayment={(reservation) => {
+            const balance = (reservation.balance_amount || 0);
             handlePayment(
               reservation.id,
               balance,
-              fullReservation.currency || "USD"
+              reservation.currency || "USD"
             );
-          }
-        }}
-      />
+          }}
+          onAddIncome={handleAddIncome}
+          onPrint={handlePrint}
+        />
+      ) : (
+        <PaymentsTable />
+      )}
+
       <ViewReservationDialog
         visible={isViewDialogOpen}
         reservation={

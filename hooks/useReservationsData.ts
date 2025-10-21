@@ -5,43 +5,49 @@ import { useAuth } from "./useAuth";
 import { useTenant } from "./useTenant";
 
 export interface Reservation {
-  id: string;
-  reservation_number: string;
-  guest_name: string;
-  guest_email?: string;
-  guest_phone?: string;
-  guest_nationality?: string;
-  room_id: string;
-  location_id: string;
-  tenant_id: string;
-  check_in_date: string;
-  check_out_date: string;
-  adults: number;
-  children: number;
-  nights: number;
-  room_rate: number;
-  currency: "LKR" | "USD";
-  total_amount: number;
-  paid_amount: number;
-  status: "tentative" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
-  booking_source: string;
-  special_requests?: string;
-  created_at: string;
-  updated_at: string;
-  // Relations
-  rooms?: {
-    room_number: string;
-    room_type: string;
-    bed_type?: string;
-    description?: string;
-    amenities?: string[];
-  };
-  locations?: {
-    name: string;
-    address?: string;
-    phone?: string;
-    email?: string;
-  };
+	id: string;
+	reservation_number: string;
+	guest_name: string;
+	guest_email?: string;
+	guest_phone?: string;
+	guest_nationality?: string;
+	room_id: string;
+	location_id: string;
+	tenant_id: string;
+	check_in_date: string;
+	check_out_date: string;
+	adults: number;
+	children: number;
+	nights: number;
+	room_rate: number;
+	currency: "LKR" | "USD";
+	total_amount: number;
+	paid_amount: number | null;
+	balance_amount: number | null;
+	status:
+		| "tentative"
+		| "confirmed"
+		| "checked_in"
+		| "checked_out"
+		| "cancelled";
+	booking_source: string;
+	special_requests?: string;
+	created_at: string;
+	updated_at: string;
+	// Relations
+	rooms?: {
+		room_number: string;
+		room_type: string;
+		bed_type?: string;
+		description?: string;
+		amenities?: string[];
+	};
+	locations?: {
+		name: string;
+		address?: string;
+		phone?: string;
+		email?: string;
+	};
 }
 
 export function useReservationsData() {
