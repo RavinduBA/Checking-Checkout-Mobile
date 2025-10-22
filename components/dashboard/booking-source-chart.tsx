@@ -1,15 +1,9 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Cell, Pie, PieChart } from "recharts";
-import { BookingSourceChartSkeleton } from "@/components/skeleton/booking-source-chart-skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from "@/components/ui/chart";
-import { useAuth } from "@/context/auth-context";
-import { supabase } from "@/integrations/supabase/client";
+import { ActivityIndicator, Dimensions, Text, View } from "react-native";
+import { VictoryPie, VictoryLegend } from "victory-native";
+import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface BookingSourceData {
 	source: string;
@@ -70,11 +64,10 @@ export function BookingSourceChart({
 	selectedMonth,
 }: BookingSourceChartProps) {
 	const { tenant } = useAuth();
-	const { t } = useTranslation();
 	const [sourceData, setSourceData] = useState<BookingSourceData[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [totalBookings, setTotalBookings] = useState(0);
-	// Shortcut action handlers
+	const screenWidth = Dimensions.get("window").width;
 
 	useEffect(() => {
 		const fetchBookingSourceData = async () => {
@@ -152,99 +145,77 @@ export function BookingSourceChart({
 	}, [selectedLocation, selectedMonth, tenant?.id]);
 
 	if (loading) {
-		return <BookingSourceChartSkeleton />;
+		return (
+			<View className="bg-white rounded-xl p-6 border border-gray-200">
+				<Text className="text-lg font-semibold text-gray-900 mb-4">
+					Booking Sources
+				</Text>
+				<ActivityIndicator size="large" color="#3b82f6" />
+			</View>
+		);
 	}
 
 	if (sourceData.length === 0) {
 		return (
-			<Card className="bg-card border">
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="text-sm font-medium">
-						{t("dashboard.bookingSources.title")}
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="h-[400px] flex items-center justify-center text-muted-foreground">
-						{t("dashboard.bookingSources.noData")}
-					</div>
-				</CardContent>
-			</Card>
+			<View className="bg-white rounded-xl p-6 border border-gray-200">
+				<Text className="text-lg font-semibold text-gray-900 mb-4">
+					Booking Sources
+				</Text>
+				<Text className="text-gray-500 text-center py-8">No booking data available</Text>
+			</View>
 		);
 	}
 
-	return (
-		<Card className="bg-card border w-full sm:w-fit h-fit">
-			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle className="text-sm font-medium">
-					Booking Sources & Quick Actions
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="flex justify-center flex-col flex-1">
-					<ChartContainer
-						config={{}}
-						className="mx-auto aspect-square h-[220px]"
-					>
-						<PieChart>
-							<Pie
-								data={sourceData}
-								cx="50%"
-								cy="50%"
-								innerRadius={50}
-								outerRadius={90}
-								paddingAngle={2}
-								dataKey="count"
-							>
-								{sourceData.map((entry, index) => (
-									<Cell
-										key={`cell-${index}`}
-										fill={
-											SOURCE_COLORS[entry.source] ||
-											FALLBACK_COLORS[index % FALLBACK_COLORS.length]
-										}
-									/>
-								))}
-							</Pie>
-							<ChartTooltip
-								content={
-									<ChartTooltipContent
-										labelFormatter={(value) => value}
-										formatter={(value, name, entry) => [
-											`${entry.payload.count} bookings (${entry.payload.percentage.toFixed(1)}%)`,
-											entry.payload.source,
-										]}
-									/>
-								}
-							/>
-						</PieChart>
-					</ChartContainer>
+	// Prepare data for Victory chart
+	const chartData = sourceData.map((entry, index) => ({
+		x: SOURCE_DISPLAY_NAMES[entry.source] || entry.source,
+		y: entry.count,
+		label: `${entry.percentage.toFixed(1)}%`,
+		fill: SOURCE_COLORS[entry.source] || FALLBACK_COLORS[index % FALLBACK_COLORS.length],
+	}));
 
-					{/* Legend */}
-					<div className="mt-2 flex-1">
-						<div className="grid grid-cols-1 gap-1 text-xs">
-							{sourceData.map((entry, index) => (
-								<div key={entry.source} className="flex items-center gap-2">
-									<div
-										className="w-2 h-2 rounded-full flex-shrink-0"
-										style={{
-											backgroundColor:
-												SOURCE_COLORS[entry.source] ||
-												FALLBACK_COLORS[index % FALLBACK_COLORS.length],
-										}}
-									/>
-									<span className="truncate text-xs">
-										{entry.source}: {entry.count} ({entry.percentage.toFixed(1)}
-										%)
-									</span>
-								</div>
-							))}
-						</div>
-						<span className="text-xs text-muted-foreground">
-							{totalBookings} total bookings
-						</span>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
+	return (
+		<View className="bg-white rounded-xl p-4 border border-gray-200">
+			<View className="flex-row items-center gap-2 mb-4">
+				<Ionicons name="pie-chart-outline" size={20} color="#3b82f6" />
+				<Text className="text-lg font-semibold text-gray-900">
+					Booking Sources
+				</Text>
+			</View>
+			<View className="items-center">
+				<VictoryPie
+					data={chartData}
+					width={screenWidth - 64}
+					height={220}
+					innerRadius={50}
+					colorScale={chartData.map(d => d.fill)}
+					style={{
+						labels: { fontSize: 12, fill: "white", fontWeight: "bold" }
+					}}
+				/>
+			</View>
+
+			{/* Legend */}
+			<View className="mt-4 gap-2">
+				{sourceData.map((entry, index) => (
+					<View key={entry.source} className="flex-row items-center gap-2">
+						<View
+							style={{
+								width: 12,
+								height: 12,
+								borderRadius: 6,
+								backgroundColor: SOURCE_COLORS[entry.source] || FALLBACK_COLORS[index % FALLBACK_COLORS.length],
+							}}
+						/>
+						<Text className="text-sm text-gray-700 flex-1">
+							{SOURCE_DISPLAY_NAMES[entry.source] || entry.source}: {entry.count} ({entry.percentage.toFixed(1)}%)
+						</Text>
+					</View>
+				))}
+				<Text className="text-xs text-gray-500 mt-2">
+					{totalBookings} total bookings
+				</Text>
+			</View>
+		</View>
 	);
 }

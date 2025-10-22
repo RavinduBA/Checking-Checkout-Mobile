@@ -1,35 +1,18 @@
-import { ArrowDownCircle, ArrowUpCircle, TrendingUp } from "lucide-react";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-	Bar,
-	BarChart,
-	CartesianGrid,
-	ReferenceLine,
-	XAxis,
-	YAxis,
-} from "recharts";
-import { IncomeExpenseChartSkeleton } from "@/components/skeleton/income-expense-chart-skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from "@/components/ui/chart";
-import { useAuth } from "@/context/auth-context";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { ActivityIndicator, ScrollView, Text, View, Dimensions } from "react-native";
+import { VictoryBar, VictoryChart, VictoryTheme, VictoryAxis, VictoryLine } from "victory-native";
+import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
+import type { Database } from "../../integrations/supabase/types";
 import {
 	convertCurrency,
 	formatAmountWithSymbol,
 	getCurrencySymbol,
 	getDisplayCurrency,
-} from "@/utils/currency";
-import { BookingSourceChart } from "./booking-source-chart";
+} from "../../utils/currency";
 
-type Location = Tables<"locations">;
+type Location = Database["public"]["Tables"]["locations"]["Row"];
 
 interface ChartData {
 	date: string;
@@ -71,9 +54,8 @@ export function IncomeExpenseChart({
 	const [weeklyProfit, setWeeklyProfit] = useState(0);
 	const [profitMargin, setProfitMargin] = useState(0);
 	const { tenant } = useAuth();
-	const { t } = useTranslation();
-	const displayCurrency = getDisplayCurrency(); // Get the display currency
-	const isMobile = useIsMobile();
+	const displayCurrency = getDisplayCurrency();
+	const screenWidth = Dimensions.get("window").width;
 
 	useEffect(() => {
 		const fetchFinancialData = async () => {
@@ -221,147 +203,110 @@ export function IncomeExpenseChart({
 	}, [selectedLocation, selectedMonth, tenant?.id, displayCurrency]);
 
 	if (loading) {
-		return <IncomeExpenseChartSkeleton />;
+		return (
+			<View className="bg-white rounded-xl p-6 border border-gray-200">
+				<Text className="text-lg font-semibold text-gray-900 mb-4">
+					Income vs Expenses
+				</Text>
+				<ActivityIndicator size="large" color="#3b82f6" />
+			</View>
+		);
 	}
 
 	const locationName = selectedLocation
-		? locations.find((l) => l.id === selectedLocation)?.name ||
-			t("dashboard.chart.allLocations")
-		: t("dashboard.chart.allLocations");
+		? locations.find((l) => l.id === selectedLocation)?.name || "All Locations"
+		: "All Locations";
 
 	return (
-		<div className="space-y-4 w-full flex-1">
+		<View className="gap-4">
 			{/* Summary Cards */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				<Card className="bg-card border">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm md:text-base lg:text-lg font-medium text-muted-foreground">
-							{selectedMonth
-								? t("dashboard.summaryCards.monthlyIncome")
-								: t("dashboard.summaryCards.todayIncome")}
-						</CardTitle>
-						<ArrowUpCircle className="size-4 text-success" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-xl lg:text-2xl font-bold text-success">
-							{formatAmountWithSymbol(todayIncome, displayCurrency)}
-						</div>
-						<p className="text-xs text-muted-foreground">{locationName}</p>
-					</CardContent>
-				</Card>
+			<ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-3">
+				<View className="bg-white rounded-xl p-4 border border-gray-200 min-w-[160px]">
+					<View className="flex-row items-center justify-between mb-2">
+						<Text className="text-sm text-gray-600">
+							{selectedMonth ? "Monthly Income" : "Today Income"}
+						</Text>
+						<Ionicons name="arrow-up-circle" size={20} color="#10b981" />
+					</View>
+					<Text className="text-2xl font-bold text-green-600">
+						{formatAmountWithSymbol(todayIncome, displayCurrency)}
+					</Text>
+					<Text className="text-xs text-gray-500 mt-1">{locationName}</Text>
+				</View>
 
-				<Card className="bg-card border">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm md:text-base lg:text-lg font-medium text-muted-foreground">
-							{selectedMonth
-								? t("dashboard.summaryCards.monthlyExpenses")
-								: t("dashboard.summaryCards.todayExpenses")}
-						</CardTitle>
-						<ArrowDownCircle className="size-4 text-destructive" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-xl lg:text-2xl font-bold text-destructive">
-							{formatAmountWithSymbol(todayExpenses, displayCurrency)}
-						</div>
-						<p className="text-xs text-muted-foreground">{locationName}</p>
-					</CardContent>
-				</Card>
+				<View className="bg-white rounded-xl p-4 border border-gray-200 min-w-[160px]">
+					<View className="flex-row items-center justify-between mb-2">
+						<Text className="text-sm text-gray-600">
+							{selectedMonth ? "Monthly Expenses" : "Today Expenses"}
+						</Text>
+						<Ionicons name="arrow-down-circle" size={20} color="#ef4444" />
+					</View>
+					<Text className="text-2xl font-bold text-red-600">
+						{formatAmountWithSymbol(todayExpenses, displayCurrency)}
+					</Text>
+					<Text className="text-xs text-gray-500 mt-1">{locationName}</Text>
+				</View>
 
-				<Card className="bg-card border">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm md:text-base lg:text-lg font-medium text-muted-foreground">
-							{t("dashboard.summaryCards.weeklyProfit")}
-						</CardTitle>
-						<TrendingUp className="size-4 text-primary" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-xl lg:text-2xl font-bold text-primary">
-							{formatAmountWithSymbol(weeklyProfit, displayCurrency)}
-						</div>
-						<p className="text-xs text-muted-foreground">
-							{profitMargin.toFixed(1)}% {t("dashboard.summaryCards.margin")}
-						</p>
-					</CardContent>
-				</Card>
-			</div>
+				<View className="bg-white rounded-xl p-4 border border-gray-200 min-w-[160px]">
+					<View className="flex-row items-center justify-between mb-2">
+						<Text className="text-sm text-gray-600">Weekly Profit</Text>
+						<Ionicons name="trending-up" size={20} color="#3b82f6" />
+					</View>
+					<Text className="text-2xl font-bold text-blue-600">
+						{formatAmountWithSymbol(weeklyProfit, displayCurrency)}
+					</Text>
+					<Text className="text-xs text-gray-500 mt-1">
+						{profitMargin.toFixed(1)}% margin
+					</Text>
+				</View>
+			</ScrollView>
 
 			{/* Chart */}
-			<Card className="bg-card border">
-				<CardHeader>
-					<CardTitle className="text-base md:text-lg lg:text-xl xl:text-2xl font-semibold">
-						{t("dashboard.chart.incomeVsExpenses")}
-					</CardTitle>
-					<p className="text-sm text-muted-foreground">
-						{selectedMonth
-							? t("dashboard.chart.monthlyOverview")
-							: t("dashboard.chart.last30DaysOverview")}
-					</p>
-				</CardHeader>
-				<CardContent>
-					<ChartContainer config={chartConfig} className="h-[300px] w-full">
-						<BarChart
-							data={chartData}
-							margin={{
-								left: 0,
-								right: 0,
-								top: 0,
-								bottom: 0,
+			<View className="bg-white rounded-xl p-4 border border-gray-200">
+				<Text className="text-lg font-semibold text-gray-900 mb-1">
+					Income vs Expenses
+				</Text>
+				<Text className="text-sm text-gray-600 mb-4">
+					{selectedMonth ? "Monthly Overview" : "Last 30 Days Overview"}
+				</Text>
+				<View style={{ height: 250 }}>
+					<VictoryChart
+						theme={VictoryTheme.material}
+						width={screenWidth - 64}
+						height={250}
+						domainPadding={{ x: 10 }}
+					>
+						<VictoryAxis
+							tickFormat={(date: string) => {
+								const d = new Date(date);
+								return `${d.getMonth() + 1}/${d.getDate()}`;
 							}}
-							barCategoryGap={0}
-						>
-							<CartesianGrid vertical={false} />
-							<XAxis
-								dataKey="date"
-								tickLine={false}
-								axisLine={false}
-								tickMargin={0}
-								minTickGap={0}
-								interval={isMobile ? 5 : 1}
-								tickFormatter={(value) => {
-									const date = new Date(value);
-									return date.toLocaleDateString("en-US", {
-										month: "short",
-										day: "numeric",
-									});
-								}}
-							/>
-							<ReferenceLine
-								y={0}
-								stroke="hsl(var(--border))"
-								strokeDasharray="3 3"
-							/>
-							<ChartTooltip
-								content={
-									<ChartTooltipContent
-										className="w-[200px]"
-										labelFormatter={(value) => {
-											return new Date(value).toLocaleDateString("en-US", {
-												month: "short",
-												day: "numeric",
-												year: "numeric",
-											});
-										}}
-										formatter={(value, name) => [
-											`${getCurrencySymbol(displayCurrency)} ${Math.abs(Number(value)).toLocaleString()}`,
-											name === "expenses"
-												? "Expenses"
-												: name === "income"
-													? "Income"
-													: "Net",
-										]}
-									/>
-								}
-							/>
-							<Bar dataKey="income" fill="var(--primary)" name="Income" />
-							<Bar
-								dataKey="expenses"
-								fill="var(--destructive)"
-								name="Expenses"
-							/>
-						</BarChart>
-					</ChartContainer>
-				</CardContent>
-			</Card>
-		</div>
+							style={{
+								tickLabels: { fontSize: 8, angle: -45, textAnchor: "end" }
+							}}
+						/>
+						<VictoryAxis
+							dependentAxis
+							tickFormat={(value: number) => `${getCurrencySymbol(displayCurrency)}${Math.abs(value)}`}
+							style={{
+								tickLabels: { fontSize: 10 }
+							}}
+						/>
+						<VictoryBar
+							data={chartData.map(d => ({ x: d.date, y: d.income }))}
+							style={{ data: { fill: "#3b82f6" } }}
+						/>
+						<VictoryBar
+							data={chartData.map(d => ({ x: d.date, y: d.expenses }))}
+							style={{ data: { fill: "#ef4444" } }}
+						/>
+						<VictoryLine
+							data={chartData.map(d => ({ x: d.date, y: d.net }))}
+							style={{ data: { stroke: "#10b981", strokeWidth: 2 } }}
+						/>
+					</VictoryChart>
+				</View>
+			</View>
+		</View>
 	);
 }

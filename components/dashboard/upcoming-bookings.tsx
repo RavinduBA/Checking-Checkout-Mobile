@@ -1,35 +1,31 @@
-import { Calendar, Eye } from "lucide-react";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import { UpcomingBookingsSkeleton } from "@/components/skeleton/upcoming-bookings-skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/context/auth-context";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
+import type { Database } from "../../integrations/supabase/types";
 
-type Reservation = Tables<"reservations"> & {
-	locations: Tables<"locations">;
-	rooms: Tables<"rooms">;
+type Reservation = Database["public"]["Tables"]["reservations"]["Row"] & {
+	locations: Database["public"]["Tables"]["locations"]["Row"];
+	rooms: Database["public"]["Tables"]["rooms"]["Row"];
 };
 
 interface UpcomingBookingsProps {
 	selectedLocation: string;
 	hasCalendarPermission: boolean;
+	onViewAllPress?: () => void;
 }
 
 export function UpcomingBookings({
 	selectedLocation,
 	hasCalendarPermission,
+	onViewAllPress,
 }: UpcomingBookingsProps) {
 	const [loading, setLoading] = useState(true);
 	const [upcomingReservations, setUpcomingReservations] = useState<
 		Reservation[]
 	>([]);
 	const { tenant } = useAuth();
-	const { t } = useTranslation();
 
 	useEffect(() => {
 		const fetchReservationsData = async () => {
@@ -77,88 +73,108 @@ export function UpcomingBookings({
 
 	if (loading) {
 		return (
-			<UpcomingBookingsSkeleton hasCalendarPermission={hasCalendarPermission} />
+			<View className="bg-white rounded-xl p-6 border border-gray-200">
+				<View className="flex-row items-center justify-between mb-4">
+					<View className="flex-row items-center gap-2">
+						<Ionicons name="calendar-outline" size={20} color="#3b82f6" />
+						<Text className="text-lg font-semibold text-gray-900">
+							Upcoming Bookings
+						</Text>
+					</View>
+				</View>
+				<ActivityIndicator size="large" color="#3b82f6" />
+			</View>
 		);
 	}
+
+	const getStatusColor = (status: string) => {
+		switch (status) {
+			case "confirmed":
+				return "bg-green-100 text-green-900";
+			case "tentative":
+				return "bg-yellow-100 text-yellow-900";
+			case "checked_in":
+				return "bg-blue-100 text-blue-900";
+			default:
+				return "bg-gray-100 text-gray-900";
+		}
+	};
+
 	return (
-		<Card className="bg-card border">
-			<CardHeader className="flex flex-row items-center justify-between">
-				<CardTitle className="flex items-center gap-2">
-					<Calendar className="size-5 text-primary" />
-					{t("dashboard.upcomingBookings.title")}
-				</CardTitle>
-				{hasCalendarPermission && (
-					<Button asChild variant="outline" size="sm">
-						<Link to="/calendar">
-							<Eye className="size-4" />
-							{t("dashboard.upcomingBookings.viewAll")}
-						</Link>
-					</Button>
+		<View className="bg-white rounded-xl p-6 border border-gray-200">
+			<View className="flex-row items-center justify-between mb-4">
+				<View className="flex-row items-center gap-2">
+					<Ionicons name="calendar-outline" size={20} color="#3b82f6" />
+					<Text className="text-lg font-semibold text-gray-900">
+						Upcoming Bookings
+					</Text>
+				</View>
+				{hasCalendarPermission && onViewAllPress && (
+					<TouchableOpacity
+						onPress={onViewAllPress}
+						className="flex-row items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-lg"
+					>
+						<Ionicons name="eye-outline" size={16} color="#3b82f6" />
+						<Text className="text-sm font-medium text-blue-600">View All</Text>
+					</TouchableOpacity>
 				)}
-			</CardHeader>
-			<CardContent className="space-y-3 lg:space-y-4 p-4 sm:p-6">
+			</View>
+			<ScrollView className="gap-3">
 				{upcomingReservations.length > 0 ? (
 					upcomingReservations.map((reservation) => (
-						<div
+						<View
 							key={reservation.id}
-							className="p-3 lg:p-4 rounded-lg bg-background/50 border border-border/50"
+							className="p-4 rounded-lg bg-gray-50 border border-gray-100"
 						>
-							<div className="flex flex-col space-y-2">
-								<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-									<div className="min-w-0 flex-1">
-										<p className="font-medium text-foreground truncate">
+							<View className="gap-2">
+								<View className="flex-row items-start justify-between gap-2">
+									<View className="flex-1 min-w-0">
+										<Text className="font-semibold text-gray-900" numberOfLines={1}>
 											{reservation.guest_name}
-										</p>
-										<p className="text-sm text-muted-foreground">
+										</Text>
+										<Text className="text-sm text-gray-600 mt-1">
 											{new Date(reservation.check_in_date).toLocaleDateString()}{" "}
-											{t("dashboard.upcomingBookings.to")}{" "}
-											{new Date(
-												reservation.check_out_date,
-											).toLocaleDateString()}
-										</p>
-										<p className="text-xs text-muted-foreground">
+											to{" "}
+											{new Date(reservation.check_out_date).toLocaleDateString()}
+										</Text>
+										<Text className="text-xs text-gray-500 mt-0.5">
 											{reservation.locations?.name} • Room{" "}
 											{reservation.rooms?.room_number}
-										</p>
-									</div>
-									<div className="flex flex-wrap items-center gap-2">
-										<Badge
-											variant={
-												reservation.status === "confirmed"
-													? "default"
-													: "secondary"
-											}
-											className="capitalize text-xs"
-										>
-											{reservation.status}
-										</Badge>
+										</Text>
+									</View>
+									<View className="gap-2">
+										<View className={`px-2 py-1 rounded ${getStatusColor(reservation.status)}`}>
+											<Text className="text-xs font-medium capitalize">
+												{reservation.status}
+											</Text>
+										</View>
 										{reservation.booking_source && (
-											<Badge variant="outline" className="text-xs">
-												{reservation.booking_source.replace("_", ".")}
-											</Badge>
+											<View className="px-2 py-1 bg-purple-100 rounded border border-purple-200">
+												<Text className="text-xs font-medium text-purple-900">
+													{reservation.booking_source.replace("_", ".")}
+												</Text>
+											</View>
 										)}
-									</div>
-								</div>
-								<div className="flex justify-between items-center">
-									<span className="text-xs text-muted-foreground">
+									</View>
+								</View>
+								<View className="flex-row justify-between items-center mt-2">
+									<Text className="text-xs text-gray-500">
 										{reservation.reservation_number}
-									</span>
-									<span className="font-bold text-success">
+									</Text>
+									<Text className="font-bold text-green-600">
 										{reservation.currency}{" "}
 										{reservation.total_amount.toLocaleString()}
-									</span>
-								</div>
-							</div>
-						</div>
+									</Text>
+								</View>
+							</View>
+						</View>
 					))
 				) : (
-					<div className="text-center py-6 lg:py-8">
-						<p className="text-muted-foreground">
-							{t("dashboard.upcomingBookings.noBookings")}
-						</p>
-					</div>
+					<View className="py-8 items-center">
+						<Text className="text-gray-500">No upcoming bookings</Text>
+					</View>
 				)}
-			</CardContent>
-		</Card>
+			</ScrollView>
+		</View>
 	);
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import {
   AccountBalances,
   BookingSourceChart,
@@ -14,10 +15,15 @@ import type { Database } from "../../integrations/supabase/types";
 type Location = Database["public"]["Tables"]["locations"]["Row"];
 
 export default function DashboardScreen() {
+  const navigation = useNavigation<any>();
   const { selectedLocation } = useLocationContext();
   const [selectedMonth, setSelectedMonth] = useState("");
   const [locations, setLocations] = useState<Location[]>([]);
   const { hasAnyPermission } = usePermissions();
+
+  const handleViewAllBookings = () => {
+    navigation.navigate("Calendar");
+  };
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
@@ -47,6 +53,7 @@ export default function DashboardScreen() {
           <UpcomingBookings
             selectedLocation={selectedLocation || ""}
             hasCalendarPermission={hasAnyPermission("access_calendar")}
+            onViewAllPress={handleViewAllBookings}
           />
         </View>
       </View>
