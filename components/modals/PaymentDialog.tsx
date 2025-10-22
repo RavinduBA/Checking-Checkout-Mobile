@@ -322,16 +322,6 @@ export function PaymentDialog({
         reservation.location_id
       );
 
-      console.log('Payment Debug:', {
-        inputAmount: formData.amount,
-        inputCurrency: formData.currency,
-        reservationCurrency: reservation.currency,
-        convertedAmount,
-        remainingBalance,
-        totalAmount: reservation.total_amount,
-        paidAmount: reservation.paid_amount
-      });
-
       // Create payment record (database trigger will automatically update reservation)
       const { error: paymentError } = await supabase.from("payments").insert({
         reservation_id: reservation.id,
