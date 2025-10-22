@@ -13,6 +13,7 @@ import {
   PaymentDialog,
   ViewReservationDialog,
 } from "../modals";
+import { AddIncomeDialog } from "../modals/AddIncomeDialog";
 import { CompactReservationDialog } from "../reservation/CompactReservationDialog";
 import { PaymentsTable } from "../reservation/PaymentsTable";
 import { ReservationsDesktopTable } from "../reservation/ReservationsDesktopTable";
@@ -271,6 +272,19 @@ export default function ReservationsScreen() {
             setPaymentData(null);
           }}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+      {/* Add Income Dialog */}
+      {selectedReservation && (
+        <AddIncomeDialog
+          visible={isIncomeDialogOpen}
+          selectedReservation={selectedReservation}
+          accounts={accounts}
+          onClose={() => {
+            setIsIncomeDialogOpen(false);
+            setSelectedReservation(null);
+          }}
+          onSuccess={handleIncomeSuccess}
         />
       )}
       {/* Compact Reservation Dialog */}
