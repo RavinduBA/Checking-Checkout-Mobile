@@ -254,7 +254,7 @@ export default function ReservationsScreen() {
           setIsEditDialogOpen(false);
           setEditingReservation(null);
         }}
-        onSuccess={() => {
+        onUpdate={() => {
           handleDataUpdate();
           setIsEditDialogOpen(false);
           setEditingReservation(null);

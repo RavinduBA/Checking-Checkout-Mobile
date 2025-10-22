@@ -130,6 +130,8 @@ export function ReservationActions({
 
         <OTPVerification
           onVerified={onEdit}
+          phoneNumber={reservation.guest_phone || ""}
+          locationId={reservation.location_id}
           triggerComponent={
             <TouchableOpacity className="border border-gray-300 rounded-md py-2 px-3 bg-white">
               <Ionicons name="create-outline" size={16} color="#374151" />
@@ -182,6 +184,8 @@ export function ReservationActions({
 
       <OTPVerification
         onVerified={onEdit}
+        phoneNumber={reservation.guest_phone || ""}
+        locationId={reservation.location_id}
         triggerComponent={
           <TouchableOpacity className="border border-gray-300 rounded-md py-2 px-3 bg-white">
             <Ionicons name="create-outline" size={16} color="#374151" />

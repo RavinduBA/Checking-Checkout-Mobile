@@ -99,11 +99,17 @@ export const OTPVerification = ({
     setOtpSent(false);
   };
 
+  // Clone the trigger component and add onPress handler
+  const clonedTrigger = React.cloneElement(
+    triggerComponent as React.ReactElement<any>,
+    {
+      onPress: () => setIsOpen(true),
+    }
+  );
+
   return (
     <>
-      <TouchableOpacity onPress={() => setIsOpen(true)}>
-        {triggerComponent}
-      </TouchableOpacity>
+      {clonedTrigger}
 
       <Modal
         visible={isOpen}
