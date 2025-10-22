@@ -467,7 +467,9 @@ export function ViewReservationDialog({
                       Check-out
                     </Text>
                     <Text className="text-sm font-semibold text-gray-900">
-                      {new Date(reservation.check_out_date).toLocaleDateString()}
+                      {new Date(
+                        reservation.check_out_date
+                      ).toLocaleDateString()}
                     </Text>
                   </View>
                 </View>
@@ -668,7 +670,9 @@ export function ViewReservationDialog({
                   </Text>
                   <Text
                     className={`text-base font-bold ${
-                      getTotalBalance() > 0 ? "text-red-600" : "text-emerald-600"
+                      getTotalBalance() > 0
+                        ? "text-red-600"
+                        : "text-emerald-600"
                     }`}
                   >
                     {getSymbol(reservation.currency)}{" "}
