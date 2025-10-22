@@ -13,7 +13,7 @@ import {
   PaymentDialog,
   ViewReservationDialog,
 } from "../modals";
-import { AddIncomeDialog } from "../modals/AddIncomeDialog";
+import { AddIncomeDialog } from "../modals/income/AddIncomeDialog";
 import { CompactReservationDialog } from "../reservation/CompactReservationDialog";
 import { PaymentsTable } from "../reservation/PaymentsTable";
 import { ReservationsDesktopTable } from "../reservation/ReservationsDesktopTable";

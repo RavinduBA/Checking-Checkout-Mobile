@@ -82,3 +82,16 @@ Issues
 
 
 
+Bugs
+
+Web-
+-  reservation no generating wrong fixed in web but not in mobile app
+-  reservation dosent allow to edit and save it
+-  in reservations add income window even the usd amount shows as lkr amount 
+
+Both- 
+- Otp is not verifying it accepts any otp edge fucntions just sending a sms to 
+- when a payemnt is done for a reservation it doesnt show in payments tab 
+
+Mobile- 
+- when editing reservation otp  is sending to the undefined no
