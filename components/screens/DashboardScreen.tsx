@@ -1,15 +1,55 @@
-import React from "react";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { ScrollView, Text, View } from "react-native";
+import {
+  AccountBalances,
+  BookingSourceChart,
+  DashboardHeader,
+  IncomeExpenseChart,
+  UpcomingBookings,
+} from "../dashboard";
+import { useLocationContext } from "../../contexts/LocationContext";
+import { usePermissions } from "../../hooks/usePermissions";
+import type { Database } from "../../integrations/supabase/types";
+
+type Location = Database["public"]["Tables"]["locations"]["Row"];
 
 export default function DashboardScreen() {
+  const { selectedLocation } = useLocationContext();
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [locations, setLocations] = useState<Location[]>([]);
+  const { hasAnyPermission } = usePermissions();
+
   return (
-    <View className="flex-1 items-center justify-center bg-gray-50">
-      <Text className="text-xl font-semibold text-gray-800">
-        Dashboard Screen
-      </Text>
-      <Text className="text-gray-600 mt-2">
-        Welcome to the hotel management dashboard
-      </Text>
-    </View>
+    <ScrollView className="flex-1 bg-gray-50">
+      <View className="p-4 pb-20 gap-4">
+        {/* Header */}
+        <DashboardHeader />
+
+        {/* Income & Expense Chart */}
+        <IncomeExpenseChart
+          selectedLocation={selectedLocation || ""}
+          selectedMonth={selectedMonth}
+          locations={locations}
+        />
+
+        {/* Booking Source Chart */}
+        <BookingSourceChart
+          selectedLocation={selectedLocation || ""}
+          selectedMonth={selectedMonth}
+        />
+
+        {/* Account Balances and Upcoming Bookings */}
+        <View className="gap-4">
+          {/* Account Balances */}
+          <AccountBalances selectedLocation={selectedLocation || ""} />
+
+          {/* Upcoming Bookings */}
+          <UpcomingBookings
+            selectedLocation={selectedLocation || ""}
+            hasCalendarPermission={hasAnyPermission("access_calendar")}
+          />
+        </View>
+      </View>
+    </ScrollView>
   );
 }

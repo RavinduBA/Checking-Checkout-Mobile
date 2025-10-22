@@ -14,29 +14,29 @@ export function CalendarLegend({ className }: CalendarLegendProps) {
           <Text className="text-[8px] sm:text-[9px] text-gray-500 font-semibold mb-1">
             Direct Bookings:
           </Text>
-          <View className="flex-row flex-wrap gap-2">
+          <View className="flex-row flex-wrap gap-1">
             <View className="flex-row items-center gap-1">
-              <View className="w-2.5 h-2.5 bg-emerald-500 rounded-sm" />
+              <View className="w-2 h-2.5 bg-emerald-500 rounded-sm" />
               <Text className="text-[9px] sm:text-[10px]">Confirmed</Text>
             </View>
             <View className="flex-row items-center gap-1">
-              <View className="w-2.5 h-2.5 bg-amber-500 rounded-sm" />
+              <View className="w-2 h-2.5 bg-amber-500 rounded-sm" />
               <Text className="text-[9px] sm:text-[10px]">Tentative</Text>
             </View>
             <View className="flex-row items-center gap-1">
-              <View className="w-2.5 h-2.5 bg-sky-500 rounded-sm" />
+              <View className="w-2 h-2.5 bg-sky-500 rounded-sm" />
               <Text className="text-[9px] sm:text-[10px]">Pending</Text>
             </View>
             <View className="flex-row items-center gap-1">
-              <View className="w-2.5 h-2.5 bg-violet-500 rounded-sm" />
+              <View className="w-2 h-2.5 bg-violet-500 rounded-sm" />
               <Text className="text-[9px] sm:text-[10px]">Checked In</Text>
             </View>
             <View className="flex-row items-center gap-1">
-              <View className="w-2.5 h-2.5 bg-slate-400 rounded-sm" />
+              <View className="w-2 h-2.5 bg-slate-400 rounded-sm" />
               <Text className="text-[9px] sm:text-[10px]">Checked Out</Text>
             </View>
             <View className="flex-row items-center gap-1">
-              <View className="w-2.5 h-2.5 bg-rose-500 rounded-sm" />
+              <View className="w-2 h-2.5 bg-rose-500 rounded-sm" />
               <Text className="text-[9px] sm:text-[10px]">Cancelled</Text>
             </View>
           </View>

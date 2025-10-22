@@ -359,7 +359,7 @@ export function TimelineView({
       <CalendarLegend className="px-4 py-3 bg-white border-b border-gray-200" />
 
       {/* Calendar Grid - Days as Rows, Rooms as Columns */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
+      <ScrollView className="flex-1 pl-4 pr-4 " showsVerticalScrollIndicator={true} >
         <View className="bg-white">
           {filteredRooms.length === 0 ? (
             <View className="p-8 items-center">
