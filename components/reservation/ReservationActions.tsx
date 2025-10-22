@@ -159,26 +159,36 @@ export function ReservationActions({
         </TouchableOpacity>
       )}
 
-      {showPaymentAndIncome && !isReservationComplete && (
-        <>
-          {onAddIncome && (
-            <TouchableOpacity
-              onPress={onAddIncome}
-              className="border border-gray-300 rounded-md py-2 px-3 bg-white"
-            >
-              <Ionicons name="cash-outline" size={16} color="#3B82F6" />
-            </TouchableOpacity>
-          )}
-          {canShowPayment && onPayment && (
-            <TouchableOpacity
-              onPress={onPayment}
-              className="border border-gray-300 rounded-md py-2 px-3 bg-white"
-            >
-              <Ionicons name="card-outline" size={16} color="#10B981" />
-            </TouchableOpacity>
-          )}
-        </>
-      )}
+      {showPaymentAndIncome &&
+        (isReservationComplete ? (
+          <View className="border border-gray-300 rounded-md py-2 px-3 bg-gray-100 flex-row items-center">
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={16}
+              color="#10B981"
+            />
+            <Text className="text-xs text-green-600 ml-1">(Complete)</Text>
+          </View>
+        ) : (
+          <>
+            {onAddIncome && (
+              <TouchableOpacity
+                onPress={onAddIncome}
+                className="border border-gray-300 rounded-md py-2 px-3 bg-white"
+              >
+                <Ionicons name="cash-outline" size={16} color="#3B82F6" />
+              </TouchableOpacity>
+            )}
+            {canShowPayment && onPayment && (
+              <TouchableOpacity
+                onPress={onPayment}
+                className="border border-gray-300 rounded-md py-2 px-3 bg-white"
+              >
+                <Ionicons name="card-outline" size={16} color="#10B981" />
+              </TouchableOpacity>
+            )}
+          </>
+        ))}
 
       <OTPVerification
         onVerified={onEdit}
