@@ -12,9 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useLocationContext } from "../../hooks";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useAuth } from "../../hooks/useAuth";
-import { useLocationContext } from "../../hooks";
 import { useToast } from "../../hooks/useToast";
 import { CurrencyType } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useToast } from "../../hooks/useToast";
 import { supabase } from "../../lib/supabase";
+import { convertCurrency, getCurrencySymbol } from "../../utils/currency";
 
 interface Reservation {
   id: string;
@@ -18,7 +19,10 @@ interface Reservation {
   guest_name: string;
   guest_email?: string;
   guest_phone?: string;
+  guest_address?: string;
   guest_nationality?: string;
+  guest_passport_number?: string;
+  guest_id_number?: string;
   adults: number;
   children: number;
   check_in_date: string;
@@ -32,7 +36,12 @@ interface Reservation {
   status: string;
   special_requests?: string;
   arrival_time?: string;
+  booking_source?: string;
   created_at: string;
+  tenant_id?: string;
+  location_id: string;
+  guide_commission?: number;
+  agent_commission?: number;
   locations?: {
     id: string;
     name: string;
@@ -46,6 +55,7 @@ interface Reservation {
     room_type: string;
     bed_type?: string;
     description?: string;
+    amenities?: string[];
   };
   guides?: {
     id: string;
@@ -56,6 +66,7 @@ interface Reservation {
   agents?: {
     id: string;
     name: string;
+    agency_name?: string;
     phone?: string;
     email?: string;
   };
@@ -178,18 +189,14 @@ export function ViewReservationDialog({
           let paidExpenses = 0;
 
           for (const income of incomeRecords) {
-            // Simple conversion for mobile app
-            let convertedAmount = Number(income.amount);
-            if (income.currency !== reservation.currency) {
-              if (income.currency === "LKR" && reservation.currency === "USD") {
-                convertedAmount = convertedAmount / 300; // Simple LKR to USD
-              } else if (
-                income.currency === "USD" &&
-                reservation.currency === "LKR"
-              ) {
-                convertedAmount = convertedAmount * 300; // Simple USD to LKR
-              }
-            }
+            // Use proper currency conversion from utils
+            const convertedAmount = await convertCurrency(
+              Number(income.amount),
+              income.currency,
+              reservation.currency,
+              reservation.tenant_id!,
+              reservation.location_id
+            );
 
             totalExpenses += convertedAmount;
 
@@ -214,14 +221,29 @@ export function ViewReservationDialog({
     }
   }, [reservation, incomeRecords]);
 
-  const getCurrencySymbol = (currency: string) => {
-    const symbols: Record<string, string> = {
-      LKR: "Rs.",
-      USD: "$",
-      EUR: "€",
-      GBP: "£",
-    };
-    return symbols[currency] || currency;
+  const getSymbol = (currency: string) => {
+    return getCurrencySymbol(currency);
+  };
+
+  const getPendingExpenses = () => {
+    return convertedAmounts.pendingExpenses;
+  };
+
+  const getTotalExpenses = () => {
+    return convertedAmounts.totalExpenses;
+  };
+
+  const getPaidExpenses = () => {
+    return convertedAmounts.paidExpenses;
+  };
+
+  const getTotalBalance = () => {
+    // Balance = Room balance + Pending expenses
+    // Room balance already accounts for paid room amount and paid additional services
+    // We only need to add pending expenses that haven't been paid yet
+    const roomBalance = reservation?.balance_amount || 0;
+    const pendingExpenses = getPendingExpenses();
+    return roomBalance + pendingExpenses;
   };
 
   const getStatusColor = (status: string) => {
@@ -249,12 +271,6 @@ export function ViewReservationDialog({
       cancelled: "Cancelled",
     };
     return statusMap[status as keyof typeof statusMap] || status;
-  };
-
-  const getTotalBalance = () => {
-    const roomBalance = reservation?.balance_amount || 0;
-    const pendingExpenses = convertedAmounts.pendingExpenses;
-    return roomBalance + pendingExpenses;
   };
 
   if (!visible) return null;
@@ -333,60 +349,98 @@ export function ViewReservationDialog({
               </View>
 
               <View className="space-y-2">
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">
-                    Name:
+                <View className="mb-2">
+                  <Text className="text-xs font-medium text-gray-500 mb-1">
+                    Name
                   </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
+                  <Text className="text-sm font-semibold text-gray-900">
                     {reservation.guest_name}
                   </Text>
                 </View>
 
                 {reservation.guest_email && (
-                  <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">
-                      Email:
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Email
                     </Text>
-                    <Text className="text-sm text-gray-900 flex-1">
+                    <Text className="text-sm text-gray-900">
                       {reservation.guest_email}
                     </Text>
                   </View>
                 )}
 
                 {reservation.guest_phone && (
-                  <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">
-                      Phone:
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Phone
                     </Text>
-                    <Text className="text-sm text-gray-900 flex-1">
+                    <Text className="text-sm text-gray-900">
                       {reservation.guest_phone}
                     </Text>
                   </View>
                 )}
 
-                {reservation.guest_nationality && (
-                  <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">
-                      Nationality:
+                {reservation.guest_address && (
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Address
                     </Text>
-                    <Text className="text-sm text-gray-900 flex-1">
+                    <Text className="text-sm text-gray-900">
+                      {reservation.guest_address}
+                    </Text>
+                  </View>
+                )}
+
+                {reservation.guest_nationality && (
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Nationality
+                    </Text>
+                    <Text className="text-sm text-gray-900">
                       {reservation.guest_nationality}
                     </Text>
                   </View>
                 )}
 
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">
-                    Guests:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {reservation.adults} adult
-                    {reservation.adults > 1 ? "s" : ""}
-                    {reservation.children > 0 &&
-                      `, ${reservation.children} child${
-                        reservation.children > 1 ? "ren" : ""
-                      }`}
-                  </Text>
+                {reservation.guest_passport_number && (
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Passport Number
+                    </Text>
+                    <Text className="text-sm text-gray-900">
+                      {reservation.guest_passport_number}
+                    </Text>
+                  </View>
+                )}
+
+                {reservation.guest_id_number && (
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      ID Number
+                    </Text>
+                    <Text className="text-sm text-gray-900">
+                      {reservation.guest_id_number}
+                    </Text>
+                  </View>
+                )}
+
+                <View className="flex-row gap-6 mt-2">
+                  <View>
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Adults
+                    </Text>
+                    <Text className="text-sm font-semibold text-gray-900">
+                      {reservation.adults}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Children
+                    </Text>
+                    <Text className="text-sm font-semibold text-gray-900">
+                      {reservation.children}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -399,43 +453,67 @@ export function ViewReservationDialog({
               </View>
 
               <View className="space-y-2">
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Check-in:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {new Date(reservation.check_in_date).toLocaleDateString()}
-                  </Text>
+                <View className="flex-row gap-4 mb-2">
+                  <View className="flex-1">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Check-in
+                    </Text>
+                    <Text className="text-sm font-semibold text-gray-900">
+                      {new Date(reservation.check_in_date).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Check-out
+                    </Text>
+                    <Text className="text-sm font-semibold text-gray-900">
+                      {new Date(reservation.check_out_date).toLocaleDateString()}
+                    </Text>
+                  </View>
                 </View>
 
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Check-out:
+                <View className="mb-2">
+                  <Text className="text-xs font-medium text-gray-500 mb-1">
+                    Nights
                   </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {new Date(reservation.check_out_date).toLocaleDateString()}
-                  </Text>
-                </View>
-
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Nights:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
+                  <Text className="text-sm font-semibold text-gray-900">
                     {reservation.nights}
                   </Text>
                 </View>
 
                 {reservation.arrival_time && (
-                  <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-24">
-                      Arrival:
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Arrival Time
                     </Text>
-                    <Text className="text-sm text-gray-900 flex-1">
-                      {reservation.arrival_time}
+                    <View className="flex-row items-center">
+                      <Ionicons name="time" size={14} color="#6B7280" />
+                      <Text className="text-sm text-gray-900 ml-1">
+                        {reservation.arrival_time}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {reservation.special_requests && (
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Special Requests
+                    </Text>
+                    <Text className="text-sm text-gray-900">
+                      {reservation.special_requests}
                     </Text>
                   </View>
                 )}
+
+                <View className="mb-2">
+                  <Text className="text-xs font-medium text-gray-500 mb-1">
+                    Booking Source
+                  </Text>
+                  <Text className="text-sm text-gray-900 capitalize">
+                    {reservation.booking_source || "Direct"}
+                  </Text>
+                </View>
               </View>
             </View>
 
@@ -448,158 +526,159 @@ export function ViewReservationDialog({
                 </Text>
               </View>
 
-              <View className="space-y-2">
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">
-                    Room:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {reservation.rooms?.room_number || "N/A"}
-                  </Text>
-                </View>
-
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">
-                    Type:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {reservation.rooms?.room_type || "N/A"}
-                  </Text>
-                </View>
-
-                {reservation.rooms?.bed_type && (
-                  <View className="flex-row">
-                    <Text className="text-sm font-medium text-gray-700 w-20">
-                      Bed:
+              {reservation.rooms ? (
+                <View className="space-y-2">
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Room Number
                     </Text>
-                    <Text className="text-sm text-gray-900 flex-1">
+                    <Text className="text-sm font-semibold text-gray-900">
+                      {reservation.rooms.room_number}
+                    </Text>
+                  </View>
+
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Room Type
+                    </Text>
+                    <Text className="text-sm text-gray-900">
+                      {reservation.rooms.room_type}
+                    </Text>
+                  </View>
+
+                  <View className="mb-2">
+                    <Text className="text-xs font-medium text-gray-500 mb-1">
+                      Bed Type
+                    </Text>
+                    <Text className="text-sm text-gray-900">
                       {reservation.rooms.bed_type}
+                    </Text>
+                  </View>
+
+                  {reservation.rooms.description && (
+                    <View className="mb-2">
+                      <Text className="text-xs font-medium text-gray-500 mb-1">
+                        Description
+                      </Text>
+                      <Text className="text-sm text-gray-900">
+                        {reservation.rooms.description}
+                      </Text>
+                    </View>
+                  )}
+
+                  {reservation.rooms.amenities &&
+                    reservation.rooms.amenities.length > 0 && (
+                      <View className="mb-2">
+                        <Text className="text-xs font-medium text-gray-500 mb-1">
+                          Amenities
+                        </Text>
+                        <Text className="text-sm text-gray-900">
+                          {reservation.rooms.amenities.join(", ")}
+                        </Text>
+                      </View>
+                    )}
+                </View>
+              ) : (
+                <Text className="text-sm text-gray-500">
+                  Room information not available
+                </Text>
+              )}
+            </View>
+
+            {/* Pricing & Payment */}
+            <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+              <View className="flex-row items-center mb-3">
+                <Ionicons name="cash" size={20} color="#374151" />
+                <Text className="text-lg font-semibold ml-2">
+                  Financial Details
+                </Text>
+              </View>
+
+              <View className="space-y-2">
+                <View className="flex-row justify-between items-center mb-1">
+                  <Text className="text-xs font-medium text-gray-500">
+                    Room Rate (per night)
+                  </Text>
+                  <Text className="text-sm font-semibold text-gray-900">
+                    {getSymbol(reservation.currency)}{" "}
+                    {reservation.room_rate.toLocaleString()}
+                  </Text>
+                </View>
+
+                <View className="flex-row justify-between items-center mb-1">
+                  <Text className="text-xs font-medium text-gray-500">
+                    Nights
+                  </Text>
+                  <Text className="text-sm text-gray-900">
+                    × {reservation.nights}
+                  </Text>
+                </View>
+
+                <View className="border-t border-gray-200 my-2" />
+
+                <View className="flex-row justify-between items-center mb-1">
+                  <Text className="text-xs font-medium text-gray-500">
+                    Total Amount
+                  </Text>
+                  <Text className="text-sm font-bold text-gray-900">
+                    {getSymbol(reservation.currency)}{" "}
+                    {reservation.total_amount.toLocaleString()}
+                  </Text>
+                </View>
+
+                <View className="flex-row justify-between items-center mb-1">
+                  <Text className="text-xs font-medium text-gray-500">
+                    Paid Amount
+                  </Text>
+                  <Text className="text-sm font-semibold text-emerald-600">
+                    {getSymbol(reservation.currency)}{" "}
+                    {(reservation.paid_amount || 0).toLocaleString()}
+                  </Text>
+                </View>
+
+                {getPaidExpenses() > 0 && (
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-xs font-medium text-gray-500">
+                      Paid Additional Services
+                    </Text>
+                    <Text className="text-sm text-emerald-600">
+                      {getSymbol(reservation.currency)}{" "}
+                      {getPaidExpenses().toLocaleString()}
                     </Text>
                   </View>
                 )}
 
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-20">
-                    Rate:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}
-                    {reservation.room_rate}/night
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Payment Information */}
-            <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-              <View className="flex-row items-center mb-3">
-                <Ionicons name="card" size={20} color="#374151" />
-                <Text className="text-lg font-semibold ml-2">
-                  Payment Information
-                </Text>
-              </View>
-
-              <View className="space-y-2">
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Total:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}
-                    {reservation.total_amount}
-                  </Text>
-                </View>
-
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Paid:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}
-                    {reservation.paid_amount || 0}
-                  </Text>
-                </View>
-
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Expenses:
-                  </Text>
-                  <Text className="text-sm text-gray-900 flex-1">
-                    {getCurrencySymbol(reservation.currency)}
-                    {convertedAmounts.totalExpenses}
-                  </Text>
-                </View>
-
-                <View className="flex-row">
-                  <Text className="text-sm font-medium text-gray-700 w-24">
-                    Balance:
-                  </Text>
-                  <Text className="text-sm font-semibold text-red-600 flex-1">
-                    {getCurrencySymbol(reservation.currency)}
-                    {getTotalBalance().toFixed(2)}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Special Requests */}
-            {reservation.special_requests && (
-              <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                <View className="flex-row items-center mb-2">
-                  <Ionicons
-                    name="chatbubble-ellipses"
-                    size={20}
-                    color="#D97706"
-                  />
-                  <Text className="text-lg font-semibold ml-2 text-yellow-800">
-                    Special Requests
-                  </Text>
-                </View>
-                <Text className="text-sm text-yellow-700">
-                  {reservation.special_requests}
-                </Text>
-              </View>
-            )}
-
-            {/* Income Records */}
-            {incomeRecords.length > 0 && (
-              <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-                <View className="flex-row items-center mb-3">
-                  <Ionicons name="receipt" size={20} color="#374151" />
-                  <Text className="text-lg font-semibold ml-2">
-                    Payment History
-                  </Text>
-                </View>
-
-                {incomeRecords.map((income) => (
-                  <View
-                    key={income.id}
-                    className="flex-row justify-between items-center py-2 border-b border-gray-100"
-                  >
-                    <View className="flex-1">
-                      <Text className="text-sm font-medium text-gray-900">
-                        {getCurrencySymbol(income.currency)}
-                        {income.amount}
-                      </Text>
-                      <Text className="text-xs text-gray-500">
-                        {new Date(income.date).toLocaleDateString()} •{" "}
-                        {income.payment_method}
-                      </Text>
-                    </View>
-                    {income.note && (
-                      <Text
-                        className="text-xs text-gray-500 ml-2"
-                        numberOfLines={1}
-                      >
-                        {income.note}
-                      </Text>
-                    )}
+                {getPendingExpenses() > 0 && (
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-xs font-medium text-gray-500">
+                      Pending Additional Services
+                    </Text>
+                    <Text className="text-sm text-orange-600">
+                      {getSymbol(reservation.currency)}{" "}
+                      {getPendingExpenses().toLocaleString()}
+                    </Text>
                   </View>
-                ))}
-              </View>
-            )}
+                )}
 
-            {/* Commission Details */}
+                <View className="border-t border-gray-200 my-2" />
+
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-sm font-semibold text-gray-900">
+                    Balance Due
+                  </Text>
+                  <Text
+                    className={`text-base font-bold ${
+                      getTotalBalance() > 0 ? "text-red-600" : "text-emerald-600"
+                    }`}
+                  >
+                    {getSymbol(reservation.currency)}{" "}
+                    {getTotalBalance().toLocaleString()}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Commission Details (if applicable) */}
             {(reservation.guides || reservation.agents) && (
               <View className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                 <View className="flex-row items-center mb-3">
@@ -609,31 +688,46 @@ export function ViewReservationDialog({
                   </Text>
                 </View>
 
-                {reservation.guides && (
-                  <View className="mb-2">
-                    <Text className="text-sm font-medium text-gray-700">
-                      Guide: {reservation.guides.name}
-                    </Text>
-                    {reservation.guides.phone && (
-                      <Text className="text-xs text-gray-500">
-                        {reservation.guides.phone}
+                <View className="flex-row flex-wrap gap-4">
+                  {reservation.guides && (
+                    <View className="flex-1 min-w-[140px]">
+                      <Text className="text-xs font-medium text-gray-500 mb-1">
+                        Guide
                       </Text>
-                    )}
-                  </View>
-                )}
+                      <Text className="text-sm font-semibold text-gray-900">
+                        {reservation.guides.name}
+                      </Text>
+                      {reservation.guide_commission && (
+                        <Text className="text-sm text-gray-600 mt-1">
+                          Commission: {getSymbol(reservation.currency)}{" "}
+                          {reservation.guide_commission.toLocaleString()}
+                        </Text>
+                      )}
+                    </View>
+                  )}
 
-                {reservation.agents && (
-                  <View>
-                    <Text className="text-sm font-medium text-gray-700">
-                      Agent: {reservation.agents.name}
-                    </Text>
-                    {reservation.agents.phone && (
-                      <Text className="text-xs text-gray-500">
-                        {reservation.agents.phone}
+                  {reservation.agents && (
+                    <View className="flex-1 min-w-[140px]">
+                      <Text className="text-xs font-medium text-gray-500 mb-1">
+                        Agent
                       </Text>
-                    )}
-                  </View>
-                )}
+                      <Text className="text-sm font-semibold text-gray-900">
+                        {reservation.agents.name}
+                      </Text>
+                      {reservation.agents.agency_name && (
+                        <Text className="text-xs text-gray-500">
+                          {reservation.agents.agency_name}
+                        </Text>
+                      )}
+                      {reservation.agent_commission && (
+                        <Text className="text-sm text-gray-600 mt-1">
+                          Commission: {getSymbol(reservation.currency)}{" "}
+                          {reservation.agent_commission.toLocaleString()}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
               </View>
             )}
           </ScrollView>
