@@ -94,10 +94,7 @@ export function AmountInput({
           Currency *
         </Text>
         <View className="border border-gray-300 rounded-lg">
-          <Picker
-            selectedValue={currency}
-            onValueChange={handleCurrencyChange}
-          >
+          <Picker selectedValue={currency} onValueChange={handleCurrencyChange}>
             <Picker.Item label="LKR - Sri Lankan Rupee" value="LKR" />
             <Picker.Item label="USD - US Dollar" value="USD" />
             <Picker.Item label="EUR - Euro" value="EUR" />

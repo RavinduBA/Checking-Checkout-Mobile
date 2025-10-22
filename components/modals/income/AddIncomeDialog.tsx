@@ -8,13 +8,13 @@ import {
   Text,
   View,
 } from "react-native";
+import { useLocationContext } from "../../../contexts/LocationContext";
 import { useAuth } from "../../../hooks/useAuth";
 import { useTenant } from "../../../hooks/useTenant";
-import { useLocationContext } from "../../../contexts/LocationContext";
+import type { Database } from "../../../integrations/supabase/types";
 import { supabase } from "../../../lib/supabase";
 import { AddToBillForm } from "./AddToBillForm";
 import { ImmediatePaymentForm } from "./ImmediatePaymentForm";
-import type { Database } from "../../../integrations/supabase/types";
 
 type Reservation = Database["public"]["Tables"]["reservations"]["Row"];
 type Account = Database["public"]["Tables"]["accounts"]["Row"];

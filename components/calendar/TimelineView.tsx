@@ -1,11 +1,4 @@
-import React, { useMemo } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   addDays,
   eachDayOfInterval,
@@ -14,14 +7,14 @@ import {
   parseISO,
   startOfDay,
 } from "date-fns";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useMemo } from "react";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useLocationContext } from "../../contexts/LocationContext";
-import { useTenant } from "../../hooks/useTenant";
 import { useRooms } from "../../hooks/useRooms";
+import { useTenant } from "../../hooks/useTenant";
+import type { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
 import { CalendarLegend } from "./CalendarLegend";
-import { RoomRow } from "./RoomRow";
-import type { Database } from "../../integrations/supabase/types";
 
 type Room = Database["public"]["Tables"]["rooms"]["Row"];
 type Reservation = {
@@ -98,15 +91,20 @@ export function TimelineView({
   const { tenant } = useTenant();
 
   // Fetch rooms using existing hook
-  const { rooms, loading: roomsLoading } = useRooms(selectedLocation || undefined);
+  const { rooms, loading: roomsLoading } = useRooms(
+    selectedLocation || undefined
+  );
 
   // Fetch reservations
   const [reservations, setReservations] = React.useState<Reservation[]>([]);
   const [reservationsLoading, setReservationsLoading] = React.useState(true);
 
   // Fetch external bookings
-  const [externalBookings, setExternalBookings] = React.useState<ExternalBooking[]>([]);
-  const [externalBookingsLoading, setExternalBookingsLoading] = React.useState(true);
+  const [externalBookings, setExternalBookings] = React.useState<
+    ExternalBooking[]
+  >([]);
+  const [externalBookingsLoading, setExternalBookingsLoading] =
+    React.useState(true);
 
   React.useEffect(() => {
     const fetchReservations = async () => {
@@ -129,7 +127,10 @@ export function TimelineView({
           .eq("tenant_id", tenant.id)
           .eq("location_id", selectedLocation)
           .or(
-            `check_in_date.lte.${format(viewEnd, "yyyy-MM-dd")},check_out_date.gte.${format(viewStart, "yyyy-MM-dd")}`
+            `check_in_date.lte.${format(
+              viewEnd,
+              "yyyy-MM-dd"
+            )},check_out_date.gte.${format(viewStart, "yyyy-MM-dd")}`
           )
           .order("check_in_date", { ascending: true });
 
@@ -167,7 +168,10 @@ export function TimelineView({
           .eq("tenant_id", tenant.id)
           .eq("location_id", selectedLocation)
           .or(
-            `check_in.lte.${format(viewEnd, "yyyy-MM-dd")},check_out.gte.${format(viewStart, "yyyy-MM-dd")}`
+            `check_in.lte.${format(
+              viewEnd,
+              "yyyy-MM-dd"
+            )},check_out.gte.${format(viewStart, "yyyy-MM-dd")}`
           )
           .order("check_in", { ascending: true });
 
@@ -214,7 +218,8 @@ export function TimelineView({
     }
 
     // Calculate where the booking starts in the calendar
-    const displayStart = bookingStart < monthStartDay ? monthStartDay : bookingStart;
+    const displayStart =
+      bookingStart < monthStartDay ? monthStartDay : bookingStart;
     const displayEnd = bookingEnd > monthEndDay ? monthEndDay : bookingEnd;
 
     // Find the index of the start day
@@ -255,17 +260,14 @@ export function TimelineView({
 
   // Group rooms by room_type
   const groupedRooms = useMemo(() => {
-    return filteredRooms.reduce(
-      (acc, room) => {
-        const type = room.room_type || "Other";
-        if (!acc[type]) {
-          acc[type] = [];
-        }
-        acc[type].push(room);
-        return acc;
-      },
-      {} as Record<string, typeof filteredRooms>
-    );
+    return filteredRooms.reduce((acc, room) => {
+      const type = room.room_type || "Other";
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(room);
+      return acc;
+    }, {} as Record<string, typeof filteredRooms>);
   }, [filteredRooms]);
 
   // Apply filters to reservations
@@ -311,79 +313,291 @@ export function TimelineView({
     );
   }
 
+  // Helper to get bookings for a specific room and date
+  const getRoomBookingsForDate = (roomId: string, date: Date) => {
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
+
+    const directBooking = filteredReservations.find((res) => {
+      const checkIn = parseISO(res.check_in_date);
+      const checkOut = parseISO(res.check_out_date);
+      return (
+        res.room_id === roomId &&
+        checkIn <= dayEnd &&
+        checkOut >= dayStart
+      );
+    });
+
+    const externalBooking = filteredExternalBookings.find((booking) => {
+      const checkIn = parseISO(booking.check_in);
+      const checkOut = parseISO(booking.check_out);
+      return (
+        booking.room_id === roomId &&
+        checkIn <= dayEnd &&
+        checkOut >= dayStart
+      );
+    });
+
+    return { directBooking, externalBooking };
+  };
+
+  // Helper to check if a date is today
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-gray-50">
       {/* Legend */}
       <CalendarLegend className="px-4 py-3 bg-white border-b border-gray-200" />
 
-      {/* Calendar Grid */}
-      <ScrollView className="flex-1">
-        <View className="flex-1">
-          {/* Header Row */}
-          <View className="flex-row bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-            {/* Room Column Header */}
-            <View className="w-24 sm:w-28 md:w-32 shrink-0 px-2 py-2 border-r">
-              <Text className="font-semibold text-[10px] sm:text-xs">Room</Text>
-            </View>
-
-            {/* Date Headers */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-              <View className="flex-row">
-                {calendarDays.map((day, index) => (
-                  <View
-                    key={index}
-                    className="min-w-[32px] sm:min-w-[40px] px-1 py-2 border-r last:border-r-0"
-                  >
-                    <Text className="text-[8px] sm:text-[9px] text-center font-medium">
-                      {format(day, "EEE")}
-                    </Text>
-                    <Text className="text-[10px] sm:text-xs text-center font-semibold">
-                      {format(day, "dd")}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          {/* Room Rows Grouped by Type */}
-          {Object.entries(groupedRooms).map(([roomType, roomsInType]) => (
-            <View key={roomType}>
-              {/* Room Type Header */}
-              <View className="bg-gray-100 px-4 py-2 border-b border-gray-300">
-                <Text className="font-semibold text-xs text-gray-700">
-                  {roomType} ({roomsInType.length})
-                </Text>
-              </View>
-
-              {/* Rooms of this type */}
-              {roomsInType.map((room) => (
-                <RoomRow
-                  key={room.id}
-                  room={room}
-                  calendarDays={calendarDays}
-                  reservations={filteredReservations}
-                  externalBookings={filteredExternalBookings}
-                  onBookingClick={onBookingClick}
-                  onQuickBook={onQuickBook}
-                  getStatusColor={getStatusColor}
-                  getCurrencySymbol={getCurrencySymbol}
-                  calculateBookingSpan={calculateBookingSpan}
-                />
-              ))}
-            </View>
-          ))}
-
-          {filteredRooms.length === 0 && (
-            <View className="p-8 items-center">
+      {/* Calendar Grid - Mobile Optimized (Days as Rows, Rooms as Columns) */}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={true}>
+        <View className="p-2 sm:p-4">
+          {filteredRooms.length === 0 ? (
+            <View className="p-8 items-center bg-white rounded-xl shadow-sm">
               <Ionicons name="bed-outline" size={48} color="#9ca3af" />
-              <Text className="mt-4 text-gray-600 text-center">
+              <Text className="mt-4 text-gray-600 text-center font-semibold">
                 No rooms found
               </Text>
               <Text className="mt-2 text-gray-500 text-sm text-center">
                 Try adjusting your filters
               </Text>
             </View>
+          ) : (
+            calendarDays.map((day, dayIndex) => (
+              <View
+                key={dayIndex}
+                className={`mb-3 rounded-xl shadow-sm overflow-hidden ${
+                  isToday(day) ? "border-2 border-blue-500" : ""
+                }`}
+              >
+                {/* Day Header */}
+                <View
+                  className={`px-4 py-3 ${
+                    isToday(day)
+                      ? "bg-blue-500"
+                      : format(day, "EEE") === "Sat" ||
+                        format(day, "EEE") === "Sun"
+                      ? "bg-indigo-50"
+                      : "bg-white"
+                  }`}
+                >
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-2">
+                      <Ionicons
+                        name="calendar-outline"
+                        size={18}
+                        color={isToday(day) ? "#ffffff" : "#6b7280"}
+                      />
+                      <View>
+                        <Text
+                          className={`text-sm font-semibold ${
+                            isToday(day) ? "text-white" : "text-gray-900"
+                          }`}
+                        >
+                          {format(day, "EEEE")}
+                        </Text>
+                        <Text
+                          className={`text-xs ${
+                            isToday(day) ? "text-blue-100" : "text-gray-500"
+                          }`}
+                        >
+                          {format(day, "MMMM dd, yyyy")}
+                        </Text>
+                      </View>
+                    </View>
+                    {isToday(day) && (
+                      <View className="bg-white px-2 py-1 rounded-full">
+                        <Text className="text-xs font-bold text-blue-600">
+                          TODAY
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                {/* Room Cards for this Day */}
+                <View className="bg-white p-3">
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerClassName="gap-3"
+                  >
+                    {filteredRooms.map((room) => {
+                      const { directBooking, externalBooking } =
+                        getRoomBookingsForDate(room.id, day);
+                      const hasBooking = directBooking || externalBooking;
+                      const booking = directBooking || externalBooking;
+
+                      return (
+                        <View
+                          key={room.id}
+                          className="w-40 border border-gray-200 rounded-lg overflow-hidden"
+                        >
+                          {/* Room Header */}
+                          <View className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                            <View className="flex-row items-center justify-between">
+                              <View className="flex-1">
+                                <Text
+                                  className="text-xs font-semibold text-gray-900"
+                                  numberOfLines={1}
+                                >
+                                  {room.room_number}
+                                </Text>
+                                <Text
+                                  className="text-[10px] text-gray-500"
+                                  numberOfLines={1}
+                                >
+                                  {room.room_type}
+                                </Text>
+                              </View>
+                              <Ionicons
+                                name={hasBooking ? "lock-closed" : "checkmark-circle"}
+                                size={16}
+                                color={hasBooking ? "#ef4444" : "#10b981"}
+                              />
+                            </View>
+                          </View>
+
+                          {/* Booking Status / Quick Book */}
+                          {hasBooking ? (
+                            <TouchableOpacity
+                              onPress={() => onBookingClick(booking!)}
+                              activeOpacity={0.7}
+                              className="p-3"
+                            >
+                              {directBooking ? (
+                                <View>
+                                  <View
+                                    className={`mb-2 px-2 py-1 rounded ${getStatusColor(
+                                      directBooking.status
+                                    )}`}
+                                  >
+                                    <Text className="text-[10px] font-semibold text-white text-center">
+                                      {directBooking.status.toUpperCase()}
+                                    </Text>
+                                  </View>
+                                  <View className="gap-1">
+                                    <View className="flex-row items-center gap-1">
+                                      <Ionicons
+                                        name="person-outline"
+                                        size={12}
+                                        color="#6b7280"
+                                      />
+                                      <Text
+                                        className="text-xs text-gray-700 flex-1"
+                                        numberOfLines={1}
+                                      >
+                                        {directBooking.guest_name}
+                                      </Text>
+                                    </View>
+                                    <View className="flex-row items-center gap-1">
+                                      <Ionicons
+                                        name="cash-outline"
+                                        size={12}
+                                        color="#6b7280"
+                                      />
+                                      <Text className="text-xs text-gray-600">
+                                        {getCurrencySymbol(directBooking.currency)}{" "}
+                                        {directBooking.total_amount.toLocaleString()}
+                                      </Text>
+                                    </View>
+                                    <View className="flex-row items-center gap-1">
+                                      <Ionicons
+                                        name="people-outline"
+                                        size={12}
+                                        color="#6b7280"
+                                      />
+                                      <Text className="text-xs text-gray-600">
+                                        {directBooking.adults}
+                                        {directBooking.children
+                                          ? ` + ${directBooking.children}`
+                                          : ""}{" "}
+                                        guests
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </View>
+                              ) : externalBooking ? (
+                                <View>
+                                  <View className="mb-2 px-2 py-1 rounded bg-purple-100 border border-purple-300">
+                                    <Text className="text-[10px] font-semibold text-purple-900 text-center">
+                                      {externalBooking.source.toUpperCase()}
+                                    </Text>
+                                  </View>
+                                  <View className="gap-1">
+                                    <View className="flex-row items-center gap-1">
+                                      <Ionicons
+                                        name="person-outline"
+                                        size={12}
+                                        color="#6b7280"
+                                      />
+                                      <Text
+                                        className="text-xs text-gray-700 flex-1"
+                                        numberOfLines={1}
+                                      >
+                                        {externalBooking.guest_name}
+                                      </Text>
+                                    </View>
+                                    {externalBooking.total_amount && (
+                                      <View className="flex-row items-center gap-1">
+                                        <Ionicons
+                                          name="cash-outline"
+                                          size={12}
+                                          color="#6b7280"
+                                        />
+                                        <Text className="text-xs text-gray-600">
+                                          {getCurrencySymbol(
+                                            externalBooking.currency || "USD"
+                                          )}{" "}
+                                          {externalBooking.total_amount.toLocaleString()}
+                                        </Text>
+                                      </View>
+                                    )}
+                                    {!externalBooking.room_id && (
+                                      <View className="mt-1 px-2 py-1 bg-yellow-50 rounded border border-yellow-300">
+                                        <Text className="text-[9px] text-yellow-800 text-center">
+                                          ⚠️ Unmapped
+                                        </Text>
+                                      </View>
+                                    )}
+                                  </View>
+                                </View>
+                              ) : null}
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              onPress={() => onQuickBook(room as any, day)}
+                              activeOpacity={0.6}
+                              className="p-4 items-center justify-center bg-emerald-50"
+                            >
+                              <Ionicons
+                                name="add-circle-outline"
+                                size={24}
+                                color="#10b981"
+                              />
+                              <Text className="mt-1 text-xs font-semibold text-emerald-700">
+                                Quick Book
+                              </Text>
+                              <Text className="text-[10px] text-emerald-600">
+                                {getCurrencySymbol(room.currency || "LKR")}{" "}
+                                {room.base_price?.toLocaleString() || "N/A"}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              </View>
+            ))
           )}
         </View>
       </ScrollView>

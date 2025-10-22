@@ -1,8 +1,8 @@
-import React from "react";
-import { Text, TouchableOpacity, View, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ExternalBookingBlock } from "./ExternalBookingBlock";
+import React from "react";
+import { Dimensions, Text, TouchableOpacity, View } from "react-native";
 import type { Database } from "../../integrations/supabase/types";
+import { ExternalBookingBlock } from "./ExternalBookingBlock";
 import type { ExternalBooking } from "./TimelineView";
 
 type Room = Database["public"]["Tables"]["rooms"]["Row"];
@@ -96,7 +96,10 @@ export function RoomRow({
       <View className="flex-row w-full">
         {/* Room Info Column - Compact & Responsive */}
         <View className="w-24 sm:w-28 md:w-32 shrink-0 px-1.5 sm:px-2 py-1 border-r flex items-center">
-          <Text className="font-medium text-[10px] sm:text-xs" numberOfLines={1}>
+          <Text
+            className="font-medium text-[10px] sm:text-xs"
+            numberOfLines={1}
+          >
             {room.room_number}
           </Text>
         </View>
@@ -151,13 +154,25 @@ export function RoomRow({
                   <View
                     className="absolute inset-y-[2px]"
                     style={{
-                      left: `${(bookingStartingToday.span.startIndex / calendarDays.length) * 100}%`,
-                      right: `${100 - ((bookingStartingToday.span.startIndex + bookingStartingToday.span.spanDays) / calendarDays.length) * 100}%`,
+                      left: `${
+                        (bookingStartingToday.span.startIndex /
+                          calendarDays.length) *
+                        100
+                      }%`,
+                      right: `${
+                        100 -
+                        ((bookingStartingToday.span.startIndex +
+                          bookingStartingToday.span.spanDays) /
+                          calendarDays.length) *
+                          100
+                      }%`,
                     }}
                   >
                     <TouchableOpacity
                       onPress={() => onBookingClick(bookingStartingToday)}
-                      className={`w-full h-full ${getStatusColor(bookingStartingToday.status)} flex flex-col justify-center px-1 rounded`}
+                      className={`w-full h-full ${getStatusColor(
+                        bookingStartingToday.status
+                      )} flex flex-col justify-center px-1 rounded`}
                       activeOpacity={0.8}
                     >
                       {bookingStartingToday.span.spanDays >= 2 ? (
@@ -169,7 +184,10 @@ export function RoomRow({
                             {bookingStartingToday.guest_name}
                           </Text>
                           <Text className="text-white text-[9px] sm:text-[10px] font-semibold shrink-0">
-                            • ({bookingStartingToday.adults + (bookingStartingToday.children || 0)})
+                            • (
+                            {bookingStartingToday.adults +
+                              (bookingStartingToday.children || 0)}
+                            )
                           </Text>
                         </View>
                       ) : (

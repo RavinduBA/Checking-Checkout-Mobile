@@ -97,7 +97,10 @@ export function ExternalBookingBlock({
       >
         {/* Channel indicator stripe */}
         <View
-          className={`absolute top-0 left-0 right-0 h-0.5 ${colors.border.replace("border-", "bg-")}`}
+          className={`absolute top-0 left-0 right-0 h-0.5 ${colors.border.replace(
+            "border-",
+            "bg-"
+          )}`}
         />
 
         {/* Booking details - guest name and guest count */}
@@ -113,7 +116,8 @@ export function ExternalBookingBlock({
             <Text
               className={`${colors.text} text-[9px] sm:text-[10px] font-semibold shrink-0`}
             >
-              • ({adults + children} {adults + children === 1 ? "guest" : "guests"})
+              • ({adults + children}{" "}
+              {adults + children === 1 ? "guest" : "guests"})
             </Text>
           </View>
         ) : (

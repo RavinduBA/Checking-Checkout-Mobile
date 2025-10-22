@@ -1,6 +1,7 @@
 # Add Income Feature - Component Structure
 
 ## Overview
+
 Restructured the Add Income feature to match the web app's component architecture with proper separation of concerns.
 
 ## File Structure
@@ -18,6 +19,7 @@ components/modals/income/
 ## Component Responsibilities
 
 ### AddIncomeDialog.tsx
+
 - Main modal wrapper
 - Toggle between "Add to Bill" and "Immediate Payment" modes
 - Fetches income types from database
@@ -25,6 +27,7 @@ components/modals/income/
 - Renders appropriate form based on mode
 
 **Props:**
+
 - `visible`: boolean
 - `onClose`: () => void
 - `selectedReservation`: Reservation | null
@@ -32,6 +35,7 @@ components/modals/income/
 - `onSuccess`: () => void
 
 ### AddToBillForm.tsx
+
 - Creates income record with `payment_method="pending"`
 - Sets `account_id=null` (not paid yet)
 - Database trigger updates `reservation.total_amount`
@@ -39,6 +43,7 @@ components/modals/income/
 - No account selection needed
 
 **Database Operation:**
+
 ```typescript
 supabase.from("income").insert({
   booking_id: reservation.id,
@@ -46,11 +51,12 @@ supabase.from("income").insert({
   currency: formData.currency,
   payment_method: "pending",
   account_id: null,
-  type: "booking"
-})
+  type: "booking",
+});
 ```
 
 ### ImmediatePaymentForm.tsx
+
 - Creates income record with selected payment method
 - Requires account selection
 - Converts amount to account currency
@@ -59,6 +65,7 @@ supabase.from("income").insert({
 - Shows green "Immediate Payment" badge
 
 **Database Operation:**
+
 ```typescript
 // Convert to account currency
 convertedAmount = await convertCurrency(
@@ -84,24 +91,28 @@ supabase.from("currency_conversion_log").insert({...})
 ```
 
 ### shared/AmountInput.tsx
+
 - Amount input with decimal keyboard
 - Currency picker (LKR, USD, EUR, GBP)
 - Real-time currency conversion using `convertCurrency()`
 - Updates displayed reservation amount when currency changes
 
 **Features:**
+
 - Converts current amount to new currency
 - Converts base reservation amount for display
 - Shows warnings if conversion fails
 - Validates tenant_id and location_id
 
 ### shared/AccountSelector.tsx
+
 - Dropdown for selecting payment account
 - Shows account name and currency
 - Required field indicator
 - Filtered by tenant/location (handled by parent)
 
 **Props:**
+
 - `accounts`: Account[]
 - `selectedAccountId`: string
 - `onAccountChange`: (accountId: string) => void
@@ -110,6 +121,7 @@ supabase.from("currency_conversion_log").insert({...})
 ## Integration
 
 ### ReservationsScreen.tsx
+
 ```typescript
 import { AddIncomeDialog } from "../modals/income/AddIncomeDialog";
 
@@ -133,12 +145,13 @@ const handleAddIncome = (reservation: any) => {
     setSelectedReservation(null);
   }}
   onSuccess={handleIncomeSuccess}
-/>
+/>;
 ```
 
 ## Database Schema
 
 ### income table
+
 - `id`: uuid (PK)
 - `booking_id`: uuid (FK → reservations)
 - `amount`: numeric
@@ -154,12 +167,14 @@ const handleAddIncome = (reservation: any) => {
 - `location_id`: uuid
 
 ### Database Triggers
+
 1. **Add to Bill**: Trigger increases `reservation.total_amount`
 2. **Immediate Payment**: No trigger (direct account recording)
 
 ## Currency Conversion
 
 Uses `convertCurrency()` utility:
+
 ```typescript
 convertCurrency(
   amount: number,
@@ -171,6 +186,7 @@ convertCurrency(
 ```
 
 **Flow:**
+
 1. Fetch exchange rate from `currency_rates` table
 2. Calculate converted amount
 3. Return rounded result
@@ -179,6 +195,7 @@ convertCurrency(
 ## Feature Parity with Web App
 
 ✅ **Completed:**
+
 - Dual-mode toggle (Add to Bill / Immediate Payment)
 - Income type selection
 - Multi-currency support with conversion
@@ -193,6 +210,7 @@ convertCurrency(
 ## Usage Examples
 
 ### Add to Bill (Pending Payment)
+
 1. User clicks "Add Income" on reservation
 2. Dialog opens with toggle OFF (default)
 3. Turn toggle ON for "Add to Guest Bill"
@@ -205,6 +223,7 @@ convertCurrency(
 10. Guest pays at checkout
 
 ### Immediate Payment
+
 1. User clicks "Add Income" on reservation
 2. Dialog opens with toggle OFF
 3. Select income type (e.g., "Laundry")

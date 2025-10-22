@@ -1,17 +1,11 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
-import {
-  Alert,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useToast } from "../../../hooks/useToast";
+import type { Database } from "../../../integrations/supabase/types";
 import { supabase } from "../../../lib/supabase";
 import { AmountInput } from "./shared/AmountInput";
-import type { Database } from "../../../integrations/supabase/types";
 
 type Reservation = Database["public"]["Tables"]["reservations"]["Row"];
 type IncomeType = {

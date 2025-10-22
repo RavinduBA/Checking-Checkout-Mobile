@@ -1,16 +1,11 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { usePermissions } from "../../hooks/usePermissions";
+import type { Database } from "../../integrations/supabase/types";
+import { getCurrencySymbol } from "../../utils/currency";
 import { TimelineView } from "../calendar";
 import { NewReservationDialog } from "../modals";
-import type { Database } from "../../integrations/supabase/types";
 
 type Room = Database["public"]["Tables"]["rooms"]["Row"];
 
@@ -44,16 +39,7 @@ const formatMonthYear = (date: Date): string => {
   return `${months[date.getMonth()]} ${date.getFullYear()}`;
 };
 
-// Helper to get currency symbol
-const getCurrencySymbol = (currency: string): string => {
-  const symbols: Record<string, string> = {
-    LKR: "Rs",
-    USD: "$",
-    EUR: "€",
-    GBP: "£",
-  };
-  return symbols[currency] || currency;
-};
+// ...existing code...
 
 export default function CalendarScreen() {
   const { hasAnyPermission } = usePermissions();
@@ -97,7 +83,9 @@ export default function CalendarScreen() {
     console.log("Booking clicked:", booking);
     Alert.alert(
       "Booking Details",
-      `Guest: ${booking.guest_name}\nReservation: ${booking.reservation_number || booking.external_id}`,
+      `Guest: ${booking.guest_name}\nReservation: ${
+        booking.reservation_number || booking.external_id
+      }`,
       [{ text: "OK" }]
     );
   };
@@ -164,7 +152,10 @@ export default function CalendarScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
+            <Text
+              className="text-base font-semibold text-gray-900"
+              numberOfLines={1}
+            >
               {formatMonthYear(currentDate)}
             </Text>
           </View>
@@ -174,9 +165,7 @@ export default function CalendarScreen() {
             className="bg-blue-600 px-4 py-2 rounded-lg flex-row items-center gap-1 ml-2"
           >
             <Ionicons name="add" size={20} color="white" />
-            <Text className="text-white font-semibold text-sm">
-              New
-            </Text>
+            <Text className="text-white font-semibold text-sm">New</Text>
           </TouchableOpacity>
         </View>
 
@@ -190,10 +179,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showDirectBookings ? "bg-blue-600" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showDirectBookings ? "bg-blue-600" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showDirectBookings ? "text-blue-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showDirectBookings ? "text-blue-900" : "text-gray-600"
+                }`}
               >
                 Direct
               </Text>
@@ -206,10 +199,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showBookingCom ? "bg-blue-600" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showBookingCom ? "bg-blue-600" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showBookingCom ? "text-blue-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showBookingCom ? "text-blue-900" : "text-gray-600"
+                }`}
               >
                 Booking.com
               </Text>
@@ -222,10 +219,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showAirbnb ? "bg-pink-600" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showAirbnb ? "bg-pink-600" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showAirbnb ? "text-pink-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showAirbnb ? "text-pink-900" : "text-gray-600"
+                }`}
               >
                 Airbnb
               </Text>
@@ -238,10 +239,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showExpedia ? "bg-yellow-600" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showExpedia ? "bg-yellow-600" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showExpedia ? "text-yellow-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showExpedia ? "text-yellow-900" : "text-gray-600"
+                }`}
               >
                 Expedia
               </Text>
@@ -254,10 +259,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showBeds24 ? "bg-purple-600" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showBeds24 ? "bg-purple-600" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showBeds24 ? "text-purple-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showBeds24 ? "text-purple-900" : "text-gray-600"
+                }`}
               >
                 Beds24
               </Text>
@@ -270,10 +279,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showIcal ? "bg-teal-600" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showIcal ? "bg-teal-600" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showIcal ? "text-teal-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showIcal ? "text-teal-900" : "text-gray-600"
+                }`}
               >
                 iCal
               </Text>
@@ -286,10 +299,14 @@ export default function CalendarScreen() {
               }`}
             >
               <View
-                className={`w-2 h-2 rounded-full ${showOther ? "bg-gray-700" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${
+                  showOther ? "bg-gray-700" : "bg-gray-400"
+                }`}
               />
               <Text
-                className={`text-xs font-medium ${showOther ? "text-gray-900" : "text-gray-600"}`}
+                className={`text-xs font-medium ${
+                  showOther ? "text-gray-900" : "text-gray-600"
+                }`}
               >
                 Other
               </Text>
