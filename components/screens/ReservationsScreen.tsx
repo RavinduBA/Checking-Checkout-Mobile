@@ -8,16 +8,17 @@ import { useToast } from "../../hooks/useToast";
 import { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
 import {
-	EditReservationDialog,
-	NewReservationDialog,
-	PaymentDialog,
-	ViewReservationDialog,
+  EditReservationDialog,
+  NewReservationDialog,
+  PaymentDialog,
+  ViewReservationDialog,
 } from "../modals";
 import { CompactReservationDialog } from "../reservation/CompactReservationDialog";
+import { PaymentsTable } from "../reservation/PaymentsTable";
+import { ReservationsDesktopTable } from "../reservation/ReservationsDesktopTable";
 import { ReservationsFilters } from "../reservation/ReservationsFilters";
 import { ReservationsHeader } from "../reservation/ReservationsHeader";
-import { ReservationsList } from "../reservation/ReservationsList";
-import { PaymentsTable } from "../reservation/PaymentsTable";
+import { ReservationsMobileCards } from "../reservation/ReservationsMobileCards";
 
 type CurrencyType = Database["public"]["Enums"]["currency_type"];
 
@@ -118,7 +119,7 @@ export default function ReservationsScreen() {
     setIsPaymentDialogOpen(true);
   };
 
- // TODO: Implement OTP verification
+  // TODO: Implement OTP verification
 
   const handleAddIncome = (reservation: any) => {
     setSelectedReservation(reservation);
@@ -149,19 +150,10 @@ export default function ReservationsScreen() {
     setPaymentData(null);
   };
 
-	const handleDataUpdate = () => {
-		refetch();
-		refetchFinancials();
-	};
-
-	// Filter logic
-	const filteredReservations = reservations.filter((r) => {
-		const matchesSearch = r.guest_name
-			.toLowerCase()
-			.includes(searchQuery.toLowerCase());
-		const matchesStatus = statusFilter === "all" || r.status === statusFilter;
-		return matchesSearch && matchesStatus;
-	});  // Remove this - using the new handleDataUpdate function below
+  const handleDataUpdate = () => {
+    refetch();
+    refetchFinancials();
+  };
 
   // New reservation creation logic
   const handleCreateReservation = async (reservationData: any) => {
@@ -218,22 +210,27 @@ export default function ReservationsScreen() {
 
       {/* Tab Content */}
       {activeTab === "reservations" ? (
-        <ReservationsList
-          reservations={filteredReservations}
-          selectedCurrency={selectedCurrency}
-          onView={handleViewReservation}
-          onEdit={handleEditReservation}
-          onPayment={(reservation) => {
-            const balance = (reservation.balance_amount || 0);
-            handlePayment(
-              reservation.id,
-              balance,
-              reservation.currency || "USD"
-            );
-          }}
-          onAddIncome={handleAddIncome}
-          onPrint={handlePrint}
-        />
+        <>
+          <ReservationsMobileCards
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
+            selectedCurrency={selectedCurrency}
+            onViewReservation={handleViewReservation}
+            onEditReservation={handleEditReservation}
+            onPayment={handlePayment}
+            onAddIncome={handleAddIncome}
+          />
+          <ReservationsDesktopTable
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
+            selectedCurrency={selectedCurrency}
+            onViewReservation={handleViewReservation}
+            onEditReservation={handleEditReservation}
+            onPayment={handlePayment}
+            onAddIncome={handleAddIncome}
+            onPrint={handlePrint}
+          />
+        </>
       ) : (
         <PaymentsTable />
       )}
@@ -242,7 +239,7 @@ export default function ReservationsScreen() {
         visible={isViewDialogOpen}
         reservation={
           viewingReservationId
-            ? filteredReservations.find((r) => r.id === viewingReservationId)
+            ? reservations.find((r) => r.id === viewingReservationId)
             : null
         }
         onClose={() => {
@@ -266,7 +263,7 @@ export default function ReservationsScreen() {
       {paymentData && (
         <PaymentDialog
           visible={isPaymentDialogOpen}
-          reservation={filteredReservations.find(
+          reservation={reservations.find(
             (r) => r.id === paymentData.reservationId
           )}
           onClose={() => {

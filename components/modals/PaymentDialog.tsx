@@ -14,9 +14,9 @@ import {
 } from "react-native";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useAuth } from "../../hooks/useAuth";
-// import { useLocationContext } from "../../hooks/useLocationContext";
+import { useLocationContext } from "../../hooks";
 import { useToast } from "../../hooks/useToast";
-// import { CURRENCIES } from "../../lib/currencies";
+import { CurrencyType } from "../../lib/currencies";
 import { supabase } from "../../lib/supabase";
 
 interface PaymentDialogProps {
@@ -40,7 +40,7 @@ export function PaymentDialog({
   // Form state
   const [formData, setFormData] = useState({
     amount: 0,
-    currency: "LKR" as keyof typeof CURRENCIES,
+    currency: "LKR" as CurrencyType,
     payment_method: "cash",
     account_id: "",
     date: new Date(),

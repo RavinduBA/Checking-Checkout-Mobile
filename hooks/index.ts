@@ -1,4 +1,5 @@
 // Export all hooks for easy importing
+export { useLocationContext } from '../contexts/LocationContext';
 export { useAccountOperations } from './useAccountOperations';
 export { useAccounts } from './useAccounts';
 export { useAuth } from './useAuth';
@@ -20,7 +21,6 @@ export { useTenant } from './useTenant';
 export { useTenantLocations } from './useTenantLocations';
 export { useToast } from './useToast';
 export { useUserProfile } from './useUserProfile';
-export { useLocationContext } from '../contexts/LocationContext';
 
 // Export types
 export type { CalendarReservation } from './useCalendarData';
