@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, Text, View } from "react-native";
-import { VictoryPie } from "victory-native";
 import { useTenant } from "../../hooks/useTenant";
 import { supabase } from "../../lib/supabase";
 
@@ -60,14 +59,17 @@ const SOURCE_DISPLAY_NAMES: Record<string, string> = {
 };
 
 export function BookingSourceChart({
-	selectedLocation,
-	selectedMonth,
+  selectedLocation,
+  selectedMonth,
 }: BookingSourceChartProps) {
-	const { tenant } = useTenant();
-	const [sourceData, setSourceData] = useState<BookingSourceData[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [totalBookings, setTotalBookings] = useState(0);
-	const screenWidth = Dimensions.get("window").width;  useEffect(() => {
+  const { tenant } = useTenant();
+  const [sourceData, setSourceData] = useState<BookingSourceData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [totalBookings, setTotalBookings] = useState(0);
+  const screenWidth = Dimensions.get("window").width;
+
+
+  useEffect(() => {
     const fetchBookingSourceData = async () => {
       if (!tenant?.id) return;
 
@@ -166,14 +168,13 @@ export function BookingSourceChart({
     );
   }
 
-  // Prepare data for Victory chart
+  // Prepare data for Pie chart
   const chartData = sourceData.map((entry, index) => ({
-    x: SOURCE_DISPLAY_NAMES[entry.source] || entry.source,
-    y: entry.count,
-    label: `${entry.percentage.toFixed(1)}%`,
-    fill:
+    value: entry.count,
+    color:
       SOURCE_COLORS[entry.source] ||
       FALLBACK_COLORS[index % FALLBACK_COLORS.length],
+    label: SOURCE_DISPLAY_NAMES[entry.source] || entry.source,
   }));
 
   return (
@@ -184,39 +185,46 @@ export function BookingSourceChart({
           Booking Sources
         </Text>
       </View>
-      <View className="items-center">
-        <VictoryPie
-          data={chartData}
-          width={screenWidth - 64}
-          height={220}
-          innerRadius={50}
-          colorScale={chartData.map((d) => d.fill)}
-          style={{
-            labels: { fontSize: 12, fill: "white", fontWeight: "bold" },
-          }}
-        />
-      </View>
 
-      {/* Legend */}
-      <View className="mt-4 gap-2">
-        {sourceData.map((entry, index) => (
-          <View key={entry.source} className="flex-row items-center gap-2">
-            <View
-              style={{
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor:
-                  SOURCE_COLORS[entry.source] ||
-                  FALLBACK_COLORS[index % FALLBACK_COLORS.length],
-              }}
-            />
-            <Text className="text-sm text-gray-700 flex-1">
-              {SOURCE_DISPLAY_NAMES[entry.source] || entry.source}:{" "}
-              {entry.count} ({entry.percentage.toFixed(1)}%)
-            </Text>
-          </View>
-        ))}
+      {/* Horizontal bar chart representation */}
+      <View className="gap-2">
+        {sourceData.map((entry, index) => {
+          const barWidth = (entry.percentage / 100) * (screenWidth - 96);
+          const color =
+            SOURCE_COLORS[entry.source] ||
+            FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+          
+          return (
+            <View key={entry.source} className="gap-1">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-2 flex-1">
+                  <View
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: color,
+                    }}
+                  />
+                  <Text className="text-sm text-gray-700 flex-1">
+                    {SOURCE_DISPLAY_NAMES[entry.source] || entry.source}
+                  </Text>
+                </View>
+                <Text className="text-sm font-semibold text-gray-900">
+                  {entry.count} ({entry.percentage.toFixed(1)}%)
+                </Text>
+              </View>
+              <View
+                style={{
+                  height: 8,
+                  width: Math.max(barWidth, 20),
+                  backgroundColor: color,
+                  borderRadius: 4,
+                }}
+              />
+            </View>
+          );
+        })}
         <Text className="text-xs text-gray-500 mt-2">
           {totalBookings} total bookings
         </Text>
