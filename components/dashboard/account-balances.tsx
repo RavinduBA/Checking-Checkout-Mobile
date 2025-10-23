@@ -111,41 +111,46 @@ export function AccountBalances({ selectedLocation }: AccountBalancesProps) {
   }
 
   return (
-    <View className="bg-white rounded-xl p-6 border border-gray-200">
+    <View className="bg-white rounded-xl p-4 border border-gray-200">
       <View className="flex-row items-center gap-2 mb-4">
-        <Ionicons name="cash-outline" size={20} color="#3b82f6" />
+        <Ionicons name="wallet" size={20} color="#3b82f6" />
         <Text className="text-lg font-semibold text-gray-900">
           Account Balances
         </Text>
       </View>
-      <ScrollView className="gap-3">
+      <View className="gap-3">
         {accountBalances.map((account) => (
           <View
             key={account.id}
-            className="flex-row items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100"
+            className="flex-row items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 shadow-sm"
           >
-            <View className="flex-1 min-w-0">
-              <Text className="font-semibold text-gray-900" numberOfLines={1}>
-                {account.name}
-              </Text>
-              <Text className="text-sm text-gray-600">
-                {account.currency} Account
-              </Text>
+            <View className="flex-row items-center gap-3 flex-1">
+              <View className="bg-blue-500 rounded-full p-2">
+                <Ionicons name="card" size={18} color="white" />
+              </View>
+              <View className="flex-1 min-w-0">
+                <Text className="font-bold text-gray-900 text-sm" numberOfLines={1}>
+                  {account.name}
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  {account.currency} Account
+                </Text>
+              </View>
             </View>
-            <View className="items-end ml-4">
-              <Text className="text-lg font-bold text-gray-900">
+            <View className="items-end ml-3">
+              <Text className="text-base font-bold text-blue-600">
                 {getCurrencySymbol(account.currency)}
                 {account.current_balance.toLocaleString()}
               </Text>
-              <View className="mt-1 px-2 py-0.5 bg-blue-100 rounded">
-                <Text className="text-xs font-medium text-blue-900">
+              <View className="mt-1 px-2 py-0.5 bg-blue-500 rounded-full">
+                <Text className="text-[10px] font-bold text-white">
                   {account.currency}
                 </Text>
               </View>
             </View>
           </View>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 }

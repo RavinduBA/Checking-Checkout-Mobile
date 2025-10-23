@@ -13,7 +13,6 @@ import { supabase } from "../../lib/supabase";
 import {
   convertCurrency,
   formatAmountWithSymbol,
-  getCurrencySymbol,
   getDisplayCurrency,
 } from "../../utils/currency";
 
@@ -209,51 +208,41 @@ export function IncomeExpenseChart({
 
   return (
     <View className="gap-4">
-      {/* Summary Cards */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 12, paddingHorizontal: 2 }}
-      >
-        <View className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 shadow-lg min-w-[140px]">
-          <View className="flex-row items-center justify-between mb-2">
-            <Ionicons name="trending-up" size={24} color="white" />
-          </View>
-          <Text className="text-xs text-green-100 mb-1">
-            {selectedMonth ? "Monthly Income" : "Today"}
+      {/* Summary Cards - Compact, No Horizontal Scroll */}
+      <View className="flex-row gap-2">
+        <View className="flex-1 bg-emerald-500 rounded-xl p-3 shadow-sm">
+          <Ionicons name="trending-up" size={20} color="white" className="mb-1" />
+          <Text className="text-[10px] text-emerald-100 mb-1">
+            {selectedMonth ? "Monthly" : "Today"}
           </Text>
-          <Text className="text-xl font-bold text-white" numberOfLines={1}>
+          <Text className="text-base font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(todayIncome, displayCurrency)}
           </Text>
-          <Text className="text-xs text-green-100 mt-1">Income</Text>
+          <Text className="text-[10px] text-emerald-100 mt-0.5">Income</Text>
         </View>
 
-        <View className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 shadow-lg min-w-[140px]">
-          <View className="flex-row items-center justify-between mb-2">
-            <Ionicons name="trending-down" size={24} color="white" />
-          </View>
-          <Text className="text-xs text-red-100 mb-1">
-            {selectedMonth ? "Monthly Expenses" : "Today"}
+        <View className="flex-1 bg-rose-500 rounded-xl p-3 shadow-sm">
+          <Ionicons name="trending-down" size={20} color="white" className="mb-1" />
+          <Text className="text-[10px] text-rose-100 mb-1">
+            {selectedMonth ? "Monthly" : "Today"}
           </Text>
-          <Text className="text-xl font-bold text-white" numberOfLines={1}>
+          <Text className="text-base font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(todayExpenses, displayCurrency)}
           </Text>
-          <Text className="text-xs text-red-100 mt-1">Expenses</Text>
+          <Text className="text-[10px] text-rose-100 mt-0.5">Expenses</Text>
         </View>
 
-        <View className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 shadow-lg min-w-[140px]">
-          <View className="flex-row items-center justify-between mb-2">
-            <Ionicons name="stats-chart" size={24} color="white" />
-          </View>
-          <Text className="text-xs text-blue-100 mb-1">Weekly</Text>
-          <Text className="text-xl font-bold text-white" numberOfLines={1}>
+        <View className="flex-1 bg-violet-500 rounded-xl p-3 shadow-sm">
+          <Ionicons name="stats-chart" size={20} color="white" className="mb-1" />
+          <Text className="text-[10px] text-violet-100 mb-1">Weekly</Text>
+          <Text className="text-base font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(weeklyProfit, displayCurrency)}
           </Text>
-          <Text className="text-xs text-blue-100 mt-1">
-            Profit • {profitMargin.toFixed(1)}%
+          <Text className="text-[10px] text-violet-100 mt-0.5">
+            {profitMargin.toFixed(1)}%
           </Text>
         </View>
-      </ScrollView>
+      </View>
 
       {/* Chart - Vertical Bars */}
       <View className="bg-white rounded-xl p-4 border border-gray-200">
@@ -266,24 +255,32 @@ export function IncomeExpenseChart({
         <Text className="text-sm text-gray-600 mb-4">
           {selectedMonth ? "Monthly Overview" : "Last 7 Days"}
         </Text>
-        
+
         {/* Vertical Bar Chart */}
-        <View className="flex-row items-end justify-between gap-1" style={{ height: 180 }}>
+        <View
+          className="flex-row items-end justify-between gap-1"
+          style={{ height: 180 }}
+        >
           {chartData.slice(-7).map((item, index) => {
             const date = new Date(item.date);
             const maxValue = Math.max(
-              ...chartData.slice(-7).map((d) =>
-                Math.max(Math.abs(d.income), Math.abs(d.expenses))
-              )
+              ...chartData
+                .slice(-7)
+                .map((d) => Math.max(Math.abs(d.income), Math.abs(d.expenses)))
             );
-            
-            const incomeHeight = maxValue > 0 ? (item.income / maxValue) * 140 : 0;
-            const expenseHeight = maxValue > 0 ? (Math.abs(item.expenses) / maxValue) * 140 : 0;
+
+            const incomeHeight =
+              maxValue > 0 ? (item.income / maxValue) * 140 : 0;
+            const expenseHeight =
+              maxValue > 0 ? (Math.abs(item.expenses) / maxValue) * 140 : 0;
 
             return (
               <View key={index} className="flex-1 items-center gap-1">
                 {/* Bars Container */}
-                <View className="flex-row gap-1 items-end" style={{ height: 140 }}>
+                <View
+                  className="flex-row gap-1 items-end"
+                  style={{ height: 140 }}
+                >
                   {/* Income Bar */}
                   <View
                     style={{
@@ -316,7 +313,7 @@ export function IncomeExpenseChart({
             );
           })}
         </View>
-        
+
         {/* Legend */}
         <View className="flex-row justify-center gap-4 mt-4 pt-3 border-t border-gray-100">
           <View className="flex-row items-center gap-2">

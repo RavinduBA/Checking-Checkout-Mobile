@@ -185,68 +185,80 @@ export function BookingSourceChart({
         </Text>
       </View>
 
-      {/* Circular Segments Visualization */}
+      {/* Donut Chart like the image */}
       <View className="items-center mb-6">
-        <View style={{ width: 200, height: 200, position: "relative", alignItems: "center", justifyContent: "center" }}>
-          {/* Circular segments */}
-          {sourceData.map((entry, index) => {
-            const color =
-              SOURCE_COLORS[entry.source] ||
-              FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-            
-            // Calculate position in circle
-            const totalItems = sourceData.length;
-            const angle = (index / totalItems) * 2 * Math.PI;
-            const radius = 70;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            
-            // Size based on percentage
-            const size = Math.max(30 + (entry.percentage / 100) * 30, 35);
+        <View
+          style={{
+            width: 180,
+            height: 180,
+            borderRadius: 90,
+            backgroundColor: "#f3f4f6",
+            position: "relative",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {/* Donut ring segments */}
+          {(() => {
+            let cumulativePercentage = 0;
+            return sourceData.map((entry, index) => {
+              const percentage = entry.percentage;
+              const color =
+                SOURCE_COLORS[entry.source] ||
+                FALLBACK_COLORS[index % FALLBACK_COLORS.length];
 
-            return (
-              <View
-                key={entry.source}
-                style={{
-                  position: "absolute",
-                  left: 100 + x - size / 2,
-                  top: 100 + y - size / 2,
-                  width: size,
-                  height: size,
-                  backgroundColor: color,
-                  borderRadius: size / 2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderWidth: 3,
-                  borderColor: "white",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}
-              >
-                <Text className="text-white font-bold text-xs">
-                  {entry.percentage.toFixed(0)}%
-                </Text>
-              </View>
-            );
-          })}
+              // Calculate segment for donut
+              const startAngle = (cumulativePercentage / 100) * 360;
+              const endAngle = ((cumulativePercentage + percentage) / 100) * 360;
+              cumulativePercentage += percentage;
 
-          {/* Center info circle */}
+              // Create segments around the circle
+              const segmentWidth = 30; // Width of the donut ring
+              const radius = 90;
+              const innerRadius = radius - segmentWidth;
+
+              return (
+                <View
+                  key={entry.source}
+                  style={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {/* Simplified segment representation */}
+                  <View
+                    style={{
+                      position: "absolute",
+                      width: segmentWidth,
+                      height: percentage > 50 ? 160 : (percentage / 100) * 160,
+                      backgroundColor: color,
+                      borderRadius: segmentWidth / 2,
+                      transform: [{ rotate: `${startAngle}deg` }],
+                      top: percentage > 50 ? 10 : 90 - ((percentage / 100) * 160) / 2,
+                    }}
+                  />
+                </View>
+              );
+            });
+          })()}
+
+          {/* Center white circle (donut hole) */}
           <View
-            className="bg-blue-500 rounded-full items-center justify-center shadow-lg"
+            className="bg-white rounded-full items-center justify-center shadow-sm"
             style={{
-              width: 80,
-              height: 80,
-              borderWidth: 4,
-              borderColor: "white",
+              width: 120,
+              height: 120,
+              borderWidth: 2,
+              borderColor: "#e5e7eb",
             }}
           >
-            <Text className="text-2xl font-bold text-white">
+            <Text className="text-3xl font-bold text-gray-900">
               {totalBookings}
             </Text>
-            <Text className="text-[10px] text-blue-100 mt-0.5">Total</Text>
+            <Text className="text-xs text-gray-500 mt-1">Bookings</Text>
           </View>
         </View>
       </View>
@@ -278,12 +290,18 @@ export function BookingSourceChart({
                     shadowRadius: 2,
                   }}
                 />
-                <Text className="text-sm text-gray-700 flex-1" numberOfLines={1}>
+                <Text
+                  className="text-sm text-gray-700 flex-1"
+                  numberOfLines={1}
+                >
                   {SOURCE_DISPLAY_NAMES[entry.source] || entry.source}
                 </Text>
               </View>
               <Text className="text-sm font-bold text-gray-900 ml-2">
-                {entry.count} <Text className="text-xs font-normal text-gray-500">({entry.percentage.toFixed(0)}%)</Text>
+                {entry.count}{" "}
+                <Text className="text-xs font-normal text-gray-500">
+                  ({entry.percentage.toFixed(0)}%)
+                </Text>
               </Text>
             </View>
           );
