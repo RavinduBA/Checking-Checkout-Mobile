@@ -65,12 +65,12 @@ export default function ExpensesScreen() {
   return (
     <View className="flex-1 bg-gray-50">
       <View className="flex-1">
-        {/* Header Section with Gradient */}
-        <View className="bg-gradient-to-br from-rose-500 to-rose-600 px-4 pt-3 pb-6">
-          <View className="flex-row items-center justify-between mb-3">
+        {/* Header Section */}
+        <View className="bg-blue-600 px-4 pt-3 pb-6">
+          <View className="flex-row items-center justify-between mb-4">
             <View>
               <Text className="text-2xl font-bold text-white">Expenses</Text>
-              <Text className="text-rose-100 text-sm mt-1">
+              <Text className="text-blue-100 text-sm mt-1">
                 Track your spending
               </Text>
             </View>
@@ -78,22 +78,22 @@ export default function ExpensesScreen() {
               onPress={() => setShowExpenseForm(true)}
               className="bg-white rounded-xl px-4 py-2.5 flex-row items-center shadow-lg"
             >
-              <Ionicons name="add-circle" size={20} color="#ef4444" />
-              <Text className="text-rose-600 font-bold ml-1.5">Add</Text>
+              <Ionicons name="add-circle" size={20} color="#2563eb" />
+              <Text className="text-blue-600 font-bold ml-1.5">Add</Text>
             </TouchableOpacity>
           </View>
 
           {/* Summary Cards */}
-          <View className="flex-row gap-2 mt-3">
+          <View className="flex-row gap-3">
             {Object.entries(totalExpenses).map(([currency, amount]) => (
               <View
                 key={currency}
-                className="flex-1 bg-white/20 backdrop-blur-sm rounded-xl p-3 border border-white/30"
+                className="flex-1 bg-white rounded-xl p-3 shadow-sm"
               >
-                <Text className="text-rose-100 text-xs mb-1">
+                <Text className="text-xs font-bold text-gray-500 uppercase mb-1">
                   Total {currency}
                 </Text>
-                <Text className="text-white font-bold text-base" numberOfLines={1}>
+                <Text className="text-gray-900 font-bold text-lg">
                   {getCurrencySymbol(currency as "LKR" | "USD")}
                   {amount.toLocaleString()}
                 </Text>

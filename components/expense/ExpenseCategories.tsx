@@ -64,7 +64,7 @@ export function ExpenseCategories({
             }
           >
             <View className="flex-row items-center gap-2 flex-1">
-              <Ionicons name="folder-outline" size={18} color={formData.mainCategory ? "#ef4444" : "#9ca3af"} />
+              <Ionicons name="folder-outline" size={18} color={formData.mainCategory ? "#3b82f6" : "#9ca3af"} />
               <Text
                 className={
                   formData.mainCategory
@@ -87,7 +87,7 @@ export function ExpenseCategories({
             <View className="mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
               {mainCategories.length === 0 ? (
                 <View className="px-4 py-8 items-center">
-                  <Ionicons name="alert-circle-outline" size={40} color="#ef4444" />
+                  <Ionicons name="alert-circle-outline" size={40} color="#3b82f6" />
                   <Text className="text-gray-600 text-center mt-2 mb-1 font-medium">
                     No categories found
                   </Text>
@@ -107,8 +107,8 @@ export function ExpenseCategories({
                       setShowMainCategoryDropdown(false);
                     }}
                   >
-                    <View className="bg-rose-50 rounded-lg p-2">
-                      <Ionicons name="folder" size={16} color="#ef4444" />
+                    <View className="bg-blue-50 rounded-lg p-2">
+                      <Ionicons name="folder" size={16} color="#3b82f6" />
                     </View>
                     <Text className="font-semibold text-gray-900 capitalize flex-1">
                       {category}
@@ -142,7 +142,7 @@ export function ExpenseCategories({
               <Ionicons 
                 name="pricetag-outline" 
                 size={18} 
-                color={formData.subCategory ? "#ef4444" : "#9ca3af"} 
+                color={formData.subCategory ? "#3b82f6" : "#9ca3af"} 
               />
               <Text
                 className={
@@ -179,8 +179,8 @@ export function ExpenseCategories({
                     setShowSubCategoryDropdown(false);
                   }}
                 >
-                  <View className="bg-rose-50 rounded-lg p-2">
-                    <Ionicons name="pricetag" size={16} color="#ef4444" />
+                  <View className="bg-blue-50 rounded-lg p-2">
+                    <Ionicons name="pricetag" size={16} color="#3b82f6" />
                   </View>
                   <Text className="font-semibold text-gray-900 capitalize flex-1">
                     {subCategory}

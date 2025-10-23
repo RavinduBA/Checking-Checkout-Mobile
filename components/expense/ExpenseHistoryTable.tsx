@@ -99,8 +99,8 @@ export function ExpenseHistoryTable({
         <Text className="text-lg font-bold text-gray-900">
           Recent Expenses
         </Text>
-        <View className="bg-rose-100 px-2.5 py-1 rounded-full">
-          <Text className="text-xs font-bold text-rose-600">
+        <View className="bg-blue-100 px-2.5 py-1 rounded-full">
+          <Text className="text-xs font-bold text-blue-700">
             {expenses.length} {expenses.length === 1 ? "entry" : "entries"}
           </Text>
         </View>
@@ -117,8 +117,8 @@ export function ExpenseHistoryTable({
       >
         {expenses.length === 0 ? (
           <View className="bg-white rounded-2xl p-12 items-center border border-gray-100">
-            <View className="bg-rose-50 rounded-full p-6 mb-4">
-              <Ionicons name="receipt-outline" size={48} color="#f43f5e" />
+            <View className="bg-blue-50 rounded-full p-6 mb-4">
+              <Ionicons name="receipt-outline" size={48} color="#3b82f6" />
             </View>
             <Text className="text-lg font-bold text-gray-900 mb-2">
               No expenses yet
@@ -132,67 +132,56 @@ export function ExpenseHistoryTable({
             {expenses.map((expense) => (
               <TouchableOpacity
                 key={expense.id}
-                className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"
+                className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm"
                 activeOpacity={0.7}
                 onPress={() => onExpensePress?.(expense)}
               >
                 {/* Header Row */}
-                <View className="flex-row items-start justify-between mb-3">
-                  <View className="flex-1">
-                    <View className="flex-row items-center gap-2 mb-1">
-                      <View className="bg-rose-50 rounded-lg p-1.5">
-                        <Ionicons name="remove-circle" size={16} color="#ef4444" />
-                      </View>
-                      <Text className="font-bold text-gray-900 capitalize flex-1" numberOfLines={1}>
-                        {expense.main_type}
-                      </Text>
-                    </View>
-                    <Text className="text-xs text-gray-500 capitalize ml-8">
+                <View className="flex-row items-start justify-between mb-2">
+                  <View className="flex-1 mr-3">
+                    <Text className="font-bold text-gray-900 capitalize text-base mb-1" numberOfLines={1}>
+                      {expense.main_type}
+                    </Text>
+                    <Text className="text-sm text-gray-500 capitalize">
                       {expense.sub_type}
                     </Text>
                   </View>
-                  <View className="items-end ml-2">
-                    <Text className="text-base font-bold text-rose-600">
-                      -{getCurrencySymbol(expense.currency as CurrencyType)}
+                  <View className="items-end">
+                    <Text className="text-lg font-bold text-gray-900">
+                      {getCurrencySymbol(expense.currency as CurrencyType)}
                       {expense.amount.toLocaleString()}
                     </Text>
-                    <View className="bg-rose-500 px-2 py-0.5 rounded-full mt-1">
-                      <Text className="text-[10px] font-bold text-white">
+                    <View className="bg-blue-100 px-2 py-0.5 rounded-full mt-1">
+                      <Text className="text-[10px] font-bold text-blue-700">
                         {expense.currency}
                       </Text>
                     </View>
                   </View>
                 </View>
 
-                {/* Details Row */}
-                <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
-                  <View className="flex-row items-center gap-4">
-                    <View className="flex-row items-center gap-1.5">
-                      <Ionicons name="calendar-outline" size={13} color="#6b7280" />
-                      <Text className="text-xs text-gray-600">
-                        {formatDate(expense.date)}
-                      </Text>
-                    </View>
-                    <View className="flex-row items-center gap-1.5">
-                      <Ionicons name="wallet-outline" size={13} color="#6b7280" />
-                      <Text className="text-xs text-gray-600" numberOfLines={1}>
-                        {getAccountName(expense)}
-                      </Text>
-                    </View>
+                {/* Details Row - Date, Account, Note all in one line */}
+                <View className="flex-row items-center flex-wrap gap-x-4 gap-y-1 pt-2 border-t border-gray-100">
+                  <View className="flex-row items-center gap-1.5">
+                    <Ionicons name="calendar-outline" size={14} color="#6b7280" />
+                    <Text className="text-xs text-gray-600">
+                      {formatDate(expense.date)}
+                    </Text>
                   </View>
-                </View>
-
-                {/* Note if exists */}
-                {expense.note && (
-                  <View className="mt-3 pt-3 border-t border-gray-100">
-                    <View className="flex-row items-start gap-2">
-                      <Ionicons name="document-text-outline" size={13} color="#6b7280" />
-                      <Text className="text-xs text-gray-600 flex-1" numberOfLines={2}>
+                  <View className="flex-row items-center gap-1.5">
+                    <Ionicons name="wallet-outline" size={14} color="#6b7280" />
+                    <Text className="text-xs text-gray-600" numberOfLines={1}>
+                      {getAccountName(expense)}
+                    </Text>
+                  </View>
+                  {expense.note && (
+                    <View className="flex-row items-center gap-1.5 flex-1">
+                      <Ionicons name="document-text-outline" size={14} color="#6b7280" />
+                      <Text className="text-xs text-gray-600 flex-1" numberOfLines={1}>
                         {expense.note}
                       </Text>
                     </View>
-                  </View>
-                )}
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -201,7 +190,7 @@ export function ExpenseHistoryTable({
         {/* Load more indicator */}
         {loading && expenses.length > 0 && (
           <View className="py-4 items-center">
-            <ActivityIndicator size="small" color="#ef4444" />
+            <ActivityIndicator size="small" color="#3b82f6" />
           </View>
         )}
 

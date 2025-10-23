@@ -59,8 +59,8 @@ export function ExpenseDetails({
             Amount *
           </Text>
           <View className="relative">
-            <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-rose-50 rounded-lg px-2 py-1">
-              <Text className="text-sm font-bold text-rose-600">
+            <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-blue-50 rounded-lg px-2 py-1">
+              <Text className="text-sm font-bold text-blue-600">
                 {currencySymbol}
               </Text>
             </View>
@@ -138,7 +138,7 @@ export function ExpenseDetails({
               <Ionicons 
                 name="wallet-outline" 
                 size={18} 
-                color={selectedAccount ? "#ef4444" : "#9ca3af"} 
+                color={selectedAccount ? "#3b82f6" : "#9ca3af"} 
               />
               {selectedAccount ? (
                 <View className="flex-1">
@@ -205,7 +205,7 @@ export function ExpenseDetails({
         </Text>
         <View className="relative">
           <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
-            <Ionicons name="calendar" size={18} color="#ef4444" />
+            <Ionicons name="calendar" size={18} color="#3b82f6" />
           </View>
           <TextInput
             value={formData.date}

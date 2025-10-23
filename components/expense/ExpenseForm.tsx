@@ -182,8 +182,8 @@ export function ExpenseForm({
       onRequestClose={onClose}
     >
       <View className="flex-1 bg-gray-50">
-        {/* Header with Gradient */}
-        <View className="bg-gradient-to-br from-rose-500 to-rose-600 px-4 pt-3 pb-4">
+        {/* Header */}
+        <View className="bg-blue-600 px-4 pt-3 pb-4">
           <View className="flex-row justify-between items-center">
             <TouchableOpacity 
               onPress={onClose}
@@ -195,7 +195,7 @@ export function ExpenseForm({
               <Text className="text-xl font-bold text-white">
                 Add Expense
               </Text>
-              <Text className="text-rose-100 text-xs mt-0.5">
+              <Text className="text-blue-100 text-xs mt-0.5">
                 Track your spending
               </Text>
             </View>
@@ -208,7 +208,7 @@ export function ExpenseForm({
             >
               <Text
                 className={`font-bold ${
-                  isSubmitting ? "text-white/50" : "text-rose-600"
+                  isSubmitting ? "text-white/50" : "text-blue-600"
                 }`}
               >
                 {isSubmitting ? "Saving..." : "Save"}
@@ -224,8 +224,8 @@ export function ExpenseForm({
           {/* Categories Section */}
           <View className="bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
             <View className="flex-row items-center gap-2 mb-4">
-              <View className="bg-rose-50 rounded-lg p-2">
-                <Ionicons name="grid-outline" size={18} color="#ef4444" />
+              <View className="bg-blue-50 rounded-lg p-2">
+                <Ionicons name="grid-outline" size={18} color="#3b82f6" />
               </View>
               <Text className="text-base font-bold text-gray-900">
                 Category
@@ -247,8 +247,8 @@ export function ExpenseForm({
           {/* Details Section */}
           <View className="bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
             <View className="flex-row items-center gap-2 mb-4">
-              <View className="bg-rose-50 rounded-lg p-2">
-                <Ionicons name="information-circle-outline" size={18} color="#ef4444" />
+              <View className="bg-blue-50 rounded-lg p-2">
+                <Ionicons name="information-circle-outline" size={18} color="#3b82f6" />
               </View>
               <Text className="text-base font-bold text-gray-900">
                 Details
