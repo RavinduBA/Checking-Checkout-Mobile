@@ -1,16 +1,26 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "CheckingCheckout Mobile",
+    "slug": "checkingcheckout-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.checkingcheckout.mobile"
     },
     "android": {
+      "package": "com.checkingcheckout.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE"
       },
