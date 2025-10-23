@@ -69,7 +69,8 @@ export const signIn = async (email: string, password: string) => {
 // Sign out
 export const signOut = async () => {
   try {
-    const { error } = await supabase.auth.signOut();
+    // Use 'local' scope to properly clear session from AsyncStorage/localStorage
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     
     if (error) {
       Alert.alert('Sign Out Error', error.message);
