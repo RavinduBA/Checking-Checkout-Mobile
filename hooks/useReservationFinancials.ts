@@ -1,231 +1,250 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocationContext } from "../contexts/LocationContext";
 import { supabase } from "../lib/supabase";
 import { convertCurrency } from "../utils/currency";
-import { useAuth } from "./useAuth";
 import { useTenant } from "./useTenant";
 
-interface ReservationFinancials {
-  roomAmount: number;
-  expensesAmount: number;
-  paidAmount: number;
-  balanceAmount: number;
-}
-
-interface ReservationWithFinancials {
+// Type for the simplified financial view
+export interface ReservationFinancial {
   id: string;
   reservation_number: string;
   guest_name: string;
-  guest_email?: string;
-  guest_phone?: string;
-  guest_nationality?: string;
-  adults: number;
-  children: number;
+  status: string;
+  currency: string;
+  room_amount_usd: number;
+  expenses_usd: number;
+  user_paid_amount_usd: number;
+  needs_to_pay_usd: number;
+  // Additional fields for compatibility
+  rooms?: { room_number: string; room_type: string } | null;
+  locations?: { name: string } | null;
   check_in_date: string;
   check_out_date: string;
   nights: number;
   room_rate: number;
   total_amount: number;
-  paid_amount?: number;
-  balance_amount?: number;
-  currency: string;
-  status: string;
-  special_requests?: string;
-  arrival_time?: string;
-  booking_source?: string;
-  created_at: string;
-  updated_at?: string;
-  locations?: {
-    id: string;
-    name: string;
-    address?: string;
-  };
-  rooms?: {
-    id: string;
-    room_number: string;
-    room_type: string;
-  };
-  guides?: {
-    id: string;
-    name: string;
-  };
-  agents?: {
-    id: string;
-    name: string;
-  };
-  convertedAmounts?: ReservationFinancials;
+  paid_amount: number | null;
+  balance_amount: number | null;
 }
 
 export function useReservationFinancials() {
-  const { user } = useAuth();
   const { tenant } = useTenant();
   const { selectedLocation } = useLocationContext();
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<ReservationFinancial[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const calculateFinancials = useCallback(async (
-    reservations: any[],
-    targetCurrency: "USD" | "LKR" = "USD"
-  ): Promise<ReservationWithFinancials[]> => {
-    if (!reservations || reservations.length === 0) {
-      return [];
-    }
-
-    const enhancedReservations: ReservationWithFinancials[] = [];
-
-    for (const reservation of reservations) {
-      try {
-        // Fetch income records for this reservation
-        const { data: incomeRecords, error: incomeError} = await supabase
-          .from("income")
-          .select("amount, currency, payment_method")
-          .eq("booking_id", reservation.id);
-
-        if (incomeError) {
-          console.error("Error fetching income records:", incomeError);
-        }
-
-        // Note: Expenses are not tracked per reservation in this schema
-        // Expenses are general location-level expenses, not linked to bookings
-        const expenseRecords: any[] = [];
-
-        // Calculate room amount (convert if needed)
-        let roomAmount = reservation.total_amount || 0;
-        if (reservation.currency !== targetCurrency && tenant?.id && selectedLocation) {
-          roomAmount = await convertCurrency(
-            roomAmount,
-            reservation.currency as "USD" | "LKR",
-            targetCurrency,
-            tenant.id,
-            selectedLocation
-          );
-        }
-
-        // Calculate total expenses (convert if needed)
-        let expensesAmount = 0;
-        if (expenseRecords && expenseRecords.length > 0) {
-          for (const expense of expenseRecords) {
-            let convertedAmount = expense.amount;
-            if (expense.currency !== targetCurrency && tenant?.id && selectedLocation) {
-              convertedAmount = await convertCurrency(
-                expense.amount,
-                expense.currency as "USD" | "LKR",
-                targetCurrency,
-                tenant.id,
-                selectedLocation
-              );
-            }
-            expensesAmount += convertedAmount;
-          }
-        }
-
-        // Calculate total paid amount (convert if needed)
-        let paidAmount = 0;
-        if (incomeRecords && incomeRecords.length > 0) {
-          for (const income of incomeRecords) {
-            let convertedAmount = income.amount;
-            if (income.currency !== targetCurrency && tenant?.id && selectedLocation) {
-              convertedAmount = await convertCurrency(
-                income.amount,
-                income.currency as "USD" | "LKR",
-                targetCurrency,
-                tenant.id,
-                selectedLocation
-              );
-            }
-            paidAmount += convertedAmount;
-          }
-        }
-
-        // Calculate balance
-        const totalAmount = roomAmount + expensesAmount;
-        const balanceAmount = totalAmount - paidAmount;
-
-        const convertedAmounts: ReservationFinancials = {
-          roomAmount: Math.round(roomAmount * 100) / 100,
-          expensesAmount: Math.round(expensesAmount * 100) / 100,
-          paidAmount: Math.round(paidAmount * 100) / 100,
-          balanceAmount: Math.round(balanceAmount * 100) / 100,
-        };
-
-        enhancedReservations.push({
-          ...reservation,
-          convertedAmounts,
-        });
-      } catch (error) {
-        console.error("Error calculating financials for reservation:", reservation.id, error);
-        // Add reservation without financial calculations on error
-        enhancedReservations.push({
-          ...reservation,
-          convertedAmounts: {
-            roomAmount: reservation.total_amount || 0,
-            expensesAmount: 0,
-            paidAmount: reservation.paid_amount || 0,
-            balanceAmount: (reservation.total_amount || 0) - (reservation.paid_amount || 0),
-          },
-        });
-      }
-    }
-
-    return enhancedReservations;
-  }, []);
-
-  const refetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!tenant?.id || !selectedLocation) {
-      return [];
+      setData([]);
+      return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
-      // Fetch basic reservations data
+      // Get basic reservation data with related tables
       const { data: reservations, error: reservationsError } = await supabase
         .from("reservations")
         .select(`
           *,
-          locations (
-            id,
-            name,
-            address
-          ),
-          rooms (
-            id,
-            room_number,
-            room_type
-          ),
-          guides (
-            id,
-            name
-          ),
-          agents (
-            id,
-            name
-          )
+          rooms(room_number, room_type),
+          locations(name)
         `)
         .eq("tenant_id", tenant.id)
         .eq("location_id", selectedLocation)
-        .order("check_in_date", { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (reservationsError) throw reservationsError;
 
-      // Calculate financial data for all reservations
-      const enhancedReservations = await calculateFinancials(reservations || []);
-      
-      return enhancedReservations;
+      // Get external bookings (channel manager bookings)
+      const { data: externalBookings, error: externalError } = await supabase
+        .from("external_bookings")
+        .select(`
+          *,
+          rooms(room_number, room_type),
+          locations(name)
+        `)
+        .eq("tenant_id", tenant.id)
+        .eq("location_id", selectedLocation)
+        .order("last_synced_at", { ascending: false });
+
+      if (externalError) {
+        console.warn("External bookings error (may not exist):", externalError);
+      }
+
+      // Transform external bookings to match reservation format
+      const transformedExternalBookings = (externalBookings || []).map((booking) => ({
+        id: booking.id,
+        reservation_number: `${booking.source.toUpperCase()}-${booking.external_id}`,
+        guest_name: booking.guest_name,
+        status: booking.status,
+        currency: booking.currency || "USD",
+        check_in_date: booking.check_in,
+        check_out_date: booking.check_out,
+        nights: Math.ceil(
+          (new Date(booking.check_out).getTime() -
+            new Date(booking.check_in).getTime()) /
+            (1000 * 60 * 60 * 24)
+        ),
+        room_rate: booking.total_amount
+          ? Number(booking.total_amount) /
+            Math.ceil(
+              (new Date(booking.check_out).getTime() -
+                new Date(booking.check_in).getTime()) /
+                (1000 * 60 * 60 * 24)
+            )
+          : 0,
+        total_amount: Number(booking.total_amount) || 0,
+        paid_amount: Number(booking.total_amount) || 0, // Channel bookings are typically pre-paid
+        balance_amount: 0,
+        rooms: booking.rooms,
+        locations: booking.locations,
+        tenant_id: booking.tenant_id,
+        location_id: booking.location_id,
+      }));
+
+      // Combine both reservation types
+      const allReservations = [
+        ...(reservations || []),
+        ...transformedExternalBookings,
+      ];
+
+      // Get income records for expense calculations
+      const { data: incomeRecords, error: incomeError } = await supabase
+        .from("income")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .in(
+          "booking_id",
+          allReservations?.map((r) => r.id) || []
+        );
+
+      if (incomeError) {
+        console.warn("Income records error:", incomeError);
+      }
+
+      // Calculate financial data with USD conversion using proper currency conversion
+      const financialData: ReservationFinancial[] = await Promise.all(
+        allReservations?.map(async (reservation) => {
+          try {
+            // Convert reservation amounts to USD
+            const roomAmountOriginal = reservation.room_rate * reservation.nights;
+            const roomAmountUsd = await convertCurrency(
+              roomAmountOriginal,
+              reservation.currency,
+              "USD",
+              tenant.id,
+              reservation.location_id
+            );
+            const paidAmountUsd = await convertCurrency(
+              reservation.paid_amount || 0,
+              reservation.currency,
+              "USD",
+              tenant.id,
+              reservation.location_id
+            );
+
+            // Calculate expenses from income records with proper currency conversion
+            const reservationIncomeRecords =
+              incomeRecords?.filter((inc) => inc.booking_id === reservation.id) ||
+              [];
+
+            // Convert each income record to USD individually
+            const expensesUsdPromises = reservationIncomeRecords.map(
+              async (inc) => {
+                return await convertCurrency(
+                  Number(inc.amount),
+                  inc.currency,
+                  "USD",
+                  tenant.id,
+                  reservation.location_id
+                );
+              }
+            );
+            const expensesUsdArray = await Promise.all(expensesUsdPromises);
+            const expensesUsd = expensesUsdArray.reduce(
+              (sum, amount) => sum + amount,
+              0
+            );
+            const needsToPayUsd = roomAmountUsd + expensesUsd - paidAmountUsd;
+
+            return {
+              id: reservation.id,
+              reservation_number: reservation.reservation_number,
+              guest_name: reservation.guest_name,
+              status: reservation.status,
+              currency: reservation.currency,
+              room_amount_usd: Math.round(roomAmountUsd * 100) / 100,
+              expenses_usd: Math.round(expensesUsd * 100) / 100,
+              user_paid_amount_usd: Math.round(paidAmountUsd * 100) / 100,
+              needs_to_pay_usd: Math.round(needsToPayUsd * 100) / 100,
+              rooms: reservation.rooms,
+              locations: reservation.locations,
+              check_in_date: reservation.check_in_date,
+              check_out_date: reservation.check_out_date,
+              nights: reservation.nights,
+              room_rate: reservation.room_rate,
+              total_amount: reservation.total_amount,
+              paid_amount: reservation.paid_amount,
+              balance_amount: reservation.balance_amount,
+            };
+          } catch (error) {
+            console.error(
+              `Error processing reservation ${reservation.id}:`,
+              error
+            );
+            // Return with basic data if conversion fails
+            return {
+              id: reservation.id,
+              reservation_number: reservation.reservation_number,
+              guest_name: reservation.guest_name,
+              status: reservation.status,
+              currency: reservation.currency,
+              room_amount_usd: reservation.room_rate * reservation.nights,
+              expenses_usd: 0,
+              user_paid_amount_usd: reservation.paid_amount || 0,
+              needs_to_pay_usd:
+                reservation.room_rate * reservation.nights -
+                (reservation.paid_amount || 0),
+              rooms: reservation.rooms,
+              locations: reservation.locations,
+              check_in_date: reservation.check_in_date,
+              check_out_date: reservation.check_out_date,
+              nights: reservation.nights,
+              room_rate: reservation.room_rate,
+              total_amount: reservation.total_amount,
+              paid_amount: reservation.paid_amount,
+              balance_amount: reservation.balance_amount,
+            };
+          }
+        }) || []
+      );
+
+      setData(financialData);
     } catch (error) {
       console.error("Error fetching reservation financials:", error);
-      setError(error instanceof Error ? error.message : "Failed to fetch reservation financials");
-      return [];
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch reservation financials"
+      );
+      setData([]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }, [tenant?.id, selectedLocation, calculateFinancials]);
+  }, [tenant?.id, selectedLocation]);
+
+  // Auto-fetch on mount and when dependencies change
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return {
-    calculateFinancials,
-    refetch,
-    loading,
+    data,
+    isLoading,
     error,
+    refetch: fetchData,
   };
 }
