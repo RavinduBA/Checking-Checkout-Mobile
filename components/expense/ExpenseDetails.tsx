@@ -51,63 +51,69 @@ export function ExpenseDetails({
   });
 
   return (
-    <View className="space-y-4">
+    <View className="gap-4">
       {/* Amount and Currency Row */}
-      <View className="flex-row gap-4 mb-6">
+      <View className="flex-row gap-3">
         <View className="flex-1">
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+          <Text className="text-xs font-bold text-gray-500 uppercase mb-2">
             Amount *
           </Text>
           <View className="relative">
-            <Text className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 z-10">
-              {currencySymbol}
-            </Text>
+            <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-rose-50 rounded-lg px-2 py-1">
+              <Text className="text-sm font-bold text-rose-600">
+                {currencySymbol}
+              </Text>
+            </View>
             <TextInput
               value={formData.amount}
               onChangeText={(text) => {
-                // Only allow numbers and decimal point
                 const cleaned = text.replace(/[^0-9.]/g, "");
                 onFormDataChange({ amount: cleaned });
               }}
               placeholder="0.00"
               keyboardType="decimal-pad"
-              className="bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-gray-800"
+              className="bg-gray-50 border border-gray-200 rounded-xl pl-14 pr-4 py-3.5 text-gray-900 font-semibold text-base"
+              placeholderTextColor="#9ca3af"
             />
           </View>
         </View>
 
-        <View className="w-32">
-          <Text className="text-sm font-medium text-gray-700 mb-2">
+        <View className="w-28">
+          <Text className="text-xs font-bold text-gray-500 uppercase mb-2">
             Currency *
           </Text>
           <View>
             <TouchableOpacity
-              className="bg-white border border-gray-200 rounded-lg px-3 py-3 flex-row items-center justify-between"
+              className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3.5 flex-row items-center justify-between"
               onPress={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
             >
-              <Text className="text-gray-800 font-medium">
+              <Text className="text-gray-900 font-bold">
                 {formData.currency}
               </Text>
               <Ionicons
                 name={showCurrencyDropdown ? "chevron-up" : "chevron-down"}
                 size={16}
-                color="#6B7280"
+                color="#9ca3af"
               />
             </TouchableOpacity>
 
             {showCurrencyDropdown && (
-              <View className="absolute top-full left-0 right-0 bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm z-10">
-                {(["LKR", "USD"] as CurrencyType[]).map((currency) => (
+              <View className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10">
+                {(["LKR", "USD"] as CurrencyType[]).map((currency, index) => (
                   <TouchableOpacity
                     key={currency}
-                    className="px-3 py-3 border-b border-gray-100 last:border-b-0"
+                    className={`px-3 py-3 ${
+                      index === 0 ? "border-b border-gray-100" : ""
+                    }`}
                     onPress={() => {
                       onFormDataChange({ currency });
                       setShowCurrencyDropdown(false);
                     }}
                   >
-                    <Text className="font-medium text-gray-800">
-                      {currency} -{" "}
+                    <Text className="font-bold text-gray-900 mb-0.5">
+                      {currency}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
                       {currency === "LKR" ? "Sri Lankan Rupee" : "US Dollar"}
                     </Text>
                   </TouchableOpacity>
@@ -119,72 +125,71 @@ export function ExpenseDetails({
       </View>
 
       {/* Account Selection */}
-      <View className="mb-6">
-        <Text className="text-sm font-medium text-gray-700 mb-2">
+      <View>
+        <Text className="text-xs font-bold text-gray-500 uppercase mb-2">
           Account *
         </Text>
         <View>
           <TouchableOpacity
-            className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex-row items-center justify-between"
+            className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex-row items-center justify-between"
             onPress={() => setShowAccountDropdown(!showAccountDropdown)}
           >
-            <View className="flex-1">
+            <View className="flex-row items-center gap-2 flex-1">
+              <Ionicons 
+                name="wallet-outline" 
+                size={18} 
+                color={selectedAccount ? "#ef4444" : "#9ca3af"} 
+              />
               {selectedAccount ? (
-                <>
-                  <Text className="font-medium text-gray-800">
+                <View className="flex-1">
+                  <Text className="font-semibold text-gray-900" numberOfLines={1}>
                     {selectedAccount.name}
                   </Text>
-                  <Text className="text-sm text-gray-500">
-                    Balance: {getCurrencySymbol(selectedAccount.currency)}
+                  <Text className="text-xs text-gray-500">
+                    {getCurrencySymbol(selectedAccount.currency)}
                     {selectedAccount.current_balance.toLocaleString()}
                   </Text>
-                </>
-              ) : (
-                <Text className="text-gray-500">Select account</Text>
-              )}
-            </View>
-            <View className="flex-row items-center">
-              {selectedAccount && (
-                <View className="px-2 py-1 bg-gray-100 rounded mr-2">
-                  <Text className="text-xs text-gray-600">
-                    {selectedAccount.currency}
-                  </Text>
                 </View>
+              ) : (
+                <Text className="text-gray-400">Choose account</Text>
               )}
-              <Ionicons
-                name={showAccountDropdown ? "chevron-up" : "chevron-down"}
-                size={20}
-                color="#6B7280"
-              />
             </View>
+            <Ionicons
+              name={showAccountDropdown ? "chevron-up" : "chevron-down"}
+              size={18}
+              color="#9ca3af"
+            />
           </TouchableOpacity>
 
           {showAccountDropdown && (
-            <View className="bg-white border border-gray-200 border-t-0 rounded-b-lg shadow-sm">
-              {availableAccounts.map((account) => (
+            <View className="mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+              {availableAccounts.map((account, index) => (
                 <TouchableOpacity
                   key={account.id}
-                  className="px-4 py-3 border-b border-gray-100 last:border-b-0"
+                  className={`px-4 py-3 flex-row items-center gap-3 ${
+                    index < availableAccounts.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
                   onPress={() => {
                     onFormDataChange({ accountId: account.id });
                     setShowAccountDropdown(false);
                   }}
                 >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="font-medium text-gray-800">
-                        {account.name}
-                      </Text>
-                      <Text className="text-sm text-gray-500">
-                        Balance: {getCurrencySymbol(account.currency)}
-                        {account.current_balance.toLocaleString()}
-                      </Text>
-                    </View>
-                    <View className="px-2 py-1 bg-gray-100 rounded">
-                      <Text className="text-xs text-gray-600">
-                        {account.currency}
-                      </Text>
-                    </View>
+                  <View className="bg-blue-50 rounded-lg p-2">
+                    <Ionicons name="wallet" size={16} color="#3b82f6" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-semibold text-gray-900" numberOfLines={1}>
+                      {account.name}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
+                      {getCurrencySymbol(account.currency)}
+                      {account.current_balance.toLocaleString()}
+                    </Text>
+                  </View>
+                  <View className="bg-blue-500 px-2 py-1 rounded-full">
+                    <Text className="text-[10px] font-bold text-white">
+                      {account.currency}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -194,38 +199,44 @@ export function ExpenseDetails({
       </View>
 
       {/* Date Field */}
-      <View className="mb-6">
-        <Text className="text-sm font-medium text-gray-700 mb-2">Date *</Text>
+      <View>
+        <Text className="text-xs font-bold text-gray-500 uppercase mb-2">
+          Date *
+        </Text>
         <View className="relative">
-          <Ionicons
-            name="calendar-outline"
-            size={16}
-            color="#6B7280"
-            className="absolute left-3 top-1/2 transform -translate-y-1/2"
-          />
+          <View className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+            <Ionicons name="calendar" size={18} color="#ef4444" />
+          </View>
           <TextInput
             value={formData.date}
             onChangeText={(text) => onFormDataChange({ date: text })}
             placeholder="YYYY-MM-DD"
-            className="bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-gray-800"
+            className="bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-4 py-3.5 text-gray-900 font-semibold"
+            placeholderTextColor="#9ca3af"
           />
         </View>
       </View>
 
       {/* Notes Field */}
-      <View className="mb-6">
-        <Text className="text-sm font-medium text-gray-700 mb-2">
+      <View>
+        <Text className="text-xs font-bold text-gray-500 uppercase mb-2">
           Notes (Optional)
         </Text>
-        <TextInput
-          value={formData.note}
-          onChangeText={(text) => onFormDataChange({ note: text })}
-          placeholder="Add any notes about this expense"
-          multiline
-          numberOfLines={3}
-          className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-800"
-          textAlignVertical="top"
-        />
+        <View className="relative">
+          <View className="absolute left-3 top-3 z-10">
+            <Ionicons name="document-text" size={18} color="#9ca3af" />
+          </View>
+          <TextInput
+            value={formData.note}
+            onChangeText={(text) => onFormDataChange({ note: text })}
+            placeholder="Add any notes about this expense..."
+            multiline
+            numberOfLines={3}
+            className="bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-gray-900"
+            textAlignVertical="top"
+            placeholderTextColor="#9ca3af"
+          />
+        </View>
       </View>
     </View>
   );

@@ -182,58 +182,94 @@ export function ExpenseForm({
       onRequestClose={onClose}
     >
       <View className="flex-1 bg-gray-50">
-        {/* Header */}
-        <View className="bg-white border-b border-gray-200 px-6 py-4 flex-row justify-between items-center">
-          <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color="#6B7280" />
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-gray-800">
-            Add Expense
-          </Text>
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            className={`px-4 py-2 rounded-lg ${
-              isSubmitting ? "bg-gray-300" : "bg-blue-500"
-            }`}
-          >
-            <Text
-              className={`font-medium ${
-                isSubmitting ? "text-gray-500" : "text-white"
+        {/* Header with Gradient */}
+        <View className="bg-gradient-to-br from-rose-500 to-rose-600 px-4 pt-3 pb-4">
+          <View className="flex-row justify-between items-center">
+            <TouchableOpacity 
+              onPress={onClose}
+              className="bg-white/20 rounded-full p-2"
+            >
+              <Ionicons name="close" size={24} color="white" />
+            </TouchableOpacity>
+            <View className="flex-1 items-center">
+              <Text className="text-xl font-bold text-white">
+                Add Expense
+              </Text>
+              <Text className="text-rose-100 text-xs mt-0.5">
+                Track your spending
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              className={`px-4 py-2 rounded-xl ${
+                isSubmitting ? "bg-white/20" : "bg-white"
               }`}
             >
-              {isSubmitting ? "Adding..." : "Add"}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={`font-bold ${
+                  isSubmitting ? "text-white/50" : "text-rose-600"
+                }`}
+              >
+                {isSubmitting ? "Saving..." : "Save"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <ScrollView className="flex-1 px-6 py-6">
+        <ScrollView 
+          className="flex-1 px-4 py-4"
+          showsVerticalScrollIndicator={false}
+        >
           {/* Categories Section */}
-          <ExpenseCategories
-            formData={formData}
-            expenseTypes={expenseTypes}
-            onFormDataChange={(data) =>
-              setFormData((prev) => ({ ...prev, ...data }))
-            }
-            showMainCategoryDropdown={showMainCategoryDropdown}
-            showSubCategoryDropdown={showSubCategoryDropdown}
-            setShowMainCategoryDropdown={setShowMainCategoryDropdown}
-            setShowSubCategoryDropdown={setShowSubCategoryDropdown}
-          />
+          <View className="bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
+            <View className="flex-row items-center gap-2 mb-4">
+              <View className="bg-rose-50 rounded-lg p-2">
+                <Ionicons name="grid-outline" size={18} color="#ef4444" />
+              </View>
+              <Text className="text-base font-bold text-gray-900">
+                Category
+              </Text>
+            </View>
+            <ExpenseCategories
+              formData={formData}
+              expenseTypes={expenseTypes}
+              onFormDataChange={(data) =>
+                setFormData((prev) => ({ ...prev, ...data }))
+              }
+              showMainCategoryDropdown={showMainCategoryDropdown}
+              showSubCategoryDropdown={showSubCategoryDropdown}
+              setShowMainCategoryDropdown={setShowMainCategoryDropdown}
+              setShowSubCategoryDropdown={setShowSubCategoryDropdown}
+            />
+          </View>
 
           {/* Details Section */}
-          <ExpenseDetails
-            formData={formData}
-            accounts={accounts}
-            selectedLocation={selectedLocationId}
-            onFormDataChange={(data) =>
-              setFormData((prev) => ({ ...prev, ...data }))
-            }
-            showAccountDropdown={showAccountDropdown}
-            showCurrencyDropdown={showCurrencyDropdown}
-            setShowAccountDropdown={setShowAccountDropdown}
-            setShowCurrencyDropdown={setShowCurrencyDropdown}
-          />
+          <View className="bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
+            <View className="flex-row items-center gap-2 mb-4">
+              <View className="bg-rose-50 rounded-lg p-2">
+                <Ionicons name="information-circle-outline" size={18} color="#ef4444" />
+              </View>
+              <Text className="text-base font-bold text-gray-900">
+                Details
+              </Text>
+            </View>
+            <ExpenseDetails
+              formData={formData}
+              accounts={accounts}
+              selectedLocation={selectedLocationId}
+              onFormDataChange={(data) =>
+                setFormData((prev) => ({ ...prev, ...data }))
+              }
+              showAccountDropdown={showAccountDropdown}
+              showCurrencyDropdown={showCurrencyDropdown}
+              setShowAccountDropdown={setShowAccountDropdown}
+              setShowCurrencyDropdown={setShowCurrencyDropdown}
+            />
+          </View>
+
+          {/* Bottom spacing */}
+          <View className="h-20" />
         </ScrollView>
       </View>
     </Modal>
