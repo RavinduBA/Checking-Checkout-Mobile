@@ -7,7 +7,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { CartesianChart, Line, Bar } from "victory-native";
 import { useTenant } from "../../hooks/useTenant";
 import type { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
@@ -17,7 +16,6 @@ import {
   getCurrencySymbol,
   getDisplayCurrency,
 } from "../../utils/currency";
-import { BookingSourceChart } from "./booking-source-chart";
 
 type Location = Database["public"]["Tables"]["locations"]["Row"];
 
@@ -215,104 +213,120 @@ export function IncomeExpenseChart({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="gap-3"
+        contentContainerStyle={{ gap: 12, paddingHorizontal: 2 }}
       >
-        <View className="bg-white rounded-xl p-4 border border-gray-200 min-w-[160px]">
+        <View className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 shadow-lg min-w-[140px]">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-gray-600">
-              {selectedMonth ? "Monthly Income" : "Today Income"}
-            </Text>
-            <Ionicons name="arrow-up-circle" size={20} color="#10b981" />
+            <Ionicons name="trending-up" size={24} color="white" />
           </View>
-          <Text className="text-2xl font-bold text-green-600">
+          <Text className="text-xs text-green-100 mb-1">
+            {selectedMonth ? "Monthly Income" : "Today"}
+          </Text>
+          <Text className="text-xl font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(todayIncome, displayCurrency)}
           </Text>
-          <Text className="text-xs text-gray-500 mt-1">{locationName}</Text>
+          <Text className="text-xs text-green-100 mt-1">Income</Text>
         </View>
 
-        <View className="bg-white rounded-xl p-4 border border-gray-200 min-w-[160px]">
+        <View className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 shadow-lg min-w-[140px]">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-gray-600">
-              {selectedMonth ? "Monthly Expenses" : "Today Expenses"}
-            </Text>
-            <Ionicons name="arrow-down-circle" size={20} color="#ef4444" />
+            <Ionicons name="trending-down" size={24} color="white" />
           </View>
-          <Text className="text-2xl font-bold text-red-600">
+          <Text className="text-xs text-red-100 mb-1">
+            {selectedMonth ? "Monthly Expenses" : "Today"}
+          </Text>
+          <Text className="text-xl font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(todayExpenses, displayCurrency)}
           </Text>
-          <Text className="text-xs text-gray-500 mt-1">{locationName}</Text>
+          <Text className="text-xs text-red-100 mt-1">Expenses</Text>
         </View>
 
-        <View className="bg-white rounded-xl p-4 border border-gray-200 min-w-[160px]">
+        <View className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 shadow-lg min-w-[140px]">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-gray-600">Weekly Profit</Text>
-            <Ionicons name="trending-up" size={20} color="#3b82f6" />
+            <Ionicons name="stats-chart" size={24} color="white" />
           </View>
-          <Text className="text-2xl font-bold text-blue-600">
+          <Text className="text-xs text-blue-100 mb-1">Weekly</Text>
+          <Text className="text-xl font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(weeklyProfit, displayCurrency)}
           </Text>
-          <Text className="text-xs text-gray-500 mt-1">
-            {profitMargin.toFixed(1)}% margin
+          <Text className="text-xs text-blue-100 mt-1">
+            Profit • {profitMargin.toFixed(1)}%
           </Text>
         </View>
       </ScrollView>
 
-      {/* Chart */}
+      {/* Chart - Vertical Bars */}
       <View className="bg-white rounded-xl p-4 border border-gray-200">
-        <Text className="text-lg font-semibold text-gray-900 mb-1">
-          Income vs Expenses
-        </Text>
+        <View className="flex-row items-center justify-between mb-1">
+          <Text className="text-lg font-semibold text-gray-900">
+            Income vs Expenses
+          </Text>
+          <Ionicons name="bar-chart" size={20} color="#3b82f6" />
+        </View>
         <Text className="text-sm text-gray-600 mb-4">
-          {selectedMonth ? "Monthly Overview" : "Last 30 Days Overview"}
+          {selectedMonth ? "Monthly Overview" : "Last 7 Days"}
         </Text>
-        {/* Simplified chart view - Victory Native has different API */}
-        <View className="gap-2">
+        
+        {/* Vertical Bar Chart */}
+        <View className="flex-row items-end justify-between gap-1" style={{ height: 180 }}>
           {chartData.slice(-7).map((item, index) => {
             const date = new Date(item.date);
             const maxValue = Math.max(
-              ...chartData.map((d) => Math.max(Math.abs(d.income), Math.abs(d.expenses)))
+              ...chartData.slice(-7).map((d) =>
+                Math.max(Math.abs(d.income), Math.abs(d.expenses))
+              )
             );
             
+            const incomeHeight = maxValue > 0 ? (item.income / maxValue) * 140 : 0;
+            const expenseHeight = maxValue > 0 ? (Math.abs(item.expenses) / maxValue) * 140 : 0;
+
             return (
-              <View key={index} className="gap-1">
-                <Text className="text-xs text-gray-600">
-                  {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              <View key={index} className="flex-1 items-center gap-1">
+                {/* Bars Container */}
+                <View className="flex-row gap-1 items-end" style={{ height: 140 }}>
+                  {/* Income Bar */}
+                  <View
+                    style={{
+                      width: 14,
+                      height: Math.max(incomeHeight, 4),
+                      backgroundColor: "#10b981",
+                      borderTopLeftRadius: 4,
+                      borderTopRightRadius: 4,
+                    }}
+                  />
+                  {/* Expense Bar */}
+                  <View
+                    style={{
+                      width: 14,
+                      height: Math.max(expenseHeight, 4),
+                      backgroundColor: "#ef4444",
+                      borderTopLeftRadius: 4,
+                      borderTopRightRadius: 4,
+                    }}
+                  />
+                </View>
+                {/* Date Label */}
+                <Text className="text-[9px] text-gray-500 text-center">
+                  {date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </Text>
-                <View className="flex-row gap-2 items-center">
-                  {/* Income bar */}
-                  <View className="flex-1">
-                    <View
-                      style={{
-                        height: 20,
-                        width: `${(item.income / maxValue) * 100}%`,
-                        backgroundColor: "#3b82f6",
-                        borderRadius: 4,
-                      }}
-                    />
-                  </View>
-                  <Text className="text-xs text-gray-700 w-16 text-right">
-                    {getCurrencySymbol(displayCurrency)}{item.income.toFixed(0)}
-                  </Text>
-                </View>
-                <View className="flex-row gap-2 items-center">
-                  {/* Expense bar */}
-                  <View className="flex-1">
-                    <View
-                      style={{
-                        height: 20,
-                        width: `${(Math.abs(item.expenses) / maxValue) * 100}%`,
-                        backgroundColor: "#ef4444",
-                        borderRadius: 4,
-                      }}
-                    />
-                  </View>
-                  <Text className="text-xs text-gray-700 w-16 text-right">
-                    {getCurrencySymbol(displayCurrency)}{Math.abs(item.expenses).toFixed(0)}
-                  </Text>
-                </View>
               </View>
             );
           })}
+        </View>
+        
+        {/* Legend */}
+        <View className="flex-row justify-center gap-4 mt-4 pt-3 border-t border-gray-100">
+          <View className="flex-row items-center gap-2">
+            <View className="w-3 h-3 bg-green-500 rounded" />
+            <Text className="text-xs text-gray-600">Income</Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <View className="w-3 h-3 bg-red-500 rounded" />
+            <Text className="text-xs text-gray-600">Expenses</Text>
+          </View>
         </View>
       </View>
     </View>

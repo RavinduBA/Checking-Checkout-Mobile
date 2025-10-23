@@ -68,7 +68,6 @@ export function BookingSourceChart({
   const [totalBookings, setTotalBookings] = useState(0);
   const screenWidth = Dimensions.get("window").width;
 
-
   useEffect(() => {
     const fetchBookingSourceData = async () => {
       if (!tenant?.id) return;
@@ -180,54 +179,115 @@ export function BookingSourceChart({
   return (
     <View className="bg-white rounded-xl p-4 border border-gray-200">
       <View className="flex-row items-center gap-2 mb-4">
-        <Ionicons name="pie-chart-outline" size={20} color="#3b82f6" />
+        <Ionicons name="pie-chart" size={20} color="#3b82f6" />
         <Text className="text-lg font-semibold text-gray-900">
           Booking Sources
         </Text>
       </View>
 
-      {/* Horizontal bar chart representation */}
+      {/* Circular Segments Visualization */}
+      <View className="items-center mb-6">
+        <View style={{ width: 200, height: 200, position: "relative", alignItems: "center", justifyContent: "center" }}>
+          {/* Circular segments */}
+          {sourceData.map((entry, index) => {
+            const color =
+              SOURCE_COLORS[entry.source] ||
+              FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+            
+            // Calculate position in circle
+            const totalItems = sourceData.length;
+            const angle = (index / totalItems) * 2 * Math.PI;
+            const radius = 70;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            
+            // Size based on percentage
+            const size = Math.max(30 + (entry.percentage / 100) * 30, 35);
+
+            return (
+              <View
+                key={entry.source}
+                style={{
+                  position: "absolute",
+                  left: 100 + x - size / 2,
+                  top: 100 + y - size / 2,
+                  width: size,
+                  height: size,
+                  backgroundColor: color,
+                  borderRadius: size / 2,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 3,
+                  borderColor: "white",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+              >
+                <Text className="text-white font-bold text-xs">
+                  {entry.percentage.toFixed(0)}%
+                </Text>
+              </View>
+            );
+          })}
+
+          {/* Center info circle */}
+          <View
+            className="bg-blue-500 rounded-full items-center justify-center shadow-lg"
+            style={{
+              width: 80,
+              height: 80,
+              borderWidth: 4,
+              borderColor: "white",
+            }}
+          >
+            <Text className="text-2xl font-bold text-white">
+              {totalBookings}
+            </Text>
+            <Text className="text-[10px] text-blue-100 mt-0.5">Total</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Legend - Compact List */}
       <View className="gap-2">
         {sourceData.map((entry, index) => {
-          const barWidth = (entry.percentage / 100) * (screenWidth - 96);
           const color =
             SOURCE_COLORS[entry.source] ||
             FALLBACK_COLORS[index % FALLBACK_COLORS.length];
-          
+
           return (
-            <View key={entry.source} className="gap-1">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2 flex-1">
-                  <View
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: color,
-                    }}
-                  />
-                  <Text className="text-sm text-gray-700 flex-1">
-                    {SOURCE_DISPLAY_NAMES[entry.source] || entry.source}
-                  </Text>
-                </View>
-                <Text className="text-sm font-semibold text-gray-900">
-                  {entry.count} ({entry.percentage.toFixed(1)}%)
+            <View
+              key={entry.source}
+              className="flex-row items-center justify-between py-2.5 px-3 bg-gray-50 rounded-lg"
+            >
+              <View className="flex-row items-center gap-2.5 flex-1">
+                <View
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    backgroundColor: color,
+                    borderWidth: 2,
+                    borderColor: "white",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 2,
+                  }}
+                />
+                <Text className="text-sm text-gray-700 flex-1" numberOfLines={1}>
+                  {SOURCE_DISPLAY_NAMES[entry.source] || entry.source}
                 </Text>
               </View>
-              <View
-                style={{
-                  height: 8,
-                  width: Math.max(barWidth, 20),
-                  backgroundColor: color,
-                  borderRadius: 4,
-                }}
-              />
+              <Text className="text-sm font-bold text-gray-900 ml-2">
+                {entry.count} <Text className="text-xs font-normal text-gray-500">({entry.percentage.toFixed(0)}%)</Text>
+              </Text>
             </View>
           );
         })}
-        <Text className="text-xs text-gray-500 mt-2">
-          {totalBookings} total bookings
-        </Text>
       </View>
     </View>
   );

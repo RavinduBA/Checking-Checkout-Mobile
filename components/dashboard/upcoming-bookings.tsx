@@ -107,10 +107,10 @@ export function UpcomingBookings({
   };
 
   return (
-    <View className="bg-white rounded-xl p-6 border border-gray-200">
+    <View className="bg-white rounded-xl p-4 border border-gray-200">
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center gap-2">
-          <Ionicons name="calendar-outline" size={20} color="#3b82f6" />
+          <Ionicons name="calendar" size={20} color="#3b82f6" />
           <Text className="text-lg font-semibold text-gray-900">
             Upcoming Bookings
           </Text>
@@ -118,78 +118,95 @@ export function UpcomingBookings({
         {hasCalendarPermission && onViewAllPress && (
           <TouchableOpacity
             onPress={onViewAllPress}
-            className="flex-row items-center gap-1 px-3 py-1.5 bg-gray-100 rounded-lg"
+            className="flex-row items-center gap-1 px-3 py-1.5 bg-blue-50 rounded-lg"
           >
-            <Ionicons name="eye-outline" size={16} color="#3b82f6" />
-            <Text className="text-sm font-medium text-blue-600">View All</Text>
+            <Text className="text-sm font-semibold text-blue-600">View All</Text>
+            <Ionicons name="arrow-forward" size={14} color="#3b82f6" />
           </TouchableOpacity>
         )}
       </View>
-      <ScrollView className="gap-3">
+      <View className="gap-3">
         {upcomingReservations.length > 0 ? (
           upcomingReservations.map((reservation) => (
-            <View
+            <TouchableOpacity
               key={reservation.id}
-              className="p-4 rounded-lg bg-gray-50 border border-gray-100"
+              className="p-3.5 rounded-xl bg-gradient-to-br from-gray-50 to-white border border-gray-100 shadow-sm"
+              activeOpacity={0.7}
             >
-              <View className="gap-2">
-                <View className="flex-row items-start justify-between gap-2">
-                  <View className="flex-1 min-w-0">
-                    <Text
-                      className="font-semibold text-gray-900"
-                      numberOfLines={1}
-                    >
-                      {reservation.guest_name}
-                    </Text>
-                    <Text className="text-sm text-gray-600 mt-1">
-                      {new Date(reservation.check_in_date).toLocaleDateString()}{" "}
-                      to{" "}
-                      {new Date(
-                        reservation.check_out_date
-                      ).toLocaleDateString()}
-                    </Text>
-                    <Text className="text-xs text-gray-500 mt-0.5">
-                      {reservation.locations?.name} • Room{" "}
-                      {reservation.rooms?.room_number}
-                    </Text>
-                  </View>
-                  <View className="gap-2">
-                    <View
-                      className={`px-2 py-1 rounded ${getStatusColor(
-                        reservation.status
-                      )}`}
-                    >
-                      <Text className="text-xs font-medium capitalize">
-                        {reservation.status}
-                      </Text>
-                    </View>
-                    {reservation.booking_source && (
-                      <View className="px-2 py-1 bg-purple-100 rounded border border-purple-200">
-                        <Text className="text-xs font-medium text-purple-900">
-                          {reservation.booking_source.replace("_", ".")}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                <View className="flex-row justify-between items-center mt-2">
-                  <Text className="text-xs text-gray-500">
-                    {reservation.reservation_number}
+              <View className="flex-row items-start justify-between gap-2 mb-2">
+                <View className="flex-1 min-w-0">
+                  <Text
+                    className="font-bold text-gray-900 text-base"
+                    numberOfLines={1}
+                  >
+                    {reservation.guest_name}
                   </Text>
-                  <Text className="font-bold text-green-600">
-                    {reservation.currency}{" "}
-                    {reservation.total_amount.toLocaleString()}
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    #{reservation.reservation_number}
+                  </Text>
+                </View>
+                <View
+                  className={`px-2.5 py-1 rounded-full ${getStatusColor(
+                    reservation.status
+                  )}`}
+                >
+                  <Text className="text-xs font-bold capitalize">
+                    {reservation.status.replace("_", " ")}
                   </Text>
                 </View>
               </View>
-            </View>
+
+              <View className="flex-row items-center gap-2 mb-2">
+                <Ionicons name="time-outline" size={14} color="#6b7280" />
+                <Text className="text-sm text-gray-600">
+                  {new Date(reservation.check_in_date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  -{" "}
+                  {new Date(reservation.check_out_date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </Text>
+              </View>
+
+              <View className="flex-row items-center justify-between pt-2 border-t border-gray-100">
+                <View className="flex-row items-center gap-1.5">
+                  <Ionicons name="location-outline" size={13} color="#6b7280" />
+                  <Text className="text-xs text-gray-600">
+                    {reservation.locations?.name}
+                  </Text>
+                  <Text className="text-xs text-gray-400">•</Text>
+                  <Ionicons name="bed-outline" size={13} color="#6b7280" />
+                  <Text className="text-xs text-gray-600">
+                    Room {reservation.rooms?.room_number}
+                  </Text>
+                </View>
+                <Text className="font-bold text-green-600 text-sm">
+                  {reservation.currency} {reservation.total_amount.toLocaleString()}
+                </Text>
+              </View>
+
+              {reservation.booking_source && (
+                <View className="mt-2 pt-2 border-t border-gray-100">
+                  <View className="flex-row items-center gap-1.5">
+                    <Ionicons name="globe-outline" size={12} color="#8b5cf6" />
+                    <Text className="text-xs font-medium text-purple-600 capitalize">
+                      {reservation.booking_source.replace("_", ".")}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </TouchableOpacity>
           ))
         ) : (
-          <View className="py-8 items-center">
-            <Text className="text-gray-500">No upcoming bookings</Text>
+          <View className="py-12 items-center">
+            <Ionicons name="calendar-outline" size={48} color="#d1d5db" />
+            <Text className="text-gray-400 mt-3">No upcoming bookings</Text>
           </View>
         )}
-      </ScrollView>
+      </View>
     </View>
   );
 }
