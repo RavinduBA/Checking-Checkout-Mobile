@@ -2,7 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { useLocationContext, useTenant } from "../../hooks";
-import { useReservationsData } from "../../hooks/useReservationsData";
+import {
+	type ReservationFinancial,
+	useReservationFinancials,
+} from "../../hooks/useReservationFinancials";
 import type { Database } from "../../integrations/supabase/types";
 import { convertCurrency, getCurrencySymbol } from "../../utils/currency";
 import { ReservationActions } from "./ReservationActions";
@@ -29,51 +32,12 @@ export function ReservationsMobileCards({
   onPayment,
   onAddIncome,
 }: ReservationsMobileCardsProps) {
-  const { reservations, loading } = useReservationsData();
+  const { data: reservations, isLoading: loading } = useReservationFinancials();
   const { tenant } = useTenant();
   const { selectedLocation } = useLocationContext();
 
-  // State for converted amounts
-  const [convertedAmounts, setConvertedAmounts] = useState<
-    Record<string, number>
-  >({});
-
-  // Effect to convert amounts when currency or reservations change
-  useEffect(() => {
-    if (!tenant?.id || !selectedLocation) {
-      return;
-    }
-
-    const convertAmounts = async () => {
-      if (!reservations.length) return;
-
-      const newConvertedAmounts: Record<string, number> = {};
-
-      for (const reservation of reservations) {
-        const roomAmount = reservation.room_rate * reservation.nights;
-        try {
-          const convertedAmount = await convertCurrency(
-            roomAmount,
-            reservation.currency,
-            selectedCurrency,
-            tenant.id,
-            selectedLocation
-          );
-          newConvertedAmounts[reservation.id] = convertedAmount;
-        } catch (error) {
-          console.error(
-            `Failed to convert currency for reservation ${reservation.id}:`,
-            error
-          );
-          newConvertedAmounts[reservation.id] = roomAmount; // Fallback to original amount
-        }
-      }
-
-      setConvertedAmounts(newConvertedAmounts);
-    };
-
-    convertAmounts();
-  }, [reservations, selectedCurrency, tenant?.id, selectedLocation]);
+  // Note: Currency conversion is now handled by useReservationFinancials hook
+  // All financial amounts are in USD from the hook
 
   // Utility functions
   const getStatusColor = (status: string): string => {
@@ -117,11 +81,9 @@ export function ReservationsMobileCards({
     );
   };
 
-  const getTotalPayableAmount = (reservation: any): number => {
-    // Use database-calculated total that includes room amount and pending services
-    // The trigger already calculates: balance_amount = (total_amount + pending_income) - paid_amount
-    // So total payable = total_amount + pending services = paid_amount + balance_amount
-    return (reservation.paid_amount || 0) + (reservation.balance_amount || 0);
+  const getTotalPayableAmount = (reservation: ReservationFinancial): number => {
+    // Total payable in USD = room amount + expenses (from hook's USD calculations)
+    return reservation.room_amount_usd + reservation.expenses_usd;
   };
 
   // Transform reservation data for printing (matching web app structure)
@@ -221,21 +183,32 @@ export function ReservationsMobileCards({
           <View className="flex-row items-center">
             <Ionicons name="cash-outline" size={12} color="#6B7280" />
             <Text className="text-xs text-gray-600 ml-2">
-              Room: {getCurrencySymbol(selectedCurrency)}{" "}
-              {(convertedAmounts[reservation.id] || 0).toLocaleString()}
+              Room: {getCurrencySymbol("USD")} {reservation.room_amount_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
 
-          {/* Additional Services */}
+          {/* Additional Services / Expenses */}
           <View className="flex-row items-center">
-            <Ionicons name="cash-outline" size={12} color="#6B7280" />
-            <View className="ml-2">
-              <ReservationExpensesDisplay
-                reservationId={reservation.id}
-                currency={selectedCurrency}
-                isCompact={true}
-              />
-            </View>
+            <Ionicons name="restaurant-outline" size={12} color="#6B7280" />
+            <Text className="text-xs text-gray-600 ml-2">
+              Expenses: {getCurrencySymbol("USD")} {reservation.expenses_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+          </View>
+
+          {/* Paid Amount */}
+          <View className="flex-row items-center">
+            <Ionicons name="checkmark-circle-outline" size={12} color="#10B981" />
+            <Text className="text-xs text-green-600 ml-2">
+              Paid: {getCurrencySymbol("USD")} {reservation.user_paid_amount_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+          </View>
+
+          {/* Balance / Needs to Pay */}
+          <View className="flex-row items-center">
+            <Ionicons name="alert-circle-outline" size={12} color={reservation.needs_to_pay_usd > 0 ? "#EF4444" : "#6B7280"} />
+            <Text className={`text-xs ml-2 ${reservation.needs_to_pay_usd > 0 ? "text-red-600 font-semibold" : "text-gray-600"}`}>
+              Balance: {getCurrencySymbol("USD")} {reservation.needs_to_pay_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
           </View>
         </View>
 
