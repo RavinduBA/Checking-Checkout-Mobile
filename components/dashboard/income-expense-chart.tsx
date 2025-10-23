@@ -1,16 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View, Dimensions } from "react-native";
-import { VictoryBar, VictoryChart, VictoryTheme, VictoryAxis, VictoryLine } from "victory-native";
-import { useAuth } from "../../contexts/AuthContext";
-import { supabase } from "../../lib/supabase";
+import { ActivityIndicator, Dimensions, ScrollView, Text, View } from "react-native";
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryLine, VictoryTheme } from "victory-native";
+import { useTenant } from "../../hooks/useTenant";
 import type { Database } from "../../integrations/supabase/types";
+import { supabase } from "../../lib/supabase";
 import {
 	convertCurrency,
 	formatAmountWithSymbol,
 	getCurrencySymbol,
 	getDisplayCurrency,
 } from "../../utils/currency";
+import { BookingSourceChart } from "./booking-source-chart";
 
 type Location = Database["public"]["Tables"]["locations"]["Row"];
 
@@ -53,8 +54,8 @@ export function IncomeExpenseChart({
 	const [todayExpenses, setTodayExpenses] = useState(0);
 	const [weeklyProfit, setWeeklyProfit] = useState(0);
 	const [profitMargin, setProfitMargin] = useState(0);
-	const { tenant } = useAuth();
-	const displayCurrency = getDisplayCurrency();
+	const { tenant } = useTenant();
+	const displayCurrency = getDisplayCurrency(); // Get the display currency
 	const screenWidth = Dimensions.get("window").width;
 
 	useEffect(() => {

@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { useAuth } from "../../contexts/AuthContext";
-import { supabase } from "../../lib/supabase";
+import { useTenant } from "../../hooks/useTenant";
 import type { Database } from "../../integrations/supabase/types";
+import { supabase } from "../../lib/supabase";
 import { getCurrencySymbol } from "../../utils/currency";
 
 type Account = Database["public"]["Tables"]["accounts"]["Row"];
@@ -24,7 +24,7 @@ interface AccountBalancesProps {
 export function AccountBalances({ selectedLocation }: AccountBalancesProps) {
   const [loading, setLoading] = useState(true);
   const [accountBalances, setAccountBalances] = useState<AccountBalance[]>([]);
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
 
   const fetchAccountBalances = useCallback(async () => {
     if (!tenant?.id) {
@@ -51,14 +51,16 @@ export function AccountBalances({ selectedLocation }: AccountBalancesProps) {
       // Fetch accounts with balances
       const { data: directBalanceData, error: directError } = await supabase
         .from("accounts")
-        .select(`
+        .select(
+          `
           id,
           name,
           currency,
           initial_balance,
           current_balance,
           location_access
-        `)
+        `
+        )
         .eq("tenant_id", tenant.id);
 
       if (directError) {
