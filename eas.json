@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 15.0.0"
+    "version": ">= 15.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -8,17 +9,30 @@
       "distribution": "internal",
       "android": {
         "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "NODE_ENV": "development"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://takovelbhvoqnvfmnhaq.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha292ZWxiaHZvcW52Zm1uaGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5NTI3ODIsImV4cCI6MjA3NDUyODc4Mn0.mdjZEr41VD_GKYNjnUjY5RyjPUxrcr4uXfGaz9DH39E"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://takovelbhvoqnvfmnhaq.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha292ZWxiaHZvcW52Zm1uaGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5NTI3ODIsImV4cCI6MjA3NDUyODc4Mn0.mdjZEr41VD_GKYNjnUjY5RyjPUxrcr4uXfGaz9DH39E"
       }
     }
   },
