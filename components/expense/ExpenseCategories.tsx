@@ -64,7 +64,11 @@ export function ExpenseCategories({
             }
           >
             <View className="flex-row items-center gap-2 flex-1">
-              <Ionicons name="folder-outline" size={18} color={formData.mainCategory ? "#3b82f6" : "#9ca3af"} />
+              <Ionicons
+                name="folder-outline"
+                size={18}
+                color={formData.mainCategory ? "#3b82f6" : "#9ca3af"}
+              />
               <Text
                 className={
                   formData.mainCategory
@@ -87,7 +91,11 @@ export function ExpenseCategories({
             <View className="mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
               {mainCategories.length === 0 ? (
                 <View className="px-4 py-8 items-center">
-                  <Ionicons name="alert-circle-outline" size={40} color="#3b82f6" />
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={40}
+                    color="#3b82f6"
+                  />
                   <Text className="text-gray-600 text-center mt-2 mb-1 font-medium">
                     No categories found
                   </Text>
@@ -100,7 +108,9 @@ export function ExpenseCategories({
                   <TouchableOpacity
                     key={category}
                     className={`px-4 py-3 flex-row items-center gap-3 ${
-                      index < mainCategories.length - 1 ? "border-b border-gray-100" : ""
+                      index < mainCategories.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
                     }`}
                     onPress={() => {
                       handleMainCategoryChange(category);
@@ -139,10 +149,10 @@ export function ExpenseCategories({
             disabled={!formData.mainCategory}
           >
             <View className="flex-row items-center gap-2 flex-1">
-              <Ionicons 
-                name="pricetag-outline" 
-                size={18} 
-                color={formData.subCategory ? "#3b82f6" : "#9ca3af"} 
+              <Ionicons
+                name="pricetag-outline"
+                size={18}
+                color={formData.subCategory ? "#3b82f6" : "#9ca3af"}
               />
               <Text
                 className={
@@ -172,7 +182,9 @@ export function ExpenseCategories({
                 <TouchableOpacity
                   key={subCategory}
                   className={`px-4 py-3 flex-row items-center gap-3 ${
-                    index < subCategories.length - 1 ? "border-b border-gray-100" : ""
+                    index < subCategories.length - 1
+                      ? "border-b border-gray-100"
+                      : ""
                   }`}
                   onPress={() => {
                     onFormDataChange({ subCategory });

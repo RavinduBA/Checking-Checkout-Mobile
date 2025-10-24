@@ -125,8 +125,11 @@ export default function CalendarScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
+
+      
       {/* Header */}
       <View className="bg-white border-b border-gray-200 px-4 py-3">
+         <Text className="text-xl font-bold text-gray-900 mb-2">Calendar</Text>
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2 flex-1">
             <TouchableOpacity

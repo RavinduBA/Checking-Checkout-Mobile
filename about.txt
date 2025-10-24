@@ -95,3 +95,14 @@ Both-
 
 Mobile- 
 - when editing reservation otp  is sending to the undefined no
+
+- dashboard 
+    - in DashboardScreen 
+
+
+ Apk link -    
+
+
+
+ Improvements- 
+ - setup a splash screen icon in app.json

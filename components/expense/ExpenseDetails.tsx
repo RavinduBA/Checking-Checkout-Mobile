@@ -135,14 +135,17 @@ export function ExpenseDetails({
             onPress={() => setShowAccountDropdown(!showAccountDropdown)}
           >
             <View className="flex-row items-center gap-2 flex-1">
-              <Ionicons 
-                name="wallet-outline" 
-                size={18} 
-                color={selectedAccount ? "#3b82f6" : "#9ca3af"} 
+              <Ionicons
+                name="wallet-outline"
+                size={18}
+                color={selectedAccount ? "#3b82f6" : "#9ca3af"}
               />
               {selectedAccount ? (
                 <View className="flex-1">
-                  <Text className="font-semibold text-gray-900" numberOfLines={1}>
+                  <Text
+                    className="font-semibold text-gray-900"
+                    numberOfLines={1}
+                  >
                     {selectedAccount.name}
                   </Text>
                   <Text className="text-xs text-gray-500">
@@ -167,7 +170,9 @@ export function ExpenseDetails({
                 <TouchableOpacity
                   key={account.id}
                   className={`px-4 py-3 flex-row items-center gap-3 ${
-                    index < availableAccounts.length - 1 ? "border-b border-gray-100" : ""
+                    index < availableAccounts.length - 1
+                      ? "border-b border-gray-100"
+                      : ""
                   }`}
                   onPress={() => {
                     onFormDataChange({ accountId: account.id });
@@ -178,7 +183,10 @@ export function ExpenseDetails({
                     <Ionicons name="wallet" size={16} color="#3b82f6" />
                   </View>
                   <View className="flex-1">
-                    <Text className="font-semibold text-gray-900" numberOfLines={1}>
+                    <Text
+                      className="font-semibold text-gray-900"
+                      numberOfLines={1}
+                    >
                       {account.name}
                     </Text>
                     <Text className="text-xs text-gray-500">

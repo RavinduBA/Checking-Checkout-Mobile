@@ -1,15 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { useLocationContext, useTenant } from "../../hooks";
 import {
-	type ReservationFinancial,
-	useReservationFinancials,
+  type ReservationFinancial,
+  useReservationFinancials,
 } from "../../hooks/useReservationFinancials";
 import type { Database } from "../../integrations/supabase/types";
-import { convertCurrency, getCurrencySymbol } from "../../utils/currency";
+import { getCurrencySymbol } from "../../utils/currency";
 import { ReservationActions } from "./ReservationActions";
-import { ReservationExpensesDisplay } from "./ReservationExpensesDisplay";
 
 type Currency = Database["public"]["Enums"]["currency_type"];
 
@@ -183,7 +182,11 @@ export function ReservationsMobileCards({
           <View className="flex-row items-center">
             <Ionicons name="cash-outline" size={12} color="#6B7280" />
             <Text className="text-xs text-gray-600 ml-2">
-              Room: {getCurrencySymbol("USD")} {reservation.room_amount_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              Room: {getCurrencySymbol("USD")}{" "}
+              {reservation.room_amount_usd.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </Text>
           </View>
 
@@ -191,23 +194,49 @@ export function ReservationsMobileCards({
           <View className="flex-row items-center">
             <Ionicons name="restaurant-outline" size={12} color="#6B7280" />
             <Text className="text-xs text-gray-600 ml-2">
-              Expenses: {getCurrencySymbol("USD")} {reservation.expenses_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              Expenses: {getCurrencySymbol("USD")}{" "}
+              {reservation.expenses_usd.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </Text>
           </View>
 
           {/* Paid Amount */}
           <View className="flex-row items-center">
-            <Ionicons name="checkmark-circle-outline" size={12} color="#10B981" />
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={12}
+              color="#10B981"
+            />
             <Text className="text-xs text-green-600 ml-2">
-              Paid: {getCurrencySymbol("USD")} {reservation.user_paid_amount_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              Paid: {getCurrencySymbol("USD")}{" "}
+              {reservation.user_paid_amount_usd.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </Text>
           </View>
 
           {/* Balance / Needs to Pay */}
           <View className="flex-row items-center">
-            <Ionicons name="alert-circle-outline" size={12} color={reservation.needs_to_pay_usd > 0 ? "#EF4444" : "#6B7280"} />
-            <Text className={`text-xs ml-2 ${reservation.needs_to_pay_usd > 0 ? "text-red-600 font-semibold" : "text-gray-600"}`}>
-              Balance: {getCurrencySymbol("USD")} {reservation.needs_to_pay_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <Ionicons
+              name="alert-circle-outline"
+              size={12}
+              color={reservation.needs_to_pay_usd > 0 ? "#EF4444" : "#6B7280"}
+            />
+            <Text
+              className={`text-xs ml-2 ${
+                reservation.needs_to_pay_usd > 0
+                  ? "text-red-600 font-semibold"
+                  : "text-gray-600"
+              }`}
+            >
+              Balance: {getCurrencySymbol("USD")}{" "}
+              {reservation.needs_to_pay_usd.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </Text>
           </View>
         </View>

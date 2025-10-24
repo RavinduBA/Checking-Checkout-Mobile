@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { useTenant } from "../../hooks/useTenant";
 import type { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
@@ -129,7 +129,10 @@ export function AccountBalances({ selectedLocation }: AccountBalancesProps) {
                 <Ionicons name="card" size={18} color="white" />
               </View>
               <View className="flex-1 min-w-0">
-                <Text className="font-bold text-gray-900 text-sm" numberOfLines={1}>
+                <Text
+                  className="font-bold text-gray-900 text-sm"
+                  numberOfLines={1}
+                >
                   {account.name}
                 </Text>
                 <Text className="text-xs text-gray-500 mt-0.5">

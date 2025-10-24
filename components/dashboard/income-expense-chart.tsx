@@ -1,12 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Dimensions, Text, View } from "react-native";
 import { useTenant } from "../../hooks/useTenant";
 import type { Database } from "../../integrations/supabase/types";
 import { supabase } from "../../lib/supabase";
@@ -211,7 +205,12 @@ export function IncomeExpenseChart({
       {/* Summary Cards - Compact, No Horizontal Scroll */}
       <View className="flex-row gap-2">
         <View className="flex-1 bg-emerald-500 rounded-xl p-3 shadow-sm">
-          <Ionicons name="trending-up" size={20} color="white" className="mb-1" />
+          <Ionicons
+            name="trending-up"
+            size={20}
+            color="white"
+            className="mb-1"
+          />
           <Text className="text-[10px] text-emerald-100 mb-1">
             {selectedMonth ? "Monthly" : "Today"}
           </Text>
@@ -222,7 +221,12 @@ export function IncomeExpenseChart({
         </View>
 
         <View className="flex-1 bg-rose-500 rounded-xl p-3 shadow-sm">
-          <Ionicons name="trending-down" size={20} color="white" className="mb-1" />
+          <Ionicons
+            name="trending-down"
+            size={20}
+            color="white"
+            className="mb-1"
+          />
           <Text className="text-[10px] text-rose-100 mb-1">
             {selectedMonth ? "Monthly" : "Today"}
           </Text>
@@ -233,7 +237,12 @@ export function IncomeExpenseChart({
         </View>
 
         <View className="flex-1 bg-violet-500 rounded-xl p-3 shadow-sm">
-          <Ionicons name="stats-chart" size={20} color="white" className="mb-1" />
+          <Ionicons
+            name="stats-chart"
+            size={20}
+            color="white"
+            className="mb-1"
+          />
           <Text className="text-[10px] text-violet-100 mb-1">Weekly</Text>
           <Text className="text-base font-bold text-white" numberOfLines={1}>
             {formatAmountWithSymbol(weeklyProfit, displayCurrency)}

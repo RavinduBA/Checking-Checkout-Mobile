@@ -209,7 +209,8 @@ export function BookingSourceChart({
 
               // Calculate segment for donut
               const startAngle = (cumulativePercentage / 100) * 360;
-              const endAngle = ((cumulativePercentage + percentage) / 100) * 360;
+              const endAngle =
+                ((cumulativePercentage + percentage) / 100) * 360;
               cumulativePercentage += percentage;
 
               // Create segments around the circle
@@ -237,7 +238,10 @@ export function BookingSourceChart({
                       backgroundColor: color,
                       borderRadius: segmentWidth / 2,
                       transform: [{ rotate: `${startAngle}deg` }],
-                      top: percentage > 50 ? 10 : 90 - ((percentage / 100) * 160) / 2,
+                      top:
+                        percentage > 50
+                          ? 10
+                          : 90 - ((percentage / 100) * 160) / 2,
                     }}
                   />
                 </View>

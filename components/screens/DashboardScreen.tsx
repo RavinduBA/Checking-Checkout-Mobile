@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
+import { ScrollView, View } from "react-native";
+import { useLocationContext } from "../../contexts/LocationContext";
+import { usePermissions } from "../../hooks/usePermissions";
+import type { Database } from "../../integrations/supabase/types";
 import {
   AccountBalances,
   BookingSourceChart,
@@ -8,9 +11,6 @@ import {
   IncomeExpenseChart,
   UpcomingBookings,
 } from "../dashboard";
-import { useLocationContext } from "../../contexts/LocationContext";
-import { usePermissions } from "../../hooks/usePermissions";
-import type { Database } from "../../integrations/supabase/types";
 
 type Location = Database["public"]["Tables"]["locations"]["Row"];
 

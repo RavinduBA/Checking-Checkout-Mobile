@@ -186,7 +186,8 @@ export function UpcomingBookings({
                   </Text>
                 </View>
                 <Text className="font-bold text-emerald-600 text-sm ml-2">
-                  {reservation.currency} {reservation.total_amount.toLocaleString()}
+                  {reservation.currency}{" "}
+                  {reservation.total_amount.toLocaleString()}
                 </Text>
               </View>
 

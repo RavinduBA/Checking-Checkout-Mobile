@@ -3,27 +3,33 @@
 ## 🚀 Fastest Method - EAS Build (Cloud)
 
 ### Step 1: Install EAS CLI
+
 ```bash
 npm install -g eas-cli
 ```
 
 ### Step 2: Login to Expo
+
 ```bash
 eas login
 ```
-*If you don't have an account, create one at https://expo.dev/signup*
+
+_If you don't have an account, create one at https://expo.dev/signup_
 
 ### Step 3: Build APK
+
 ```bash
 eas build --platform android --profile preview
 ```
 
 ### Step 4: Wait and Download
+
 - Build takes ~10-20 minutes
 - You'll get a download link when complete
 - Download the APK file
 
 ### Step 5: Install on Android Phone
+
 1. Transfer APK to your phone (USB, email, or cloud)
 2. Enable "Install from Unknown Sources" in Settings
 3. Tap the APK file to install
@@ -34,6 +40,7 @@ eas build --platform android --profile preview
 ## 📱 What You'll Get
 
 After running `eas build`:
+
 - ✅ A standalone APK file
 - ✅ Works on any Android phone (no Expo Go needed)
 - ✅ Can be shared with anyone
@@ -44,21 +51,25 @@ After running `eas build`:
 ## 🔧 Troubleshooting
 
 ### "Command 'eas' not found"
+
 ```bash
 npm install -g eas-cli
 ```
 
 ### "Not logged in"
+
 ```bash
 eas login
 ```
 
 ### "Build failed"
+
 - Check your internet connection
 - View build logs: `eas build:list`
 - Ensure all dependencies are installed
 
 ### "Can't install APK on phone"
+
 - Enable "Unknown Sources" in Android Settings → Security
 - Ensure Android version is 8.0 or higher
 
@@ -66,12 +77,12 @@ eas login
 
 ## 📋 Build Commands Reference
 
-| Command | Purpose |
-|---------|---------|
-| `eas build --platform android --profile preview` | Build APK for testing |
+| Command                                             | Purpose                    |
+| --------------------------------------------------- | -------------------------- |
+| `eas build --platform android --profile preview`    | Build APK for testing      |
 | `eas build --platform android --profile production` | Build for production (AAB) |
-| `eas build:list` | View all builds |
-| `eas build:cancel` | Cancel current build |
+| `eas build:list`                                    | View all builds            |
+| `eas build:cancel`                                  | Cancel current build       |
 
 ---
 
