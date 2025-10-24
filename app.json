@@ -7,7 +7,6 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "icon": "./assets/images/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.checkingcheckout.mobile"
@@ -22,6 +21,7 @@
         "READ_MEDIA_IMAGES"
       ],
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/splash-icon.png",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
@@ -44,11 +44,18 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c9f5b17f-467b-43b7-878e-1dc2c7610c13"
+      }
     }
   }
 }
