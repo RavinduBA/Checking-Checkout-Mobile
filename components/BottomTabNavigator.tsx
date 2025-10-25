@@ -11,7 +11,6 @@ import TopBar from "./TopBar";
 // Import screen components
 import AccountsScreen from "./screens/AccountsScreen";
 import BillingSubscriptionsScreen from "./screens/BillingSubscriptionsScreen";
-import BookingChannelsScreen from "./screens/BookingChannelsScreen";
 import CalendarScreen from "./screens/CalendarScreen";
 import DashboardScreen from "./screens/DashboardScreen";
 import ExpensesScreen from "./screens/ExpensesScreen";
@@ -21,11 +20,14 @@ import ReservationsScreen from "./screens/ReservationsScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import UsersScreen from "./screens/UsersScreen";
 
-const Tab = createBottomTabNavigator();  // used for bottom tab navigation.
-const Stack = createNativeStackNavigator();  // used for navigating to screens that aren’t part of the tab bar (like Settings or Users).
+const Tab = createBottomTabNavigator(); // used for bottom tab navigation.
+const Stack = createNativeStackNavigator(); // used for navigating to screens that aren’t part of the tab bar (like Settings or Users).
 
 // Wrapper component that adds TopBar to each screen
-function ScreenWithTopBar({ component: Component,}: {component: React.ComponentType<any>;
+function ScreenWithTopBar({
+  component: Component,
+}: {
+  component: React.ComponentType<any>;
 }) {
   const navigation = useNavigation<any>();
   const { user } = useAuthContext();
@@ -61,7 +63,9 @@ function ScreenWithTopBar({ component: Component,}: {component: React.ComponentT
           onNavigateToMasterFiles={() => navigation.navigate("MasterFiles")}
         />
       </View>
-      <Component navigation={navigation} />
+      <View className="flex-1 pb-24">
+        <Component navigation={navigation} />
+      </View>
     </View>
   );
 }
@@ -150,7 +154,7 @@ function MainTabs() {
       >
         {() => <ScreenWithTopBar component={AccountsScreen} />}
       </Tab.Screen>
-      
+
       <Tab.Screen
         name="Reports"
         options={{
