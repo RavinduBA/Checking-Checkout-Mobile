@@ -3,7 +3,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Alert, View } from "react-native";
+import { Alert, Platform, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthContext } from "../contexts/AuthContext";
 import { signOut } from "../lib/auth";
 import TopBar from "./TopBar";
@@ -71,6 +72,8 @@ function ScreenWithTopBar({
 }
 
 function MainTabs() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
@@ -79,13 +82,13 @@ function MainTabs() {
         tabBarStyle: {
           backgroundColor: "#ffffff",
           borderTopWidth: 0,
-          paddingBottom: 10,
+          paddingBottom: 10 + insets.bottom,
           paddingTop: 8,
           paddingHorizontal: 15,
-          height: 75,
+          height: 75 + insets.bottom,
           borderRadius: 25,
           position: "absolute",
-          bottom: 20,
+          bottom: insets.bottom > 0 ? insets.bottom : 20,
           left: 15,
           right: 15,
           elevation: 10,

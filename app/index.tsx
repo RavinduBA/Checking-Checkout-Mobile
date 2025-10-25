@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import BottomTabNavigator from "../components/BottomTabNavigator";
 import LoginScreen from "../components/screens/LoginScreen";
 import RegistrationScreen from "../components/screens/RegistrationScreen";
@@ -58,8 +59,10 @@ function AppContent() {
 // Main app wrapped with AuthProvider
 export default function Index() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
