@@ -24,13 +24,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   trend,
 }) => {
   return (
-    <View className="bg-card rounded-lg p-4 border border-border mb-3">
+    <View className="bg-white rounded-lg p-4 border border-gray-200 mb-3">
       <View className="flex-row justify-between items-start mb-2">
         <View className="flex-1">
-          <Text className="text-sm font-medium text-foreground mb-1">
+          <Text className="text-sm font-medium text-gray-900 mb-1">
             {category}
           </Text>
-          <Text className="text-xl font-bold text-foreground">{amount}</Text>
+          <Text className="text-xl font-bold text-gray-900">{amount}</Text>
         </View>
         <View
           className={`px-2 py-1 rounded-md ${
@@ -74,9 +74,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </View>
       </View>
       {/* Progress Bar */}
-      <View className="bg-muted rounded-full h-2 mt-2">
+      <View className="bg-gray-200 rounded-full h-2 mt-2">
         <View
-          className="bg-primary rounded-full h-2"
+          className="bg-blue-500 rounded-full h-2"
           style={{ width: `${percentage}` as any }}
         />
       </View>
@@ -113,9 +113,9 @@ const TimelineCard: React.FC<TimelineItem> = ({
           />
         </View>
       </View>
-      <View className="flex-1 bg-card rounded-lg p-3 border border-border">
+      <View className="flex-1 bg-white rounded-lg p-3 border border-gray-200">
         <View className="flex-row justify-between items-start mb-1">
-          <Text className="text-xs text-muted-foreground">{date}</Text>
+          <Text className="text-xs text-gray-600">{date}</Text>
           <Text
             className={`text-sm font-semibold ${
               type === "income" ? "text-green-600" : "text-red-600"
@@ -125,7 +125,7 @@ const TimelineCard: React.FC<TimelineItem> = ({
             {amount}
           </Text>
         </View>
-        <Text className="text-sm text-foreground">{description}</Text>
+        <Text className="text-sm text-gray-900">{description}</Text>
       </View>
     </View>
   );
@@ -214,7 +214,7 @@ export default function EnhancedFinancialReportsMobile() {
     return (
       <View className="flex-1 items-center justify-center py-20">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-muted-foreground mt-4">
+        <Text className="text-sm text-gray-600 mt-4">
           Loading detailed reports...
         </Text>
       </View>
@@ -228,7 +228,7 @@ export default function EnhancedFinancialReportsMobile() {
         <TouchableOpacity
           onPress={() => setSelectedView("category")}
           className={`flex-1 py-2 px-4 rounded-lg flex-row items-center justify-center gap-2 ${
-            selectedView === "category" ? "bg-primary" : "bg-muted"
+            selectedView === "category" ? "bg-blue-500" : "bg-gray-200"
           }`}
         >
           <Ionicons
@@ -238,9 +238,7 @@ export default function EnhancedFinancialReportsMobile() {
           />
           <Text
             className={`text-sm font-medium ${
-              selectedView === "category"
-                ? "text-white"
-                : "text-muted-foreground"
+              selectedView === "category" ? "text-white" : "text-gray-700"
             }`}
           >
             By Category
@@ -249,7 +247,7 @@ export default function EnhancedFinancialReportsMobile() {
         <TouchableOpacity
           onPress={() => setSelectedView("timeline")}
           className={`flex-1 py-2 px-4 rounded-lg flex-row items-center justify-center gap-2 ${
-            selectedView === "timeline" ? "bg-primary" : "bg-muted"
+            selectedView === "timeline" ? "bg-blue-500" : "bg-gray-200"
           }`}
         >
           <Ionicons
@@ -259,9 +257,7 @@ export default function EnhancedFinancialReportsMobile() {
           />
           <Text
             className={`text-sm font-medium ${
-              selectedView === "timeline"
-                ? "text-white"
-                : "text-muted-foreground"
+              selectedView === "timeline" ? "text-white" : "text-gray-700"
             }`}
           >
             Timeline
@@ -287,7 +283,7 @@ export default function EnhancedFinancialReportsMobile() {
       {/* Content */}
       {selectedView === "category" ? (
         <View>
-          <Text className="text-base font-semibold text-foreground mb-3">
+          <Text className="text-base font-semibold text-gray-900 mb-3">
             Revenue by Category
           </Text>
           {categoryData.map((item) => (
@@ -296,7 +292,7 @@ export default function EnhancedFinancialReportsMobile() {
         </View>
       ) : (
         <View>
-          <Text className="text-base font-semibold text-foreground mb-3">
+          <Text className="text-base font-semibold text-gray-900 mb-3">
             Transaction Timeline
           </Text>
           {timelineData.map((item) => (
@@ -307,11 +303,11 @@ export default function EnhancedFinancialReportsMobile() {
 
       {/* Filter & Export Buttons */}
       <View className="flex-row gap-2 mt-4">
-        <TouchableOpacity className="flex-1 bg-muted rounded-lg p-3 flex-row items-center justify-center gap-2">
+        <TouchableOpacity className="flex-1 bg-gray-200 rounded-lg p-3 flex-row items-center justify-center gap-2">
           <Ionicons name="funnel-outline" size={18} color="#666" />
-          <Text className="text-muted-foreground font-medium">Filter</Text>
+          <Text className="text-gray-700 font-medium">Filter</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex-1 bg-primary rounded-lg p-3 flex-row items-center justify-center gap-2">
+        <TouchableOpacity className="flex-1 bg-blue-500 rounded-lg p-3 flex-row items-center justify-center gap-2">
           <Ionicons name="download-outline" size={18} color="#fff" />
           <Text className="text-white font-medium">Export</Text>
         </TouchableOpacity>

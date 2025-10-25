@@ -35,14 +35,14 @@ const AccountCard: React.FC<AccountCardProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-card rounded-lg p-4 border border-border mb-3"
+      className="bg-white rounded-lg p-4 border border-gray-200 mb-3"
     >
       <View className="flex-row justify-between items-start mb-2">
         <View className="flex-1">
-          <Text className="text-base font-semibold text-foreground mb-1">
+          <Text className="text-base font-semibold text-gray-900 mb-1">
             {name}
           </Text>
-          <Text className="text-xs text-muted-foreground">{type}</Text>
+          <Text className="text-xs text-gray-600">{type}</Text>
         </View>
         <View
           className={`px-2 py-1 rounded-md ${
@@ -59,10 +59,10 @@ const AccountCard: React.FC<AccountCardProps> = ({
         </View>
       </View>
 
-      <View className="border-t border-border pt-3 mt-2">
+      <View className="border-t border-gray-200 pt-3 mt-2">
         <View className="flex-row justify-between items-center">
           <View>
-            <Text className="text-xs text-muted-foreground mb-1">Balance</Text>
+            <Text className="text-xs text-gray-600 mb-1">Balance</Text>
             <Text
               className={`text-xl font-bold ${
                 isPositive ? "text-green-600" : "text-red-600"
@@ -72,16 +72,14 @@ const AccountCard: React.FC<AccountCardProps> = ({
             </Text>
           </View>
           <View className="items-end">
-            <Text className="text-xs text-muted-foreground mb-1">
-              Last Transaction
-            </Text>
-            <Text className="text-xs text-foreground">{lastTransaction}</Text>
+            <Text className="text-xs text-gray-600 mb-1">Last Transaction</Text>
+            <Text className="text-xs text-gray-900">{lastTransaction}</Text>
           </View>
         </View>
       </View>
 
       <View className="flex-row items-center justify-end gap-1 mt-3">
-        <Text className="text-xs text-primary font-medium">View Details</Text>
+        <Text className="text-xs text-blue-500 font-medium">View Details</Text>
         <Ionicons name="chevron-forward" size={14} color="#3b82f6" />
       </View>
     </TouchableOpacity>
@@ -97,15 +95,15 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
   return (
-    <View className="flex-1 bg-card rounded-lg p-3 border border-border">
+    <View className="flex-1 bg-white rounded-lg p-3 border border-gray-200">
       <View
         className="w-8 h-8 rounded-full items-center justify-center mb-2"
         style={{ backgroundColor: `${color}20` }}
       >
         <Ionicons name={icon} size={16} color={color} />
       </View>
-      <Text className="text-xs text-muted-foreground mb-1">{title}</Text>
-      <Text className="text-lg font-bold text-foreground">{value}</Text>
+      <Text className="text-xs text-gray-600 mb-1">{title}</Text>
+      <Text className="text-lg font-bold text-gray-900">{value}</Text>
     </View>
   );
 };
@@ -181,9 +179,7 @@ export default function AccountsReportsMobile() {
     return (
       <View className="flex-1 items-center justify-center py-20">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-muted-foreground mt-4">
-          Loading accounts...
-        </Text>
+        <Text className="text-sm text-gray-600 mt-4">Loading accounts...</Text>
       </View>
     );
   }
@@ -207,13 +203,13 @@ export default function AccountsReportsMobile() {
       </View>
 
       {/* Search Bar */}
-      <View className="bg-muted rounded-lg px-3 py-2 mb-3 flex-row items-center">
+      <View className="bg-gray-100 rounded-lg px-3 py-2 mb-3 flex-row items-center">
         <Ionicons name="search" size={18} color="#666" />
         <TextInput
           placeholder="Search accounts..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          className="flex-1 ml-2 text-sm text-foreground"
+          className="flex-1 ml-2 text-sm text-gray-900"
           placeholderTextColor="#999"
         />
         {searchQuery !== "" && (
@@ -235,12 +231,12 @@ export default function AccountsReportsMobile() {
               key={filter}
               onPress={() => setFilterType(filter as any)}
               className={`px-4 py-2 rounded-full ${
-                filterType === filter ? "bg-primary" : "bg-muted"
+                filterType === filter ? "bg-blue-500" : "bg-gray-200"
               }`}
             >
               <Text
                 className={`text-sm font-medium ${
-                  filterType === filter ? "text-white" : "text-muted-foreground"
+                  filterType === filter ? "text-white" : "text-gray-700"
                 }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -252,7 +248,7 @@ export default function AccountsReportsMobile() {
 
       {/* Accounts List */}
       <View>
-        <Text className="text-base font-semibold text-foreground mb-3">
+        <Text className="text-base font-semibold text-gray-900 mb-3">
           Accounts ({filteredAccounts.length})
         </Text>
         {filteredAccounts.map((account) => (
@@ -266,7 +262,7 @@ export default function AccountsReportsMobile() {
         {filteredAccounts.length === 0 && (
           <View className="items-center py-10">
             <Ionicons name="folder-open-outline" size={48} color="#ccc" />
-            <Text className="text-sm text-muted-foreground mt-3">
+            <Text className="text-sm text-gray-600 mt-3">
               No accounts found
             </Text>
           </View>
@@ -274,7 +270,7 @@ export default function AccountsReportsMobile() {
       </View>
 
       {/* Add Account Button */}
-      <TouchableOpacity className="bg-primary rounded-lg p-4 flex-row items-center justify-center gap-2 mt-4">
+      <TouchableOpacity className="bg-blue-500 rounded-lg p-4 flex-row items-center justify-center gap-2 mt-4">
         <Ionicons name="add-circle-outline" size={20} color="#fff" />
         <Text className="text-white font-semibold">Add New Account</Text>
       </TouchableOpacity>

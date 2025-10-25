@@ -57,21 +57,19 @@ export default function ReportsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="px-4 pt-2 pb-3 bg-card border-b border-border">
+      <View className="px-4 pt-2 pb-3 bg-white border-b border-gray-200">
         <View className="flex-row justify-between items-center mb-2">
           <View className="flex-1">
-            <Text className="text-lg font-semibold text-foreground">
-              Reports
-            </Text>
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-lg font-semibold text-gray-900">Reports</Text>
+            <Text className="text-xs text-gray-600">
               Financial insights and analytics
             </Text>
           </View>
           <TouchableOpacity
             onPress={onRefresh}
-            className="ml-2 p-2 rounded-full bg-muted"
+            className="ml-2 p-2 rounded-full bg-gray-100"
           >
             <Ionicons name="refresh" size={20} color="#666" />
           </TouchableOpacity>
@@ -89,7 +87,7 @@ export default function ReportsScreen() {
                 key={tab.id}
                 onPress={() => setActiveTab(tab.id as TabType)}
                 className={`flex-row items-center gap-2 px-4 py-2.5 rounded-lg ${
-                  activeTab === tab.id ? "bg-primary" : "bg-muted"
+                  activeTab === tab.id ? "bg-primary" : "bg-gray-100"
                 }`}
               >
                 <Ionicons
@@ -99,9 +97,7 @@ export default function ReportsScreen() {
                 />
                 <Text
                   className={`text-sm font-medium ${
-                    activeTab === tab.id
-                      ? "text-white"
-                      : "text-muted-foreground"
+                    activeTab === tab.id ? "text-white" : "text-gray-600"
                   }`}
                 >
                   {tab.label}

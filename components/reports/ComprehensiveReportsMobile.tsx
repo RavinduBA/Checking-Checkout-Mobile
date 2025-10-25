@@ -20,11 +20,11 @@ const MetricCard: React.FC<MetricCardProps> = ({
   iconColor = "#3b82f6",
 }) => {
   return (
-    <View className="bg-card rounded-lg p-4 border border-border">
+    <View className="bg-white rounded-lg p-4 border border-gray-200">
       <View className="flex-row justify-between items-start mb-3">
         <View className="flex-1">
-          <Text className="text-xs text-muted-foreground mb-1">{title}</Text>
-          <Text className="text-2xl font-bold text-foreground">{value}</Text>
+          <Text className="text-xs text-gray-600 mb-1">{title}</Text>
+          <Text className="text-2xl font-bold text-gray-900">{value}</Text>
         </View>
         <View
           className="w-10 h-10 rounded-full items-center justify-center"
@@ -83,13 +83,13 @@ const RecentTransaction: React.FC<RecentTransactionProps> = ({
   type,
 }) => {
   return (
-    <View className="bg-card rounded-lg p-4 border border-border mb-2">
+    <View className="bg-white rounded-lg p-4 border border-gray-200 mb-2">
       <View className="flex-row justify-between items-start">
         <View className="flex-1 mr-2">
-          <Text className="text-sm font-medium text-foreground mb-1">
+          <Text className="text-sm font-medium text-gray-900 mb-1">
             {title}
           </Text>
-          <Text className="text-xs text-muted-foreground">{date}</Text>
+          <Text className="text-xs text-gray-600">{date}</Text>
         </View>
         <Text
           className={`text-sm font-semibold ${
@@ -119,15 +119,13 @@ export default function ComprehensiveReportsMobile() {
     return (
       <View className="flex-1 items-center justify-center py-20">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-muted-foreground mt-4">
-          Loading reports...
-        </Text>
+        <Text className="text-sm text-gray-600 mt-4">Loading reports...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 p-4">
+    <View className="flex-1 p-4 bg-gray-50">
       {/* Period Selector */}
       <View className="flex-row gap-2 mb-4">
         {["week", "month", "year"].map((period) => (
@@ -135,14 +133,12 @@ export default function ComprehensiveReportsMobile() {
             key={period}
             onPress={() => setSelectedPeriod(period as any)}
             className={`flex-1 py-2 px-4 rounded-lg ${
-              selectedPeriod === period ? "bg-primary" : "bg-muted"
+              selectedPeriod === period ? "bg-blue-500" : "bg-gray-200"
             }`}
           >
             <Text
               className={`text-sm font-medium text-center ${
-                selectedPeriod === period
-                  ? "text-white"
-                  : "text-muted-foreground"
+                selectedPeriod === period ? "text-white" : "text-gray-700"
               }`}
             >
               {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -189,7 +185,7 @@ export default function ComprehensiveReportsMobile() {
 
       {/* Recent Transactions */}
       <View className="mb-4">
-        <Text className="text-base font-semibold text-foreground mb-3">
+        <Text className="text-base font-semibold text-gray-900 mb-3">
           Recent Transactions
         </Text>
         <RecentTransaction
@@ -219,7 +215,7 @@ export default function ComprehensiveReportsMobile() {
       </View>
 
       {/* Export Button */}
-      <TouchableOpacity className="bg-primary rounded-lg p-4 flex-row items-center justify-center gap-2 mb-4">
+      <TouchableOpacity className="bg-blue-500 rounded-lg p-4 flex-row items-center justify-center gap-2 mb-4">
         <Ionicons name="download-outline" size={20} color="#fff" />
         <Text className="text-white font-semibold">Export Report</Text>
       </TouchableOpacity>

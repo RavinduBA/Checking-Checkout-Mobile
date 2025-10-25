@@ -63,15 +63,15 @@ const CommissionCard: React.FC<CommissionCardProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-card rounded-lg p-4 border border-border mb-3"
+      className="bg-white rounded-lg p-4 border border-gray-200 mb-3"
     >
       {/* Header */}
       <View className="flex-row justify-between items-start mb-3">
         <View className="flex-1">
-          <Text className="text-base font-semibold text-foreground mb-1">
+          <Text className="text-base font-semibold text-gray-900 mb-1">
             {agentName}
           </Text>
-          <Text className="text-xs text-muted-foreground">
+          <Text className="text-xs text-gray-600">
             {bookings} bookings • {commissionRate} commission
           </Text>
         </View>
@@ -84,30 +84,26 @@ const CommissionCard: React.FC<CommissionCardProps> = ({
 
       {/* Stats Grid */}
       <View className="flex-row gap-3 mb-3">
-        <View className="flex-1 bg-muted rounded-lg p-3">
-          <Text className="text-xs text-muted-foreground mb-1">
-            Total Sales
-          </Text>
-          <Text className="text-sm font-bold text-foreground">
-            {totalSales}
-          </Text>
+        <View className="flex-1 bg-gray-100 rounded-lg p-3">
+          <Text className="text-xs text-gray-600 mb-1">Total Sales</Text>
+          <Text className="text-sm font-bold text-gray-900">{totalSales}</Text>
         </View>
-        <View className="flex-1 bg-primary/10 rounded-lg p-3">
-          <Text className="text-xs text-muted-foreground mb-1">Commission</Text>
-          <Text className="text-sm font-bold text-primary">
+        <View className="flex-1 bg-blue-50 rounded-lg p-3">
+          <Text className="text-xs text-gray-600 mb-1">Commission</Text>
+          <Text className="text-sm font-bold text-blue-500">
             {commissionAmount}
           </Text>
         </View>
       </View>
 
       {/* Footer */}
-      <View className="flex-row justify-between items-center pt-2 border-t border-border">
+      <View className="flex-row justify-between items-center pt-2 border-t border-gray-200">
         <View className="flex-row items-center gap-1">
           <Ionicons name="calendar-outline" size={12} color="#666" />
-          <Text className="text-xs text-muted-foreground">Due: {dueDate}</Text>
+          <Text className="text-xs text-gray-600">Due: {dueDate}</Text>
         </View>
         <View className="flex-row items-center gap-1">
-          <Text className="text-xs text-primary font-medium">Details</Text>
+          <Text className="text-xs text-blue-500 font-medium">Details</Text>
           <Ionicons name="chevron-forward" size={14} color="#3b82f6" />
         </View>
       </View>
@@ -131,15 +127,13 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
   iconColor,
 }) => {
   return (
-    <View className="bg-card rounded-lg p-4 border border-border">
+    <View className="bg-white rounded-lg p-4 border border-gray-200">
       <View className="flex-row justify-between items-start">
         <View className="flex-1">
-          <Text className="text-xs text-muted-foreground mb-1">{title}</Text>
-          <Text className="text-2xl font-bold text-foreground mb-1">
-            {value}
-          </Text>
+          <Text className="text-xs text-gray-600 mb-1">{title}</Text>
+          <Text className="text-2xl font-bold text-gray-900 mb-1">{value}</Text>
           {subtitle && (
-            <Text className="text-xs text-muted-foreground">{subtitle}</Text>
+            <Text className="text-xs text-gray-600">{subtitle}</Text>
           )}
         </View>
         <View
@@ -241,7 +235,7 @@ export default function CommissionReportsMobile() {
     return (
       <View className="flex-1 items-center justify-center py-20">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-muted-foreground mt-4">
+        <Text className="text-sm text-gray-600 mt-4">
           Loading commissions...
         </Text>
       </View>
@@ -280,13 +274,13 @@ export default function CommissionReportsMobile() {
       </View>
 
       {/* Search Bar */}
-      <View className="bg-muted rounded-lg px-3 py-2 mb-3 flex-row items-center">
+      <View className="bg-gray-100 rounded-lg px-3 py-2 mb-3 flex-row items-center">
         <Ionicons name="search" size={18} color="#666" />
         <TextInput
           placeholder="Search agents..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          className="flex-1 ml-2 text-sm text-foreground"
+          className="flex-1 ml-2 text-sm text-gray-900"
           placeholderTextColor="#999"
         />
         {searchQuery !== "" && (
@@ -308,14 +302,12 @@ export default function CommissionReportsMobile() {
               key={filter}
               onPress={() => setFilterStatus(filter as any)}
               className={`px-4 py-2 rounded-full ${
-                filterStatus === filter ? "bg-primary" : "bg-muted"
+                filterStatus === filter ? "bg-blue-500" : "bg-gray-200"
               }`}
             >
               <Text
                 className={`text-sm font-medium ${
-                  filterStatus === filter
-                    ? "text-white"
-                    : "text-muted-foreground"
+                  filterStatus === filter ? "text-white" : "text-gray-700"
                 }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -327,7 +319,7 @@ export default function CommissionReportsMobile() {
 
       {/* Commissions List */}
       <View>
-        <Text className="text-base font-semibold text-foreground mb-3">
+        <Text className="text-base font-semibold text-gray-900 mb-3">
           Commission Records ({filteredCommissions.length})
         </Text>
         {filteredCommissions.map((commission) => (
@@ -341,7 +333,7 @@ export default function CommissionReportsMobile() {
         {filteredCommissions.length === 0 && (
           <View className="items-center py-10">
             <Ionicons name="document-outline" size={48} color="#ccc" />
-            <Text className="text-sm text-muted-foreground mt-3">
+            <Text className="text-sm text-gray-600 mt-3">
               No commission records found
             </Text>
           </View>
@@ -349,7 +341,7 @@ export default function CommissionReportsMobile() {
       </View>
 
       {/* Export Button */}
-      <TouchableOpacity className="bg-primary rounded-lg p-4 flex-row items-center justify-center gap-2 mt-4">
+      <TouchableOpacity className="bg-blue-500 rounded-lg p-4 flex-row items-center justify-center gap-2 mt-4">
         <Ionicons name="download-outline" size={20} color="#fff" />
         <Text className="text-white font-semibold">Export Report</Text>
       </TouchableOpacity>
