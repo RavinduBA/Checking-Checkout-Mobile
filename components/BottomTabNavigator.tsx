@@ -63,7 +63,7 @@ function ScreenWithTopBar({
           onNavigateToMasterFiles={() => navigation.navigate("MasterFiles")}
         />
       </View>
-      <View className="flex-1 pb-24">
+      <View className="flex-1 pb-28">
         <Component navigation={navigation} />
       </View>
     </View>
@@ -78,29 +78,32 @@ function MainTabs() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#ffffff",
-          borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
+          borderTopWidth: 0,
           paddingBottom: 10,
-          paddingTop: 3,
-          height: 95,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          paddingTop: 8,
+          paddingHorizontal: 15,
+          height: 75,
+          borderRadius: 25,
           position: "absolute",
-          elevation: 8,
+          bottom: 20,
+          left: 15,
+          right: 15,
+          elevation: 10,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
         },
         tabBarActiveTintColor: "#3b82f6",
-        tabBarInactiveTintColor: "#6b7280",
+        tabBarInactiveTintColor: "#9ca3af",
         tabBarLabelStyle: {
-          fontSize: 9,
-          fontWeight: "500",
+          fontSize: 10,
+          fontWeight: "600",
+          marginTop: -2,
           marginBottom: 2,
         },
         tabBarIconStyle: {
-          marginBottom: 0,
+          marginTop: 2,
         },
       }}
     >
