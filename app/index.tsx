@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import BottomTabNavigator from "../components/BottomTabNavigator";
-import LoginScreen from "../components/screens/LoginScreen";
-import RegistrationScreen from "../components/screens/RegistrationScreen";
 import LoadingScreen from "../components/screens/LoadingScreen";
+import LoginScreen from "../components/screens/LoginScreen";
 import OnboardingScreen from "../components/screens/OnboardingScreen";
+import RegistrationScreen from "../components/screens/RegistrationScreen";
 import WelcomeScreen from "../components/screens/WelcomeScreen";
 import { AuthProvider } from "../contexts/AuthContext";
 import { LocationProvider } from "../contexts/LocationContext";
