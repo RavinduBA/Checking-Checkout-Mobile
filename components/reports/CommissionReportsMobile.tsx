@@ -1,5 +1,5 @@
 import { useLocationContext } from "@/contexts/LocationContext";
-import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
@@ -98,10 +98,14 @@ const CommissionCard: React.FC<CommissionCardProps> = ({
           </Text>
         </View>
         <View
-          className={`px-2 py-1 rounded-md ${getStatusColor(commission.status)}`}
+          className={`px-2 py-1 rounded-md ${getStatusColor(
+            commission.status
+          )}`}
         >
           <Text
-            className={`text-xs font-medium ${getStatusTextColor(commission.status)}`}
+            className={`text-xs font-medium ${getStatusTextColor(
+              commission.status
+            )}`}
           >
             {commission.status}
           </Text>
@@ -170,8 +174,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
 type FilterType = "all" | "guide" | "agent";
 
 export default function CommissionReportsMobile() {
-  const { tenant } = useAuth();
-  const { selectedLocation } = useLocationContext();
+  const { profile } = useUserProfile();
+  const { selectedLocation, getSelectedLocationData } = useLocationContext();
   const [loading, setLoading] = useState(true);
   const [commissions, setCommissions] = useState<CommissionData[]>([]);
   const [guides, setGuides] = useState<Guide[]>([]);
@@ -182,14 +186,16 @@ export default function CommissionReportsMobile() {
   const [selectedPerson, setSelectedPerson] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const selectedLocationData = getSelectedLocationData();
+
   useEffect(() => {
     fetchData();
     fetchGuides();
     fetchAgents();
-  }, [tenant, selectedLocation]);
+  }, [profile?.tenant_id, selectedLocation]);
 
   const fetchData = async () => {
-    if (!tenant?.id || !selectedLocation?.id) return;
+    if (!profile?.tenant_id || !selectedLocationData?.id) return;
 
     setLoading(true);
     try {
@@ -212,8 +218,8 @@ export default function CommissionReportsMobile() {
           agents!agent_id(name)
         `
         )
-        .eq("tenant_id", tenant.id)
-        .eq("location_id", selectedLocation.id)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("location_id", selectedLocationData.id)
         .or("guide_id.not.is.null,agent_id.not.is.null")
         .order("check_in_date", { ascending: false });
 
@@ -246,14 +252,14 @@ export default function CommissionReportsMobile() {
   };
 
   const fetchGuides = async () => {
-    if (!tenant?.id || !selectedLocation?.id) return;
+    if (!profile?.tenant_id || !selectedLocationData?.id) return;
 
     try {
       const { data } = await supabase
         .from("guides")
         .select("id, name")
-        .eq("tenant_id", tenant.id)
-        .eq("location_id", selectedLocation.id)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("location_id", selectedLocationData.id)
         .eq("is_active", true)
         .order("name");
 
@@ -264,14 +270,14 @@ export default function CommissionReportsMobile() {
   };
 
   const fetchAgents = async () => {
-    if (!tenant?.id || !selectedLocation?.id) return;
+    if (!profile?.tenant_id || !selectedLocationData?.id) return;
 
     try {
       const { data } = await supabase
         .from("agents")
         .select("id, name")
-        .eq("tenant_id", tenant.id)
-        .eq("location_id", selectedLocation.id)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("location_id", selectedLocationData.id)
         .eq("is_active", true)
         .order("name");
 
