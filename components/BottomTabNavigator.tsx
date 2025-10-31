@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
-import { Alert, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthContext } from "../contexts/AuthContext";
 import { signOut } from "../lib/auth";
@@ -101,24 +101,44 @@ function MainTabs() {
           shadowRadius: 0,
         },
         tabBarActiveTintColor: "#000000",
-        tabBarInactiveTintColor: "#6b7280",
+        tabBarInactiveTintColor: "#9ca3af",
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: "600",
           marginTop: 2,
           marginBottom: 2,
-          color: "#000000",
         },
         tabBarIconStyle: {
           marginTop: 2,
+        },
+        tabBarItemStyle: {
+          opacity: 1,
         },
       }}
     >
       <Tab.Screen
         name="Dashboard"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={25} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name="home" 
+              size={25} 
+              color={color}
+              style={{ opacity: focused ? 1 : 0.5 }}
+            />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text 
+              style={{ 
+                fontSize: 10, 
+                color: focused ? "#000000" : "#9ca3af",
+                fontWeight: focused ? "700" : "400",
+                opacity: focused ? 1 : 0.6,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
+              Dashboard
+            </Text>
           ),
         }}
       >
@@ -127,8 +147,27 @@ function MainTabs() {
       <Tab.Screen
         name="Calendar"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="calendar" size={25} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name="calendar" 
+              size={25} 
+              color={color}
+              style={{ opacity: focused ? 1 : 0.5 }}
+            />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text 
+              style={{ 
+                fontSize: 10, 
+                color: focused ? "#000000" : "#9ca3af",
+                fontWeight: focused ? "700" : "400",
+                opacity: focused ? 1 : 0.6,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
+              Calendar
+            </Text>
           ),
         }}
       >
@@ -137,8 +176,27 @@ function MainTabs() {
       <Tab.Screen
         name="Reservations"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="bed" size={25} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name="bed" 
+              size={25} 
+              color={color}
+              style={{ opacity: focused ? 1 : 0.5 }}
+            />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text 
+              style={{ 
+                fontSize: 10, 
+                color: focused ? "#000000" : "#9ca3af",
+                fontWeight: focused ? "700" : "400",
+                opacity: focused ? 1 : 0.6,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
+              Reservations
+            </Text>
           ),
         }}
       >
@@ -147,8 +205,27 @@ function MainTabs() {
       <Tab.Screen
         name="Expenses"
         options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="attach-money" size={25} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialIcons 
+              name="attach-money" 
+              size={25} 
+              color={color}
+              style={{ opacity: focused ? 1 : 0.5 }}
+            />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text 
+              style={{ 
+                fontSize: 10, 
+                color: focused ? "#000000" : "#9ca3af",
+                fontWeight: focused ? "700" : "400",
+                opacity: focused ? 1 : 0.6,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
+              Expenses
+            </Text>
           ),
         }}
       >
@@ -157,8 +234,27 @@ function MainTabs() {
       <Tab.Screen
         name="Accounts"
         options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="account-balance" size={25} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialIcons 
+              name="account-balance" 
+              size={25} 
+              color={color}
+              style={{ opacity: focused ? 1 : 0.5 }}
+            />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text 
+              style={{ 
+                fontSize: 10, 
+                color: focused ? "#000000" : "#9ca3af",
+                fontWeight: focused ? "700" : "400",
+                opacity: focused ? 1 : 0.6,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
+              Accounts
+            </Text>
           ),
         }}
       >
@@ -168,8 +264,27 @@ function MainTabs() {
       <Tab.Screen
         name="Reports"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="bar-chart" size={25} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name="bar-chart" 
+              size={25} 
+              color={color}
+              style={{ opacity: focused ? 1 : 0.5 }}
+            />
+          ),
+          tabBarLabel: ({ focused, color }) => (
+            <Text 
+              style={{ 
+                fontSize: 10, 
+                color: focused ? "#000000" : "#9ca3af",
+                fontWeight: focused ? "700" : "400",
+                opacity: focused ? 1 : 0.6,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
+              Reports
+            </Text>
           ),
         }}
       >
