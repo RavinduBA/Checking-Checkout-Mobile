@@ -7,17 +7,29 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocationContext } from "@/contexts/LocationContext";
+import { supabase } from "@/lib/supabase";
 
 interface Account {
   id: string;
   name: string;
+  currency: string;
+  current_balance: number;
+  status: string;
   type: string;
-  balance: string;
-  status: "active" | "inactive";
-  lastTransaction: string;
-  totalIncome: string;
-  totalExpenses: string;
+  tenant_id: string;
+  location_id: string;
+}
+
+interface AccountBalance {
+  account: Account;
+  currentBalance: number;
+  totalIncome: number;
+  totalExpenses: number;
+  totalTransfers: number;
   transactionCount: number;
 }
 
@@ -26,28 +38,27 @@ interface Transaction {
   date: string;
   type: "income" | "expense" | "transfer_in" | "transfer_out";
   description: string;
-  amount: string;
-  accountName: string;
+  amount: number;
+  account_name: string;
   currency: string;
   note?: string;
 }
 
-interface AccountCardProps extends Account {
+interface AccountCardProps {
+  account: Account;
+  balance: AccountBalance;
   onPress: () => void;
 }
 
 const AccountCard: React.FC<AccountCardProps> = ({
-  name,
-  type,
+  account,
   balance,
-  status,
-  lastTransaction,
-  totalIncome,
-  totalExpenses,
-  transactionCount,
   onPress,
 }) => {
-  const isPositive = !balance.startsWith("-");
+  const isPositive = balance.currentBalance >= 0;
+  const formatCurrency = (amount: number, currency: string) => {
+    return `${currency} ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+  };
 
   return (
     <TouchableOpacity
@@ -57,21 +68,21 @@ const AccountCard: React.FC<AccountCardProps> = ({
       <View className="flex-row justify-between items-start mb-2">
         <View className="flex-1">
           <Text className="text-base font-semibold text-gray-900 mb-1">
-            {name}
+            {account.name}
           </Text>
-          <Text className="text-xs text-gray-600">{type}</Text>
+          <Text className="text-xs text-gray-600">{account.type}</Text>
         </View>
         <View
           className={`px-2 py-1 rounded-md ${
-            status === "active" ? "bg-green-100" : "bg-gray-100"
+            account.status === "active" ? "bg-green-100" : "bg-gray-100"
           }`}
         >
           <Text
             className={`text-xs font-medium ${
-              status === "active" ? "text-green-600" : "text-gray-600"
+              account.status === "active" ? "text-green-600" : "text-gray-600"
             }`}
           >
-            {status}
+            {account.status}
           </Text>
         </View>
       </View>
@@ -85,13 +96,13 @@ const AccountCard: React.FC<AccountCardProps> = ({
                 isPositive ? "text-green-600" : "text-red-600"
               }`}
             >
-              {balance}
+              {formatCurrency(balance.currentBalance, account.currency)}
             </Text>
           </View>
           <View className="items-end">
             <Text className="text-xs text-gray-600 mb-1">Transactions</Text>
             <Text className="text-sm font-semibold text-gray-900">
-              {transactionCount}
+              {balance.transactionCount}
             </Text>
           </View>
         </View>
@@ -100,13 +111,13 @@ const AccountCard: React.FC<AccountCardProps> = ({
           <View className="flex-1">
             <Text className="text-xs text-gray-600">Income</Text>
             <Text className="text-sm font-semibold text-green-600">
-              {totalIncome}
+              {formatCurrency(balance.totalIncome, account.currency)}
             </Text>
           </View>
           <View className="flex-1 items-end">
             <Text className="text-xs text-gray-600">Expenses</Text>
             <Text className="text-sm font-semibold text-red-600">
-              {totalExpenses}
+              {formatCurrency(balance.totalExpenses, account.currency)}
             </Text>
           </View>
         </View>
@@ -120,22 +131,17 @@ const AccountCard: React.FC<AccountCardProps> = ({
   );
 };
 
-interface TransactionCardProps extends Transaction {
+interface TransactionCardProps {
+  transaction: Transaction;
   onPress: () => void;
 }
 
 const TransactionCard: React.FC<TransactionCardProps> = ({
-  date,
-  type,
-  description,
-  amount,
-  accountName,
-  currency,
-  note,
+  transaction,
   onPress,
 }) => {
   const getTypeColor = () => {
-    switch (type) {
+    switch (transaction.type) {
       case "income":
         return "text-green-600";
       case "expense":
@@ -150,7 +156,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   };
 
   const getTypeIcon = () => {
-    switch (type) {
+    switch (transaction.type) {
       case "income":
         return "arrow-down-circle";
       case "expense":
@@ -164,6 +170,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
     }
   };
 
+  const formatCurrency = (amount: number, currency: string) => {
+    return `${currency} ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -173,9 +183,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         <View className="flex-row items-start flex-1">
           <View
             className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${
-              type === "income"
+              transaction.type === "income"
                 ? "bg-green-100"
-                : type === "expense"
+                : transaction.type === "expense"
                 ? "bg-red-100"
                 : "bg-blue-100"
             }`}
@@ -184,9 +194,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               name={getTypeIcon() as any}
               size={18}
               color={
-                type === "income"
+                transaction.type === "income"
                   ? "#16a34a"
-                  : type === "expense"
+                  : transaction.type === "expense"
                   ? "#dc2626"
                   : "#3b82f6"
               }
@@ -194,25 +204,24 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
           </View>
           <View className="flex-1">
             <Text className="text-sm font-semibold text-gray-900 mb-1">
-              {description}
+              {transaction.description}
             </Text>
-            <Text className="text-xs text-gray-600">{accountName}</Text>
+            <Text className="text-xs text-gray-600">{transaction.account_name}</Text>
             <Text className="text-xs text-gray-500 mt-1">
-              {new Date(date).toLocaleDateString()}
+              {new Date(transaction.date).toLocaleDateString()}
             </Text>
           </View>
         </View>
         <View className="items-end">
           <Text className={`text-lg font-bold ${getTypeColor()}`}>
-            {type === "expense" || type === "transfer_out" ? "-" : "+"}
-            {amount}
+            {transaction.type === "expense" || transaction.type === "transfer_out" ? "-" : "+"}
+            {formatCurrency(transaction.amount, transaction.currency)}
           </Text>
-          <Text className="text-xs text-gray-500">{currency}</Text>
         </View>
       </View>
-      {note && (
+      {transaction.note && (
         <View className="mt-2 p-2 bg-gray-50 rounded">
-          <Text className="text-xs text-gray-600">{note}</Text>
+          <Text className="text-xs text-gray-600">{transaction.note}</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -244,138 +253,253 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
 type TabType = "balances" | "transactions";
 
 export default function AccountsReportsMobile() {
+  const { tenant } = useAuth();
+  const { selectedLocation } = useLocationContext();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("balances");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "active" | "inactive">(
-    "all"
-  );
+  const [filterType, setFilterType] = useState<"all" | "active" | "inactive">("all");
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountBalances, setAccountBalances] = useState<AccountBalance[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
-  const accounts: Account[] = [
-    {
-      id: "1",
-      name: "Main Operating Account",
-      type: "Checking",
-      balance: "$45,250.00",
-      status: "active",
-      lastTransaction: "2 hours ago",
-      totalIncome: "$12,500.00",
-      totalExpenses: "$8,200.00",
-      transactionCount: 145,
-    },
-    {
-      id: "2",
-      name: "Payroll Account",
-      type: "Checking",
-      balance: "$12,500.00",
-      status: "active",
-      lastTransaction: "1 day ago",
-      totalIncome: "$25,000.00",
-      totalExpenses: "$12,500.00",
-      transactionCount: 24,
-    },
-    {
-      id: "3",
-      name: "Savings Reserve",
-      type: "Savings",
-      balance: "$85,000.00",
-      status: "active",
-      lastTransaction: "5 days ago",
-      totalIncome: "$50,000.00",
-      totalExpenses: "$5,000.00",
-      transactionCount: 12,
-    },
-    {
-      id: "4",
-      name: "Petty Cash",
-      type: "Cash",
-      balance: "$1,250.00",
-      status: "active",
-      lastTransaction: "3 hours ago",
-      totalIncome: "$3,500.00",
-      totalExpenses: "$2,250.00",
-      transactionCount: 89,
-    },
-    {
-      id: "5",
-      name: "Old Operations Account",
-      type: "Checking",
-      balance: "$0.00",
-      status: "inactive",
-      lastTransaction: "45 days ago",
-      totalIncome: "$0.00",
-      totalExpenses: "$0.00",
-      transactionCount: 0,
-    },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, [tenant, selectedLocation]);
 
-  const transactions: Transaction[] = [
-    {
-      id: "1",
-      date: "2025-10-31",
-      type: "income",
-      description: "Room Booking Payment",
-      amount: "$450.00",
-      accountName: "Main Operating Account",
-      currency: "USD",
-      note: "Reservation #1234",
-    },
-    {
-      id: "2",
-      date: "2025-10-31",
-      type: "expense",
-      description: "Office Supplies",
-      amount: "$85.00",
-      accountName: "Main Operating Account",
-      currency: "USD",
-    },
-    {
-      id: "3",
-      date: "2025-10-30",
-      type: "transfer_in",
-      description: "Transfer from Savings",
-      amount: "$2,000.00",
-      accountName: "Main Operating Account",
-      currency: "USD",
-    },
-    {
-      id: "4",
-      date: "2025-10-30",
-      type: "income",
-      description: "Guest Services",
-      amount: "$120.00",
-      accountName: "Petty Cash",
-      currency: "USD",
-    },
-    {
-      id: "5",
-      date: "2025-10-29",
-      type: "expense",
-      description: "Utilities - Electricity",
-      amount: "$350.00",
-      accountName: "Main Operating Account",
-      currency: "USD",
-    },
-  ];
+  useEffect(() => {
+    if (accounts.length > 0) {
+      fetchAccountBalances();
+      fetchTransactions();
+    }
+  }, [accounts, selectedAccount, dateFrom, dateTo]);
 
-  const filteredAccounts = accounts.filter((account) => {
-    const matchesSearch = account.name
+  const fetchData = async () => {
+    if (!tenant?.id || !selectedLocation?.id) return;
+    
+    setLoading(true);
+    try {
+      const { data: accountsData, error } = await supabase
+        .from("accounts")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .eq("location_id", selectedLocation.id)
+        .order("name");
+
+      if (error) throw error;
+      setAccounts(accountsData || []);
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch accounts");
+      console.error("Error fetching accounts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAccountBalances = async () => {
+    if (!tenant?.id || !selectedLocation?.id) return;
+
+    try {
+      const balances: AccountBalance[] = [];
+
+      for (const account of accounts) {
+        // Fetch income for this account (from payments table)
+        let incomeQuery = supabase
+          .from("payments")
+          .select("amount")
+          .eq("account_id", account.id)
+          .eq("tenant_id", tenant.id);
+
+        // Fetch expenses for this account
+        let expenseQuery = supabase
+          .from("expenses")
+          .select("amount")
+          .eq("account_id", account.id)
+          .eq("tenant_id", tenant.id);
+
+        // Fetch transfers from this account
+        let transfersFromQuery = supabase
+          .from("account_transfers")
+          .select("amount")
+          .eq("from_account_id", account.id)
+          .eq("tenant_id", tenant.id);
+
+        // Fetch transfers to this account
+        let transfersToQuery = supabase
+          .from("account_transfers")
+          .select("amount, conversion_rate")
+          .eq("to_account_id", account.id)
+          .eq("tenant_id", tenant.id);
+
+        // Apply date filters if specified
+        if (dateFrom) {
+          incomeQuery = incomeQuery.gte("date", dateFrom);
+          expenseQuery = expenseQuery.gte("date", dateFrom);
+          transfersFromQuery = transfersFromQuery.gte("created_at", dateFrom);
+          transfersToQuery = transfersToQuery.gte("created_at", dateFrom);
+        }
+        if (dateTo) {
+          incomeQuery = incomeQuery.lte("date", dateTo);
+          expenseQuery = expenseQuery.lte("date", dateTo);
+          transfersFromQuery = transfersFromQuery.lte("created_at", dateTo);
+          transfersToQuery = transfersToQuery.lte("created_at", dateTo);
+        }
+
+        const [
+          incomeResult,
+          expenseResult,
+          transfersFromResult,
+          transfersToResult,
+        ] = await Promise.all([
+          incomeQuery,
+          expenseQuery,
+          transfersFromQuery,
+          transfersToQuery,
+        ]);
+
+        const incomeData = incomeResult.data || [];
+        const expenseData = expenseResult.data || [];
+        const transfersFromData = transfersFromResult.data || [];
+        const transfersToData = transfersToResult.data || [];
+
+        const totalIncome = incomeData.reduce(
+          (sum, item) => sum + parseFloat(item.amount.toString()),
+          0
+        );
+        const totalExpenses = expenseData.reduce(
+          (sum, item) => sum + parseFloat(item.amount.toString()),
+          0
+        );
+        const transfersOut = transfersFromData.reduce(
+          (sum, item) => sum + parseFloat(item.amount.toString()),
+          0
+        );
+        const transfersIn = transfersToData.reduce(
+          (sum, item) =>
+            sum +
+            parseFloat(item.amount.toString()) *
+              parseFloat(item.conversion_rate.toString()),
+          0
+        );
+
+        const currentBalance = account.current_balance;
+        const transactionCount =
+          incomeData.length +
+          expenseData.length +
+          transfersFromData.length +
+          transfersToData.length;
+
+        balances.push({
+          account,
+          currentBalance,
+          totalIncome,
+          totalExpenses,
+          totalTransfers: transfersIn - transfersOut,
+          transactionCount,
+        });
+      }
+
+      setAccountBalances(balances);
+    } catch (error) {
+      console.error("Error fetching account balances:", error);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    if (!tenant?.id || !selectedLocation?.id) return;
+
+    try {
+      const allTransactions: Transaction[] = [];
+
+      for (const account of accounts) {
+        if (selectedAccount !== "all" && account.id !== selectedAccount) continue;
+
+        // Fetch income transactions
+        let incomeQuery = supabase
+          .from("income")
+          .select("id, date, amount, type, note")
+          .eq("account_id", account.id)
+          .eq("tenant_id", tenant.id);
+
+        // Fetch expense transactions
+        let expenseQuery = supabase
+          .from("expenses")
+          .select("id, date, amount, main_type, sub_type, note")
+          .eq("account_id", account.id)
+          .eq("tenant_id", tenant.id);
+
+        // Apply date filters
+        if (dateFrom) {
+          incomeQuery = incomeQuery.gte("date", dateFrom);
+          expenseQuery = expenseQuery.gte("date", dateFrom);
+        }
+        if (dateTo) {
+          incomeQuery = incomeQuery.lte("date", dateTo);
+          expenseQuery = expenseQuery.lte("date", dateTo);
+        }
+
+        const [incomeResult, expenseResult] = await Promise.all([
+          incomeQuery.order("date", { ascending: false }),
+          expenseQuery.order("date", { ascending: false }),
+        ]);
+
+        // Process income transactions
+        (incomeResult.data || []).forEach((item) => {
+          allTransactions.push({
+            id: item.id,
+            date: item.date,
+            type: "income",
+            description: `${item.type} Income`,
+            amount: parseFloat(item.amount.toString()),
+            account_name: account.name,
+            currency: account.currency,
+            note: item.note,
+          });
+        });
+
+        // Process expense transactions
+        (expenseResult.data || []).forEach((item) => {
+          allTransactions.push({
+            id: item.id,
+            date: item.date,
+            type: "expense",
+            description: `${item.main_type} - ${item.sub_type}`,
+            amount: parseFloat(item.amount.toString()),
+            account_name: account.name,
+            currency: account.currency,
+            note: item.note,
+          });
+        });
+      }
+
+      // Sort all transactions by date (newest first)
+      allTransactions.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setTransactions(allTransactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    }
+  };
+
+  const filteredBalances = accountBalances.filter((balance) => {
+    const matchesSearch = balance.account.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchesFilter = filterType === "all" || account.status === filterType;
+    const matchesFilter =
+      filterType === "all" || balance.account.status === filterType;
     return matchesSearch && matchesFilter;
   });
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
       transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.accountName.toLowerCase().includes(searchQuery.toLowerCase());
+      transaction.account_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
-
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 500);
-  }, []);
 
   const handleAccountPress = (accountId: string) => {
     console.log("View account:", accountId);
@@ -386,7 +510,18 @@ export default function AccountsReportsMobile() {
   };
 
   const handleExport = () => {
-    console.log("Export data");
+    // TODO: Implement CSV export for mobile
+    Alert.alert("Export", "Export functionality will be implemented soon");
+  };
+
+  const getTotalAssets = () => {
+    const total = accountBalances.reduce((sum, balance) => sum + balance.currentBalance, 0);
+    const currency = accounts[0]?.currency || "USD";
+    return `${currency} ${total.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+  };
+
+  const getActiveAccountsCount = () => {
+    return accountBalances.filter(b => b.account.status === "active").length;
   };
 
   if (loading) {
@@ -418,13 +553,13 @@ export default function AccountsReportsMobile() {
       <View className="flex-row gap-3 mb-4">
         <StatCard
           title="Total Assets"
-          value="$144K"
+          value={getTotalAssets()}
           icon="wallet"
           color="#10b981"
         />
         <StatCard
           title="Active"
-          value="4"
+          value={getActiveAccountsCount().toString()}
           icon="checkmark-circle"
           color="#3b82f6"
         />
@@ -522,17 +657,18 @@ export default function AccountsReportsMobile() {
       {activeTab === "balances" ? (
         <View>
           <Text className="text-base font-semibold text-gray-900 mb-3">
-            Accounts ({filteredAccounts.length})
+            Accounts ({filteredBalances.length})
           </Text>
-          {filteredAccounts.map((account) => (
+          {filteredBalances.map((balance) => (
             <AccountCard
-              key={account.id}
-              {...account}
-              onPress={() => handleAccountPress(account.id)}
+              key={balance.account.id}
+              account={balance.account}
+              balance={balance}
+              onPress={() => handleAccountPress(balance.account.id)}
             />
           ))}
 
-          {filteredAccounts.length === 0 && (
+          {filteredBalances.length === 0 && (
             <View className="items-center py-10">
               <Ionicons name="folder-open-outline" size={48} color="#ccc" />
               <Text className="text-sm text-gray-600 mt-3">
@@ -549,7 +685,7 @@ export default function AccountsReportsMobile() {
           {filteredTransactions.map((transaction) => (
             <TransactionCard
               key={transaction.id}
-              {...transaction}
+              transaction={transaction}
               onPress={() => handleTransactionPress(transaction.id)}
             />
           ))}
