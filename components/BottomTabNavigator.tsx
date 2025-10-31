@@ -51,7 +51,7 @@ function ScreenWithTopBar({
   };
 
   const insets = useSafeAreaInsets();
-  
+
   return (
     <View className="flex-1 bg-gray-100">
       <View style={{ paddingTop: insets.top }}>
@@ -66,10 +66,7 @@ function ScreenWithTopBar({
           onNavigateToMasterFiles={() => navigation.navigate("MasterFiles")}
         />
       </View>
-      <View 
-        className="flex-1" 
-        style={{ paddingBottom: 70 + insets.bottom }}
-      >
+      <View className="flex-1" style={{ paddingBottom: 70 + insets.bottom }}>
         <Component navigation={navigation} />
       </View>
     </View>
@@ -102,13 +99,14 @@ function MainTabs() {
           shadowOpacity: 0.15,
           shadowRadius: 12,
         },
-        tabBarActiveTintColor: "#3b82f6",
-        tabBarInactiveTintColor: "#9ca3af",
+        tabBarActiveTintColor: "#000000",
+        tabBarInactiveTintColor: "#6b7280",
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "600",
           marginTop: 2,
           marginBottom: 2,
+          color: "#000000",
         },
         tabBarIconStyle: {
           marginTop: 2,

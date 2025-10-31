@@ -57,16 +57,16 @@ export default function TopBar({
   const insets = useSafeAreaInsets();
 
   return (
-    <View 
-      className="bg-white border-b border-gray-200 px-3 py-2"
-      style={{ paddingTop: Math.max(insets.top, 8) }}
+    <View
+      className="bg-white border-b border-gray-200 px-3 py-1.5"
+      style={{ paddingTop: insets.top }}
     >
       <View className="flex-row items-center justify-between">
         {/* Left side with Logo, App Name and Location Selector */}
         <View className="flex-row items-center flex-1 mr-2">
           {/* Logo */}
-          <View className="w-7 h-7 mr-2">
-            <Svg width="28" height="28" viewBox="0 0 100 100">
+          <View className="w-6 h-6 mr-1.5">
+            <Svg width="24" height="24" viewBox="0 0 100 100">
               <Rect width="100" height="100" fill="#1f2937" rx="12" />
               <Path d="M 75 35 L 25 65 L 40 35 L 25 20 Z" fill="#ffffff" />
               <Path
@@ -79,23 +79,23 @@ export default function TopBar({
           {/* Location Selector */}
           <TouchableOpacity
             onPress={() => setShowLocationDropdown(true)}
-            className="flex-row items-center bg-gray-100 px-2 py-1.5 rounded-lg flex-1"
-            style={{ maxWidth: 250 }}
+            className="flex-row items-center bg-gray-100 px-2 py-1 rounded-lg flex-1"
+            style={{ maxWidth: 220 }}
           >
-            <Ionicons name="location" size={14} color="#000000" />
+            <Ionicons name="location" size={13} color="#000000" />
             <View className="ml-1.5 flex-1">
-              <Text 
-                className="text-xs font-medium text-black"
+              <Text
+                className="text-[11px] font-medium text-black"
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
                 {selectedLocationName}
               </Text>
-              <Text className="text-[10px] text-gray-600">active location</Text>
+              <Text className="text-[9px] text-gray-600">active location</Text>
             </View>
             <Ionicons
               name="chevron-down"
-              size={14}
+              size={13}
               color="#000000"
               style={{ marginLeft: 4 }}
             />
@@ -107,8 +107,8 @@ export default function TopBar({
           onPress={() => setShowUserDropdown(true)}
           className="flex-row items-center"
         >
-          <View className="w-7 h-7 bg-black rounded-full items-center justify-center">
-            <Text className="text-white text-xs font-semibold">
+          <View className="w-6 h-6 bg-black rounded-full items-center justify-center">
+            <Text className="text-white text-[10px] font-semibold">
               {profile?.name
                 ?.split(" ")
                 .map((n: string) => n[0])
@@ -117,7 +117,7 @@ export default function TopBar({
           </View>
           <Ionicons
             name="chevron-down"
-            size={14}
+            size={13}
             color="#000000"
             style={{ marginLeft: 4 }}
           />
@@ -229,9 +229,7 @@ export default function TopBar({
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
             >
               <Ionicons name="people-outline" size={16} color="#000000" />
-              <Text className="ml-3 text-sm text-black">
-                User Management
-              </Text>
+              <Text className="ml-3 text-sm text-black">User Management</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
