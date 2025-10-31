@@ -1,7 +1,11 @@
+import { useLocationContext } from "@/contexts/LocationContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -9,55 +13,69 @@ import {
   View,
 } from "react-native";
 
-interface Commission {
-  id: string;
-  agentName: string;
-  bookings: number;
-  totalSales: string;
-  commissionRate: string;
-  commissionAmount: string;
-  status: "paid" | "pending" | "overdue";
-  dueDate: string;
+interface CommissionData {
+  reservation_id: string;
+  reservation_number: string;
+  guest_name: string;
+  check_in_date: string;
+  check_out_date: string;
+  total_amount: number;
+  guide_id?: string;
+  guide_name?: string;
+  guide_commission: number;
+  agent_id?: string;
+  agent_name?: string;
+  agent_commission: number;
+  status: string;
 }
 
-interface CommissionCardProps extends Commission {
+interface Guide {
+  id: string;
+  name: string;
+}
+
+interface Agent {
+  id: string;
+  name: string;
+}
+
+interface CommissionCardProps {
+  commission: CommissionData;
   onPress: () => void;
 }
 
 const CommissionCard: React.FC<CommissionCardProps> = ({
-  agentName,
-  bookings,
-  totalSales,
-  commissionRate,
-  commissionAmount,
-  status,
-  dueDate,
+  commission,
   onPress,
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "paid":
-        return "bg-green-100";
-      case "pending":
-        return "bg-yellow-100";
-      case "overdue":
+      case "confirmed":
+        return "bg-blue-100";
+      case "checked_out":
+        return "bg-gray-100";
+      case "cancelled":
         return "bg-red-100";
       default:
-        return "bg-gray-100";
+        return "bg-yellow-100";
     }
   };
 
   const getStatusTextColor = (status: string) => {
     switch (status) {
-      case "paid":
-        return "text-green-600";
-      case "pending":
-        return "text-yellow-600";
-      case "overdue":
+      case "confirmed":
+        return "text-blue-600";
+      case "checked_out":
+        return "text-gray-600";
+      case "cancelled":
         return "text-red-600";
       default:
-        return "text-gray-600";
+        return "text-yellow-600";
     }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `LKR ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
   return (
@@ -66,169 +84,273 @@ const CommissionCard: React.FC<CommissionCardProps> = ({
       className="bg-white rounded-lg p-4 border border-gray-200 mb-3"
     >
       {/* Header */}
-      <View className="flex-row justify-between items-start mb-3">
+      <View className="flex-row justify-between items-start mb-2">
         <View className="flex-1">
           <Text className="text-base font-semibold text-gray-900 mb-1">
-            {agentName}
+            {commission.guest_name}
           </Text>
           <Text className="text-xs text-gray-600">
-            {bookings} bookings • {commissionRate} commission
+            {new Date(commission.check_in_date).toLocaleDateString()} →{" "}
+            {new Date(commission.check_out_date).toLocaleDateString()}
+          </Text>
+          <Text className="text-xs text-gray-500 mt-1">
+            Res# {commission.reservation_number}
           </Text>
         </View>
-        <View className={`px-2 py-1 rounded-md ${getStatusColor(status)}`}>
-          <Text className={`text-xs font-medium ${getStatusTextColor(status)}`}>
-            {status}
-          </Text>
-        </View>
-      </View>
-
-      {/* Stats Grid */}
-      <View className="flex-row gap-3 mb-3">
-        <View className="flex-1 bg-gray-100 rounded-lg p-3">
-          <Text className="text-xs text-gray-600 mb-1">Total Sales</Text>
-          <Text className="text-sm font-bold text-gray-900">{totalSales}</Text>
-        </View>
-        <View className="flex-1 bg-blue-50 rounded-lg p-3">
-          <Text className="text-xs text-gray-600 mb-1">Commission</Text>
-          <Text className="text-sm font-bold text-blue-500">
-            {commissionAmount}
+        <View
+          className={`px-2 py-1 rounded-md ${getStatusColor(commission.status)}`}
+        >
+          <Text
+            className={`text-xs font-medium ${getStatusTextColor(commission.status)}`}
+          >
+            {commission.status}
           </Text>
         </View>
       </View>
 
-      {/* Footer */}
-      <View className="flex-row justify-between items-center pt-2 border-t border-gray-200">
-        <View className="flex-row items-center gap-1">
-          <Ionicons name="calendar-outline" size={12} color="#666" />
-          <Text className="text-xs text-gray-600">Due: {dueDate}</Text>
-        </View>
-        <View className="flex-row items-center gap-1">
-          <Text className="text-xs text-blue-500 font-medium">Details</Text>
-          <Ionicons name="chevron-forward" size={14} color="#3b82f6" />
-        </View>
+      {/* Total Amount */}
+      <View className="bg-gray-50 rounded-lg p-3 mb-3">
+        <Text className="text-xs text-gray-600 mb-1">Total Amount</Text>
+        <Text className="text-lg font-bold text-gray-900">
+          {formatCurrency(commission.total_amount)}
+        </Text>
+      </View>
+
+      {/* Commissions Grid */}
+      <View className="flex-row gap-3">
+        {commission.guide_name && (
+          <View className="flex-1 bg-green-50 rounded-lg p-3">
+            <Text className="text-xs text-gray-600 mb-1">Guide</Text>
+            <Text className="text-xs font-medium text-gray-900 mb-1">
+              {commission.guide_name}
+            </Text>
+            <Text className="text-sm font-bold text-green-600">
+              {formatCurrency(commission.guide_commission)}
+            </Text>
+          </View>
+        )}
+        {commission.agent_name && (
+          <View className="flex-1 bg-blue-50 rounded-lg p-3">
+            <Text className="text-xs text-gray-600 mb-1">Agent</Text>
+            <Text className="text-xs font-medium text-gray-900 mb-1">
+              {commission.agent_name}
+            </Text>
+            <Text className="text-sm font-bold text-blue-600">
+              {formatCurrency(commission.agent_commission)}
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
 };
 
-interface SummaryCardProps {
+interface StatCardProps {
   title: string;
   value: string;
-  subtitle?: string;
   icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
+  color: string;
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({
-  title,
-  value,
-  subtitle,
-  icon,
-  iconColor,
-}) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
   return (
-    <View className="bg-white rounded-lg p-4 border border-gray-200">
-      <View className="flex-row justify-between items-start">
-        <View className="flex-1">
-          <Text className="text-xs text-gray-600 mb-1">{title}</Text>
-          <Text className="text-2xl font-bold text-gray-900 mb-1">{value}</Text>
-          {subtitle && (
-            <Text className="text-xs text-gray-600">{subtitle}</Text>
-          )}
-        </View>
-        <View
-          className="w-10 h-10 rounded-full items-center justify-center"
-          style={{ backgroundColor: `${iconColor}20` }}
-        >
-          <Ionicons name={icon} size={20} color={iconColor} />
-        </View>
+    <View className="flex-1 bg-white rounded-lg p-3 border border-gray-200">
+      <View
+        className="w-8 h-8 rounded-full items-center justify-center mb-2"
+        style={{ backgroundColor: `${color}20` }}
+      >
+        <Ionicons name={icon} size={16} color={color} />
       </View>
+      <Text className="text-xs text-gray-600 mb-1">{title}</Text>
+      <Text className="text-base font-bold text-gray-900">{value}</Text>
     </View>
   );
 };
 
+type FilterType = "all" | "guide" | "agent";
+
 export default function CommissionReportsMobile() {
+  const { tenant } = useAuth();
+  const { selectedLocation } = useLocationContext();
   const [loading, setLoading] = useState(true);
+  const [commissions, setCommissions] = useState<CommissionData[]>([]);
+  const [guides, setGuides] = useState<Guide[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [filterType, setFilterType] = useState<FilterType>("all");
+  const [selectedPerson, setSelectedPerson] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "paid" | "pending" | "overdue"
-  >("all");
-
-  const commissions: Commission[] = [
-    {
-      id: "1",
-      agentName: "John Smith",
-      bookings: 12,
-      totalSales: "$8,450",
-      commissionRate: "8%",
-      commissionAmount: "$676",
-      status: "paid",
-      dueDate: "Jan 15, 2024",
-    },
-    {
-      id: "2",
-      agentName: "Sarah Johnson",
-      bookings: 18,
-      totalSales: "$12,300",
-      commissionRate: "10%",
-      commissionAmount: "$1,230",
-      status: "pending",
-      dueDate: "Feb 1, 2024",
-    },
-    {
-      id: "3",
-      agentName: "Michael Chen",
-      bookings: 8,
-      totalSales: "$5,200",
-      commissionRate: "7%",
-      commissionAmount: "$364",
-      status: "pending",
-      dueDate: "Feb 5, 2024",
-    },
-    {
-      id: "4",
-      agentName: "Emily Davis",
-      bookings: 15,
-      totalSales: "$9,800",
-      commissionRate: "9%",
-      commissionAmount: "$882",
-      status: "overdue",
-      dueDate: "Dec 20, 2023",
-    },
-    {
-      id: "5",
-      agentName: "Robert Wilson",
-      bookings: 10,
-      totalSales: "$6,500",
-      commissionRate: "8%",
-      commissionAmount: "$520",
-      status: "paid",
-      dueDate: "Jan 10, 2024",
-    },
-  ];
-
-  const filteredCommissions = commissions.filter((commission) => {
-    const matchesSearch = commission.agentName
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesFilter =
-      filterStatus === "all" || commission.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
-
-  const totalCommissions = commissions.reduce(
-    (sum, c) => sum + parseFloat(c.commissionAmount.replace(/[$,]/g, "")),
-    0
-  );
-  const pendingCommissions = commissions.filter((c) => c.status === "pending");
-  const overdueCommissions = commissions.filter((c) => c.status === "overdue");
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 500);
-  }, []);
+    fetchData();
+    fetchGuides();
+    fetchAgents();
+  }, [tenant, selectedLocation]);
 
-  const handleCommissionPress = (commissionId: string) => {
-    console.log("View commission:", commissionId);
+  const fetchData = async () => {
+    if (!tenant?.id || !selectedLocation?.id) return;
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("reservations")
+        .select(
+          `
+          id,
+          reservation_number,
+          guest_name,
+          check_in_date,
+          check_out_date,
+          total_amount,
+          guide_id,
+          guide_commission,
+          agent_id,
+          agent_commission,
+          status,
+          guides!guide_id(name),
+          agents!agent_id(name)
+        `
+        )
+        .eq("tenant_id", tenant.id)
+        .eq("location_id", selectedLocation.id)
+        .or("guide_id.not.is.null,agent_id.not.is.null")
+        .order("check_in_date", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedData =
+        data?.map((item: any) => ({
+          reservation_id: item.id,
+          reservation_number: item.reservation_number,
+          guest_name: item.guest_name,
+          check_in_date: item.check_in_date,
+          check_out_date: item.check_out_date,
+          total_amount: item.total_amount,
+          guide_id: item.guide_id,
+          guide_name: item.guides?.name,
+          guide_commission: item.guide_commission || 0,
+          agent_id: item.agent_id,
+          agent_name: item.agents?.name,
+          agent_commission: item.agent_commission || 0,
+          status: item.status,
+        })) || [];
+
+      setCommissions(formattedData);
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch commission data");
+      console.error("Error fetching commissions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGuides = async () => {
+    if (!tenant?.id || !selectedLocation?.id) return;
+
+    try {
+      const { data } = await supabase
+        .from("guides")
+        .select("id, name")
+        .eq("tenant_id", tenant.id)
+        .eq("location_id", selectedLocation.id)
+        .eq("is_active", true)
+        .order("name");
+
+      setGuides(data || []);
+    } catch (error) {
+      console.error("Error fetching guides:", error);
+    }
+  };
+
+  const fetchAgents = async () => {
+    if (!tenant?.id || !selectedLocation?.id) return;
+
+    try {
+      const { data } = await supabase
+        .from("agents")
+        .select("id, name")
+        .eq("tenant_id", tenant.id)
+        .eq("location_id", selectedLocation.id)
+        .eq("is_active", true)
+        .order("name");
+
+      setAgents(data || []);
+    } catch (error) {
+      console.error("Error fetching agents:", error);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...commissions];
+
+    // Date filter
+    if (dateFrom) {
+      filtered = filtered.filter((item) => item.check_in_date >= dateFrom);
+    }
+    if (dateTo) {
+      filtered = filtered.filter((item) => item.check_in_date <= dateTo);
+    }
+
+    // Type and person filter
+    if (filterType === "guide" && selectedPerson) {
+      filtered = filtered.filter((item) => item.guide_id === selectedPerson);
+    } else if (filterType === "agent" && selectedPerson) {
+      filtered = filtered.filter((item) => item.agent_id === selectedPerson);
+    } else if (filterType === "guide") {
+      filtered = filtered.filter((item) => item.guide_id);
+    } else if (filterType === "agent") {
+      filtered = filtered.filter((item) => item.agent_id);
+    }
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (item) =>
+          item.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.reservation_number
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          item.guide_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.agent_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  };
+
+  const filteredCommissions = applyFilters();
+
+  const calculateTotals = () => {
+    const totals = filteredCommissions.reduce(
+      (acc, item) => {
+        acc.totalGuideCommission += item.guide_commission;
+        acc.totalAgentCommission += item.agent_commission;
+        acc.totalReservationValue += item.total_amount;
+        return acc;
+      },
+      {
+        totalGuideCommission: 0,
+        totalAgentCommission: 0,
+        totalReservationValue: 0,
+      }
+    );
+
+    return totals;
+  };
+
+  const totals = calculateTotals();
+
+  const formatCurrency = (amount: number) => {
+    return `LKR ${amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+  };
+
+  const handleExport = () => {
+    Alert.alert("Export", "Export functionality will be implemented soon");
+  };
+
+  const handleCommissionPress = (reservationId: string) => {
+    console.log("View reservation:", reservationId);
   };
 
   if (loading) {
@@ -243,33 +365,52 @@ export default function CommissionReportsMobile() {
   }
 
   return (
-    <View className="flex-1 p-4">
-      {/* Summary Cards */}
+    <ScrollView className="flex-1 p-4">
+      {/* Header */}
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-base font-semibold text-gray-900">
+          Commission Reports
+        </Text>
+        <TouchableOpacity
+          onPress={handleExport}
+          className="flex-row items-center gap-1 bg-blue-500 px-3 py-2 rounded-lg"
+        >
+          <Ionicons name="download-outline" size={16} color="#fff" />
+          <Text className="text-white text-xs font-medium">Export</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Summary Stats - 2 rows on mobile */}
       <View className="gap-3 mb-4">
-        <SummaryCard
-          title="Total Commissions"
-          value={`$${totalCommissions.toFixed(2)}`}
-          subtitle="All time"
-          icon="cash"
-          iconColor="#10b981"
-        />
         <View className="flex-row gap-3">
-          <View className="flex-1">
-            <SummaryCard
-              title="Pending"
-              value={pendingCommissions.length.toString()}
-              icon="time"
-              iconColor="#f59e0b"
-            />
-          </View>
-          <View className="flex-1">
-            <SummaryCard
-              title="Overdue"
-              value={overdueCommissions.length.toString()}
-              icon="alert-circle"
-              iconColor="#ef4444"
-            />
-          </View>
+          <StatCard
+            title="Guide Commissions"
+            value={formatCurrency(totals.totalGuideCommission)}
+            icon="person"
+            color="#10b981"
+          />
+          <StatCard
+            title="Agent Commissions"
+            value={formatCurrency(totals.totalAgentCommission)}
+            icon="people"
+            color="#3b82f6"
+          />
+        </View>
+        <View className="flex-row gap-3">
+          <StatCard
+            title="Total Commissions"
+            value={formatCurrency(
+              totals.totalGuideCommission + totals.totalAgentCommission
+            )}
+            icon="cash"
+            color="#f59e0b"
+          />
+          <StatCard
+            title="Reservation Value"
+            value={formatCurrency(totals.totalReservationValue)}
+            icon="card"
+            color="#8b5cf6"
+          />
         </View>
       </View>
 
@@ -277,7 +418,7 @@ export default function CommissionReportsMobile() {
       <View className="bg-gray-100 rounded-lg px-3 py-2 mb-3 flex-row items-center">
         <Ionicons name="search" size={18} color="#666" />
         <TextInput
-          placeholder="Search agents..."
+          placeholder="Search guest, reservation, guide, agent..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           className="flex-1 ml-2 text-sm text-gray-900"
@@ -297,17 +438,20 @@ export default function CommissionReportsMobile() {
         className="mb-4"
       >
         <View className="flex-row gap-2">
-          {["all", "paid", "pending", "overdue"].map((filter) => (
+          {["all", "guide", "agent"].map((filter) => (
             <TouchableOpacity
               key={filter}
-              onPress={() => setFilterStatus(filter as any)}
+              onPress={() => {
+                setFilterType(filter as FilterType);
+                setSelectedPerson("");
+              }}
               className={`px-4 py-2 rounded-full ${
-                filterStatus === filter ? "bg-blue-500" : "bg-gray-200"
+                filterType === filter ? "bg-blue-500" : "bg-gray-200"
               }`}
             >
               <Text
                 className={`text-sm font-medium ${
-                  filterStatus === filter ? "text-white" : "text-gray-700"
+                  filterType === filter ? "text-white" : "text-gray-700"
                 }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -317,34 +461,73 @@ export default function CommissionReportsMobile() {
         </View>
       </ScrollView>
 
-      {/* Commissions List */}
+      {/* Person Filter (if guide or agent selected) */}
+      {filterType !== "all" && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="mb-4"
+        >
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              onPress={() => setSelectedPerson("")}
+              className={`px-4 py-2 rounded-full ${
+                selectedPerson === "" ? "bg-blue-500" : "bg-gray-200"
+              }`}
+            >
+              <Text
+                className={`text-sm font-medium ${
+                  selectedPerson === "" ? "text-white" : "text-gray-700"
+                }`}
+              >
+                All {filterType}s
+              </Text>
+            </TouchableOpacity>
+            {(filterType === "guide" ? guides : agents).map((person) => (
+              <TouchableOpacity
+                key={person.id}
+                onPress={() => setSelectedPerson(person.id)}
+                className={`px-4 py-2 rounded-full ${
+                  selectedPerson === person.id ? "bg-blue-500" : "bg-gray-200"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-medium ${
+                    selectedPerson === person.id
+                      ? "text-white"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {person.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      )}
+
+      {/* Commission List */}
       <View>
         <Text className="text-base font-semibold text-gray-900 mb-3">
-          Commission Records ({filteredCommissions.length})
+          Commissions ({filteredCommissions.length})
         </Text>
         {filteredCommissions.map((commission) => (
           <CommissionCard
-            key={commission.id}
-            {...commission}
-            onPress={() => handleCommissionPress(commission.id)}
+            key={commission.reservation_id}
+            commission={commission}
+            onPress={() => handleCommissionPress(commission.reservation_id)}
           />
         ))}
 
         {filteredCommissions.length === 0 && (
           <View className="items-center py-10">
-            <Ionicons name="document-outline" size={48} color="#ccc" />
+            <Ionicons name="receipt-outline" size={48} color="#ccc" />
             <Text className="text-sm text-gray-600 mt-3">
-              No commission records found
+              No commissions found
             </Text>
           </View>
         )}
       </View>
-
-      {/* Export Button */}
-      <TouchableOpacity className="bg-blue-500 rounded-lg p-4 flex-row items-center justify-center gap-2 mt-4">
-        <Ionicons name="download-outline" size={20} color="#fff" />
-        <Text className="text-white font-semibold">Export Report</Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
