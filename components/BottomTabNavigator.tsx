@@ -100,8 +100,8 @@ function MainTabs() {
           shadowOpacity: 0,
           shadowRadius: 0,
         },
-        tabBarActiveTintColor: "#000000",
-        tabBarInactiveTintColor: "#9ca3af",
+        tabBarActiveTintColor: "#3b82f6",
+        tabBarInactiveTintColor: "#4b5563",
         tabBarLabelStyle: {
           fontSize: 10,
           marginTop: 2,
@@ -122,17 +122,15 @@ function MainTabs() {
             <Ionicons 
               name="home" 
               size={25} 
-              color={color}
-              style={{ opacity: focused ? 1 : 0.5 }}
+              color={focused ? "#3b82f6" : "#4b5563"}
             />
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text 
               style={{ 
                 fontSize: 10, 
-                color: focused ? "#000000" : "#9ca3af",
-                fontWeight: focused ? "700" : "400",
-                opacity: focused ? 1 : 0.6,
+                color: focused ? "#3b82f6" : "#4b5563",
+                fontWeight: focused ? "700" : "500",
                 marginTop: 2,
                 marginBottom: 2,
               }}
@@ -151,17 +149,15 @@ function MainTabs() {
             <Ionicons 
               name="calendar" 
               size={25} 
-              color={color}
-              style={{ opacity: focused ? 1 : 0.5 }}
+              color={focused ? "#3b82f6" : "#4b5563"}
             />
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text 
               style={{ 
                 fontSize: 10, 
-                color: focused ? "#000000" : "#9ca3af",
-                fontWeight: focused ? "700" : "400",
-                opacity: focused ? 1 : 0.6,
+                color: focused ? "#3b82f6" : "#4b5563",
+                fontWeight: focused ? "700" : "500",
                 marginTop: 2,
                 marginBottom: 2,
               }}
@@ -180,17 +176,15 @@ function MainTabs() {
             <Ionicons 
               name="bed" 
               size={25} 
-              color={color}
-              style={{ opacity: focused ? 1 : 0.5 }}
+              color={focused ? "#3b82f6" : "#4b5563"}
             />
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text 
               style={{ 
                 fontSize: 10, 
-                color: focused ? "#000000" : "#9ca3af",
-                fontWeight: focused ? "700" : "400",
-                opacity: focused ? 1 : 0.6,
+                color: focused ? "#3b82f6" : "#4b5563",
+                fontWeight: focused ? "700" : "500",
                 marginTop: 2,
                 marginBottom: 2,
               }}
@@ -209,17 +203,15 @@ function MainTabs() {
             <MaterialIcons 
               name="attach-money" 
               size={25} 
-              color={color}
-              style={{ opacity: focused ? 1 : 0.5 }}
+              color={focused ? "#3b82f6" : "#4b5563"}
             />
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text 
               style={{ 
                 fontSize: 10, 
-                color: focused ? "#000000" : "#9ca3af",
-                fontWeight: focused ? "700" : "400",
-                opacity: focused ? 1 : 0.6,
+                color: focused ? "#3b82f6" : "#4b5563",
+                fontWeight: focused ? "700" : "500",
                 marginTop: 2,
                 marginBottom: 2,
               }}
@@ -238,17 +230,15 @@ function MainTabs() {
             <MaterialIcons 
               name="account-balance" 
               size={25} 
-              color={color}
-              style={{ opacity: focused ? 1 : 0.5 }}
+              color={focused ? "#3b82f6" : "#4b5563"}
             />
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text 
               style={{ 
                 fontSize: 10, 
-                color: focused ? "#000000" : "#9ca3af",
-                fontWeight: focused ? "700" : "400",
-                opacity: focused ? 1 : 0.6,
+                color: focused ? "#3b82f6" : "#4b5563",
+                fontWeight: focused ? "700" : "500",
                 marginTop: 2,
                 marginBottom: 2,
               }}
@@ -268,17 +258,15 @@ function MainTabs() {
             <Ionicons 
               name="bar-chart" 
               size={25} 
-              color={color}
-              style={{ opacity: focused ? 1 : 0.5 }}
+              color={focused ? "#3b82f6" : "#4b5563"}
             />
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text 
               style={{ 
                 fontSize: 10, 
-                color: focused ? "#000000" : "#9ca3af",
-                fontWeight: focused ? "700" : "400",
-                opacity: focused ? 1 : 0.6,
+                color: focused ? "#3b82f6" : "#4b5563",
+                fontWeight: focused ? "700" : "500",
                 marginTop: 2,
                 marginBottom: 2,
               }}
