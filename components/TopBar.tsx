@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path, Rect } from "react-native-svg";
 import { useLocationContext } from "../contexts/LocationContext";
 import { useUserProfile } from "../hooks/useUserProfile";
@@ -53,14 +54,19 @@ export default function TopBar({
     onSearch?.(query);
   };
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <View className="bg-white border-b border-gray-200 px-4 py-3">
+    <View 
+      className="bg-white border-b border-gray-200 px-3 py-2"
+      style={{ paddingTop: Math.max(insets.top, 8) }}
+    >
       <View className="flex-row items-center justify-between">
         {/* Left side with Logo, App Name and Location Selector */}
-        <View className="flex-row items-center">
+        <View className="flex-row items-center flex-1 mr-2">
           {/* Logo */}
-          <View className="w-8 h-8 mr-3">
-            <Svg width="32" height="32" viewBox="0 0 100 100">
+          <View className="w-7 h-7 mr-2">
+            <Svg width="28" height="28" viewBox="0 0 100 100">
               <Rect width="100" height="100" fill="#1f2937" rx="12" />
               <Path d="M 75 35 L 25 65 L 40 35 L 25 20 Z" fill="#ffffff" />
               <Path
@@ -70,29 +76,28 @@ export default function TopBar({
             </Svg>
           </View>
 
-          {/* App Name
-          <Text className="text-sm font-bold text-gray-900 mr-2">
-            CheckingCheckout
-          </Text>
-          */}
-
           {/* Location Selector */}
           <TouchableOpacity
             onPress={() => setShowLocationDropdown(true)}
-            className="flex-row items-center bg-gray-100 px-1 py-1 rounded-lg"
+            className="flex-row items-center bg-gray-100 px-2 py-1.5 rounded-lg flex-1"
+            style={{ maxWidth: 250 }}
           >
-            <Ionicons name="location" size={16} color="#6b7280" />
-            <View className="ml-2">
-              <Text className="text-sm font-medium text-gray-700">
+            <Ionicons name="location" size={14} color="#000000" />
+            <View className="ml-1.5 flex-1">
+              <Text 
+                className="text-xs font-medium text-black"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {selectedLocationName}
               </Text>
-              <Text className="text-xs text-gray-500">active location</Text>
+              <Text className="text-[10px] text-gray-600">active location</Text>
             </View>
             <Ionicons
               name="chevron-down"
-              size={16}
-              color="#6b7280"
-              className="ml-2"
+              size={14}
+              color="#000000"
+              style={{ marginLeft: 4 }}
             />
           </TouchableOpacity>
         </View>
@@ -102,8 +107,8 @@ export default function TopBar({
           onPress={() => setShowUserDropdown(true)}
           className="flex-row items-center"
         >
-          <View className="w-8 h-8 bg-blue-500 rounded-full items-center justify-center">
-            <Text className="text-white text-sm font-semibold">
+          <View className="w-7 h-7 bg-black rounded-full items-center justify-center">
+            <Text className="text-white text-xs font-semibold">
               {profile?.name
                 ?.split(" ")
                 .map((n: string) => n[0])
@@ -112,9 +117,9 @@ export default function TopBar({
           </View>
           <Ionicons
             name="chevron-down"
-            size={16}
-            color="#6b7280"
-            className="ml-1"
+            size={14}
+            color="#000000"
+            style={{ marginLeft: 4 }}
           />
         </TouchableOpacity>
       </View>
@@ -200,8 +205,8 @@ export default function TopBar({
               }}
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
             >
-              <Ionicons name="settings-outline" size={16} color="#6b7280" />
-              <Text className="ml-3 text-sm text-gray-700">Settings</Text>
+              <Ionicons name="settings-outline" size={16} color="#000000" />
+              <Text className="ml-3 text-sm text-black">Settings</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -211,8 +216,8 @@ export default function TopBar({
               }}
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
             >
-              <Ionicons name="folder-outline" size={16} color="#6b7280" />
-              <Text className="ml-3 text-sm text-gray-700">Master Files</Text>
+              <Ionicons name="folder-outline" size={16} color="#000000" />
+              <Text className="ml-3 text-sm text-black">Master Files</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -223,8 +228,8 @@ export default function TopBar({
               }}
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
             >
-              <Ionicons name="people-outline" size={16} color="#6b7280" />
-              <Text className="ml-3 text-sm text-gray-700">
+              <Ionicons name="people-outline" size={16} color="#000000" />
+              <Text className="ml-3 text-sm text-black">
                 User Management
               </Text>
             </TouchableOpacity>
@@ -236,8 +241,8 @@ export default function TopBar({
               }}
               className="flex-row items-center px-4 py-3 border-b border-gray-100"
             >
-              <Ionicons name="card-outline" size={16} color="#6b7280" />
-              <Text className="ml-3 text-sm text-gray-700">
+              <Ionicons name="card-outline" size={16} color="#000000" />
+              <Text className="ml-3 text-sm text-black">
                 Billing & Subscriptions
               </Text>
             </TouchableOpacity>

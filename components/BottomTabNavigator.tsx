@@ -54,7 +54,7 @@ function ScreenWithTopBar({
   
   return (
     <View className="flex-1 bg-gray-100">
-      <View className="mt-20">
+      <View style={{ paddingTop: insets.top }}>
         <TopBar
           onSearch={(query: string) => console.log("Search query:", query)}
           onSettingsPress={() => console.log("Settings pressed")}
@@ -68,7 +68,7 @@ function ScreenWithTopBar({
       </View>
       <View 
         className="flex-1" 
-        style={{ paddingBottom: 30 + insets.bottom + 40 }}
+        style={{ paddingBottom: 70 + insets.bottom }}
       >
         <Component navigation={navigation} />
       </View>
@@ -87,15 +87,15 @@ function MainTabs() {
         tabBarStyle: {
           backgroundColor: "#ffffff",
           borderTopWidth: 0,
-          paddingBottom:  insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 8,
-          paddingHorizontal: 15,
-          height: 30 + insets.bottom,
-          borderRadius: 30,
+          paddingHorizontal: 8,
+          height: 60 + (insets.bottom > 0 ? insets.bottom : 0),
+          borderRadius: 0,
           position: "absolute",
-          bottom: insets.bottom > 0 ? insets.bottom : 20,
-          left: 25,
-          right: 25,
+          bottom: 0,
+          left: 0,
+          right: 0,
           elevation: 10,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -4 },
@@ -107,7 +107,7 @@ function MainTabs() {
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "600",
-          marginTop: -2,
+          marginTop: 2,
           marginBottom: 2,
         },
         tabBarIconStyle: {
