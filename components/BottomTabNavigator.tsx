@@ -66,7 +66,7 @@ function ScreenWithTopBar({
           onNavigateToMasterFiles={() => navigation.navigate("MasterFiles")}
         />
       </View>
-      <View className="flex-1" style={{ paddingBottom: 70 + insets.bottom }}>
+      <View className="flex-1" style={{ paddingBottom: 60 + insets.bottom }}>
         <Component navigation={navigation} />
       </View>
     </View>
@@ -83,7 +83,8 @@ function MainTabs() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#ffffff",
-          borderTopWidth: 0,
+          borderTopWidth: 1,
+          borderTopColor: "#ffffff",
           paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 8,
           paddingHorizontal: 8,
