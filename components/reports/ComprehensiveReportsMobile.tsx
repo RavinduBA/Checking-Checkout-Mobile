@@ -1,10 +1,17 @@
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { supabase } from "@/lib/supabase";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, View, Share } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Share,
+  Text,
+  View,
+} from "react-native";
 import { AccountDetails } from "./comprehensive/AccountDetails";
 import { FinancialSummaryCards } from "./comprehensive/FinancialSummaryCards";
 import { ReportFilters } from "./comprehensive/ReportFilters";
-import { supabase } from "@/lib/supabase";
 
 export default function ComprehensiveReportsMobile() {
   const { profile } = useUserProfile();
@@ -53,8 +60,10 @@ export default function ComprehensiveReportsMobile() {
         .join("\n");
 
       // Share the CSV content as text
-      const fileName = `comprehensive-financial-report-${new Date().toISOString().split("T")[0]}.csv`;
-      
+      const fileName = `comprehensive-financial-report-${
+        new Date().toISOString().split("T")[0]
+      }.csv`;
+
       await Share.share({
         message: csvContent,
         title: fileName,
@@ -67,7 +76,7 @@ export default function ComprehensiveReportsMobile() {
 
   const handleRefresh = () => {
     // Force re-render of child components by updating refresh key
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
     Alert.alert("Success", "Data refreshed successfully");
   };
   if (!profile?.tenant_id) {
