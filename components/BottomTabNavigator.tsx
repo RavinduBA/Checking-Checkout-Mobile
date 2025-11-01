@@ -119,11 +119,23 @@ function MainTabs() {
         name="Dashboard"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name="home"
-              size={20}
-              color={focused ? "#3b82f6" : "#4b5563"}
-            />
+            <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  width: 30,
+                  height: 3,
+                  backgroundColor: focused ? "#3b82f6" : "transparent",
+                  borderRadius: 2,
+                }}
+              />
+              <Ionicons
+                name="home"
+                size={20}
+                color={focused ? "#3b82f6" : "#4b5563"}
+              />
+            </View>
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
@@ -147,11 +159,23 @@ function MainTabs() {
         name="Calendar"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name="calendar"
-              size={20}
-              color={focused ? "#3b82f6" : "#4b5563"}
-            />
+            <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  width: 30,
+                  height: 3,
+                  backgroundColor: focused ? "#3b82f6" : "transparent",
+                  borderRadius: 2,
+                }}
+              />
+              <Ionicons
+                name="calendar"
+                size={20}
+                color={focused ? "#3b82f6" : "#4b5563"}
+              />
+            </View>
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
@@ -175,11 +199,23 @@ function MainTabs() {
         name="Reservations"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name="bed"
-              size={20}
-              color={focused ? "#3b82f6" : "#4b5563"}
-            />
+            <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  width: 30,
+                  height: 3,
+                  backgroundColor: focused ? "#3b82f6" : "transparent",
+                  borderRadius: 2,
+                }}
+              />
+              <Ionicons
+                name="bed"
+                size={20}
+                color={focused ? "#3b82f6" : "#4b5563"}
+              />
+            </View>
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
@@ -203,11 +239,23 @@ function MainTabs() {
         name="Expenses"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons
-              name="attach-money"
-              size={20}
-              color={focused ? "#3b82f6" : "#4b5563"}
-            />
+            <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  width: 30,
+                  height: 3,
+                  backgroundColor: focused ? "#3b82f6" : "transparent",
+                  borderRadius: 2,
+                }}
+              />
+              <MaterialIcons
+                name="attach-money"
+                size={20}
+                color={focused ? "#3b82f6" : "#4b5563"}
+              />
+            </View>
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
@@ -231,11 +279,23 @@ function MainTabs() {
         name="Accounts"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons
-              name="account-balance"
-              size={20}
-              color={focused ? "#3b82f6" : "#4b5563"}
-            />
+            <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  width: 30,
+                  height: 3,
+                  backgroundColor: focused ? "#3b82f6" : "transparent",
+                  borderRadius: 2,
+                }}
+              />
+              <MaterialIcons
+                name="account-balance"
+                size={20}
+                color={focused ? "#3b82f6" : "#4b5563"}
+              />
+            </View>
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
@@ -260,11 +320,23 @@ function MainTabs() {
         name="Reports"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name="bar-chart"
-              size={20}
-              color={focused ? "#3b82f6" : "#4b5563"}
-            />
+            <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  width: 30,
+                  height: 3,
+                  backgroundColor: focused ? "#3b82f6" : "transparent",
+                  borderRadius: 2,
+                }}
+              />
+              <Ionicons
+                name="bar-chart"
+                size={20}
+                color={focused ? "#3b82f6" : "#4b5563"}
+              />
+            </View>
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
