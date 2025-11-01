@@ -2,11 +2,14 @@ import { useLocationContext } from "@/contexts/LocationContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   ScrollView,
+  Share,
   Text,
   TextInput,
   TouchableOpacity,
@@ -180,11 +183,14 @@ export default function CommissionReportsMobile() {
   const [commissions, setCommissions] = useState<CommissionData[]>([]);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [selectedPerson, setSelectedPerson] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [showTypeModal, setShowTypeModal] = useState(false);
+  const [showPersonModal, setShowPersonModal] = useState(false);
 
   const selectedLocationData = getSelectedLocationData();
 
@@ -292,10 +298,12 @@ export default function CommissionReportsMobile() {
 
     // Date filter
     if (dateFrom) {
-      filtered = filtered.filter((item) => item.check_in_date >= dateFrom);
+      const fromDateStr = dateFrom.toISOString().split("T")[0];
+      filtered = filtered.filter((item) => item.check_in_date >= fromDateStr);
     }
     if (dateTo) {
-      filtered = filtered.filter((item) => item.check_in_date <= dateTo);
+      const toDateStr = dateTo.toISOString().split("T")[0];
+      filtered = filtered.filter((item) => item.check_in_date <= toDateStr);
     }
 
     // Type and person filter
@@ -307,19 +315,6 @@ export default function CommissionReportsMobile() {
       filtered = filtered.filter((item) => item.guide_id);
     } else if (filterType === "agent") {
       filtered = filtered.filter((item) => item.agent_id);
-    }
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (item) =>
-          item.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.reservation_number
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          item.guide_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.agent_name?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
     }
 
     return filtered;
@@ -351,8 +346,52 @@ export default function CommissionReportsMobile() {
     return `LKR ${amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
-  const handleExport = () => {
-    Alert.alert("Export", "Export functionality will be implemented soon");
+  const handleExport = async () => {
+    try {
+      const csvContent = [
+        [
+          "Reservation",
+          "Guest",
+          "Check In",
+          "Check Out",
+          "Total Amount",
+          "Guide",
+          "Guide Commission",
+          "Agent",
+          "Agent Commission",
+          "Status",
+        ],
+        ...filteredCommissions.map((item) => [
+          item.reservation_number,
+          item.guest_name,
+          item.check_in_date,
+          item.check_out_date,
+          item.total_amount,
+          item.guide_name || "",
+          item.guide_commission,
+          item.agent_name || "",
+          item.agent_commission,
+          item.status,
+        ]),
+      ]
+        .map((row) => row.join(","))
+        .join("\n");
+
+      await Share.share({
+        message: csvContent,
+        title: `Commission Report - ${new Date().toISOString().split("T")[0]}.csv`,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Failed to export data");
+      console.error("Export error:", error);
+    }
+  };
+
+  const clearFilters = () => {
+    setDateFrom(null);
+    setDateTo(null);
+    setFilterType("all");
+    setSelectedPerson("");
   };
 
   const handleCommissionPress = (reservationId: string) => {
@@ -374,9 +413,14 @@ export default function CommissionReportsMobile() {
     <ScrollView className="flex-1 p-4">
       {/* Header */}
       <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-base font-semibold text-gray-900">
-          Commission Reports
-        </Text>
+        <View>
+          <Text className="text-lg font-bold text-gray-900">
+            Commission Reports
+          </Text>
+          <Text className="text-xs text-gray-600">
+            View guide and agent commissions
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={handleExport}
           className="flex-row items-center gap-1 bg-blue-500 px-3 py-2 rounded-lg"
@@ -420,97 +464,92 @@ export default function CommissionReportsMobile() {
         </View>
       </View>
 
-      {/* Search Bar */}
-      <View className="bg-gray-100 rounded-lg px-3 py-2 mb-3 flex-row items-center">
-        <Ionicons name="search" size={18} color="#666" />
-        <TextInput
-          placeholder="Search guest, reservation, guide, agent..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          className="flex-1 ml-2 text-sm text-gray-900"
-          placeholderTextColor="#999"
-        />
-        {searchQuery !== "" && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons name="close-circle" size={18} color="#666" />
+      {/* Filters - All in One Row */}
+      <View className="bg-white rounded-lg p-3 border border-gray-200 mb-4">
+        <Text className="text-sm font-semibold text-gray-900 mb-3">Filters</Text>
+        
+        {/* First Row: Date From, Date To, Type */}
+        <View className="flex-row gap-2 mb-3">
+          {/* From Date */}
+          <TouchableOpacity
+            onPress={() => setShowFromDatePicker(true)}
+            className="flex-1 border border-gray-300 rounded-lg px-2 py-2.5 bg-white"
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-xs text-gray-900">
+                {dateFrom ? dateFrom.toLocaleDateString() : "From Date"}
+              </Text>
+              <Ionicons name="calendar-outline" size={16} color="#666" />
+            </View>
           </TouchableOpacity>
-        )}
-      </View>
 
-      {/* Filter Chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="mb-4"
-      >
-        <View className="flex-row gap-2">
-          {["all", "guide", "agent"].map((filter) => (
-            <TouchableOpacity
-              key={filter}
-              onPress={() => {
-                setFilterType(filter as FilterType);
-                setSelectedPerson("");
-              }}
-              className={`px-4 py-2 rounded-full ${
-                filterType === filter ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  filterType === filter ? "text-white" : "text-gray-700"
-                }`}
-              >
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+          {/* To Date */}
+          <TouchableOpacity
+            onPress={() => setShowToDatePicker(true)}
+            className="flex-1 border border-gray-300 rounded-lg px-2 py-2.5 bg-white"
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-xs text-gray-900">
+                {dateTo ? dateTo.toLocaleDateString() : "To Date"}
               </Text>
-            </TouchableOpacity>
-          ))}
+              <Ionicons name="calendar-outline" size={16} color="#666" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Type Filter */}
+          <TouchableOpacity
+            onPress={() => setShowTypeModal(true)}
+            className="flex-1 border border-gray-300 rounded-lg px-2 py-2.5 bg-white"
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-xs text-gray-900">
+                {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </View>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
 
-      {/* Person Filter (if guide or agent selected) */}
-      {filterType !== "all" && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mb-4"
-        >
-          <View className="flex-row gap-2">
-            <TouchableOpacity
-              onPress={() => setSelectedPerson("")}
-              className={`px-4 py-2 rounded-full ${
-                selectedPerson === "" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  selectedPerson === "" ? "text-white" : "text-gray-700"
-                }`}
-              >
-                All {filterType}s
+        {/* Second Row: Person Filter */}
+        <View className="flex-row gap-2">
+          {/* Person Selector */}
+          <TouchableOpacity
+            onPress={() => filterType !== "all" && setShowPersonModal(true)}
+            disabled={filterType === "all"}
+            className={`flex-1 border border-gray-300 rounded-lg px-2 py-2.5 ${
+              filterType === "all" ? "bg-gray-100" : "bg-white"
+            }`}
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className={`text-xs ${filterType === "all" ? "text-gray-400" : "text-gray-900"}`}>
+                {selectedPerson
+                  ? (filterType === "guide" ? guides : agents).find(
+                      (p) => p.id === selectedPerson
+                    )?.name || "Select"
+                  : filterType === "guide"
+                  ? "Select Guide"
+                  : filterType === "agent"
+                  ? "Select Agent"
+                  : "Select Person"}
               </Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Clear Filters Button */}
+          {(dateFrom || dateTo || filterType !== "all" || selectedPerson) && (
+            <TouchableOpacity
+              onPress={clearFilters}
+              className="border border-gray-300 rounded-lg px-3 py-2.5 bg-white"
+            >
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
+                <Text className="text-xs text-red-500 font-medium">Clear</Text>
+              </View>
             </TouchableOpacity>
-            {(filterType === "guide" ? guides : agents).map((person) => (
-              <TouchableOpacity
-                key={person.id}
-                onPress={() => setSelectedPerson(person.id)}
-                className={`px-4 py-2 rounded-full ${
-                  selectedPerson === person.id ? "bg-blue-500" : "bg-gray-200"
-                }`}
-              >
-                <Text
-                  className={`text-sm font-medium ${
-                    selectedPerson === person.id
-                      ? "text-white"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {person.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      )}
+          )}
+        </View>
+      </View>
 
       {/* Commission List */}
       <View>
@@ -534,6 +573,144 @@ export default function CommissionReportsMobile() {
           </View>
         )}
       </View>
+
+      {/* Date Pickers */}
+      <Modal visible={showFromDatePicker} transparent animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="bg-white rounded-xl p-4 m-4 w-[90%]">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-semibold">Select From Date</Text>
+              <TouchableOpacity onPress={() => setShowFromDatePicker(false)}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <DateTimePicker
+              value={dateFrom || new Date()}
+              mode="date"
+              display="inline"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setDateFrom(selectedDate);
+                }
+                setShowFromDatePicker(false);
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showToDatePicker} transparent animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="bg-white rounded-xl p-4 m-4 w-[90%]">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-semibold">Select To Date</Text>
+              <TouchableOpacity onPress={() => setShowToDatePicker(false)}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <DateTimePicker
+              value={dateTo || new Date()}
+              mode="date"
+              display="inline"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setDateTo(selectedDate);
+                }
+                setShowToDatePicker(false);
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Type Filter Modal */}
+      <Modal visible={showTypeModal} transparent animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="bg-white rounded-xl p-4 m-4 w-[80%]">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-semibold">Filter Type</Text>
+              <TouchableOpacity onPress={() => setShowTypeModal(false)}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {(["all", "guide", "agent"] as FilterType[]).map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => {
+                    setFilterType(type);
+                    setSelectedPerson("");
+                    setShowTypeModal(false);
+                  }}
+                  className="py-3 border-b border-gray-200"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-base text-gray-900">
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Text>
+                    {filterType === type && (
+                      <Ionicons name="checkmark" size={20} color="#3b82f6" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Person Filter Modal */}
+      <Modal visible={showPersonModal} transparent animationType="fade">
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="bg-white rounded-xl p-4 m-4 w-[80%] max-h-[70%]">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-semibold">
+                Select {filterType === "guide" ? "Guide" : "Agent"}
+              </Text>
+              <TouchableOpacity onPress={() => setShowPersonModal(false)}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedPerson("");
+                  setShowPersonModal(false);
+                }}
+                className="py-3 border-b border-gray-200"
+              >
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-base text-gray-900">
+                    All {filterType}s
+                  </Text>
+                  {selectedPerson === "" && (
+                    <Ionicons name="checkmark" size={20} color="#3b82f6" />
+                  )}
+                </View>
+              </TouchableOpacity>
+              {(filterType === "guide" ? guides : agents).map((person) => (
+                <TouchableOpacity
+                  key={person.id}
+                  onPress={() => {
+                    setSelectedPerson(person.id);
+                    setShowPersonModal(false);
+                  }}
+                  className="py-3 border-b border-gray-200"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-base text-gray-900">
+                      {person.name}
+                    </Text>
+                    {selectedPerson === person.id && (
+                      <Ionicons name="checkmark" size={20} color="#3b82f6" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
