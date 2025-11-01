@@ -460,42 +460,42 @@ export default function EnhancedFinancialReportsMobile() {
       </View>
 
       {/* Summary Cards - New Layout */}
-      <View className="px-4 py-3 flex-row gap-3">
+      <View className="px-4 py-2 flex-row gap-2">
         {/* Left Column: Total Income + Total Expenses */}
-        <View className="flex-1 gap-3">
+        <View className="flex-1 gap-2">
           {/* Total Income */}
-          <View className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <View className="bg-green-50 border border-green-200 rounded-lg p-3">
             <View className="flex-row justify-between items-start">
               <View className="flex-1">
                 <Text className="text-xs font-medium text-green-600">
                   Total Income
                 </Text>
-                <Text className="text-xl font-bold text-green-900 mt-1">
+                <Text className="text-base font-bold text-green-900 mt-0.5">
                   {formatCurrency(summary.totalIncome, baseCurrency)}
                 </Text>
-                <Text className="text-xs text-green-600 mt-1">
+                <Text className="text-xs text-green-600 mt-0.5">
                   {summary.incomeTransactions} transactions
                 </Text>
               </View>
-              <Ionicons name="trending-up" size={32} color="#10b981" />
+              <Ionicons name="trending-up" size={24} color="#10b981" />
             </View>
           </View>
 
           {/* Total Expenses */}
-          <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <View className="bg-red-50 border border-red-200 rounded-lg p-3">
             <View className="flex-row justify-between items-start">
               <View className="flex-1">
                 <Text className="text-xs font-medium text-red-600">
                   Total Expenses
                 </Text>
-                <Text className="text-xl font-bold text-red-900 mt-1">
+                <Text className="text-base font-bold text-red-900 mt-0.5">
                   {formatCurrency(summary.totalExpenses, baseCurrency)}
                 </Text>
-                <Text className="text-xs text-red-600 mt-1">
+                <Text className="text-xs text-red-600 mt-0.5">
                   {summary.expenseTransactions} transactions
                 </Text>
               </View>
-              <Ionicons name="trending-down" size={32} color="#ef4444" />
+              <Ionicons name="trending-down" size={24} color="#ef4444" />
             </View>
           </View>
         </View>
@@ -507,7 +507,7 @@ export default function EnhancedFinancialReportsMobile() {
               summary.netProfit >= 0
                 ? "bg-blue-50 border-blue-200"
                 : "bg-red-50 border-red-200"
-            } border rounded-lg p-4`}
+            } border rounded-lg p-3 h-full justify-center`}
           >
             <View className="flex-row justify-between items-start">
               <View className="flex-1">
@@ -519,14 +519,14 @@ export default function EnhancedFinancialReportsMobile() {
                   Net Profit
                 </Text>
                 <Text
-                  className={`text-xl font-bold mt-1 ${
+                  className={`text-base font-bold mt-0.5 ${
                     summary.netProfit >= 0 ? "text-blue-900" : "text-red-900"
                   }`}
                 >
                   {formatCurrency(summary.netProfit, baseCurrency)}
                 </Text>
                 <Text
-                  className={`text-xs mt-1 ${
+                  className={`text-xs mt-0.5 ${
                     summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
                   }`}
                 >
@@ -535,7 +535,7 @@ export default function EnhancedFinancialReportsMobile() {
               </View>
               <Ionicons
                 name="cash"
-                size={32}
+                size={24}
                 color={summary.netProfit >= 0 ? "#3b82f6" : "#ef4444"}
               />
             </View>
