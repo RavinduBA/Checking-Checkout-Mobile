@@ -482,7 +482,7 @@ export default function EnhancedFinancialReportsMobile() {
           </View>
 
           {/* Total Expenses */}
-          <View className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <View className="bg-red-50 border border-red-200 rounded-lg p-3 w-full  ">
             <View className="flex-row justify-between items-start">
               <View className="flex-1">
                 <Text className="text-xs font-medium text-red-600">
