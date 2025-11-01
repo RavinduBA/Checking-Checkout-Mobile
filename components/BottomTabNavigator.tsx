@@ -132,7 +132,7 @@ function MainTabs() {
               />
               <Ionicons
                 name="home"
-                size={20}
+                size={24}
                 color={focused ? "#3b82f6" : "#4b5563"}
               />
             </View>
@@ -172,7 +172,7 @@ function MainTabs() {
               />
               <Ionicons
                 name="calendar"
-                size={20}
+                size={24}
                 color={focused ? "#3b82f6" : "#4b5563"}
               />
             </View>
@@ -212,7 +212,7 @@ function MainTabs() {
               />
               <Ionicons
                 name="bed"
-                size={20}
+                size={24}
                 color={focused ? "#3b82f6" : "#4b5563"}
               />
             </View>
@@ -252,7 +252,7 @@ function MainTabs() {
               />
               <MaterialIcons
                 name="attach-money"
-                size={20}
+                size={24}
                 color={focused ? "#3b82f6" : "#4b5563"}
               />
             </View>
@@ -292,7 +292,7 @@ function MainTabs() {
               />
               <MaterialIcons
                 name="account-balance"
-                size={20}
+                size={24}
                 color={focused ? "#3b82f6" : "#4b5563"}
               />
             </View>
@@ -333,7 +333,7 @@ function MainTabs() {
               />
               <Ionicons
                 name="bar-chart"
-                size={20}
+                size={24}
                 color={focused ? "#3b82f6" : "#4b5563"}
               />
             </View>

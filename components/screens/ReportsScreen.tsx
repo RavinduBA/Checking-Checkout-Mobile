@@ -87,13 +87,13 @@ export default function ReportsScreen() {
                 key={tab.id}
                 onPress={() => setActiveTab(tab.id as TabType)}
                 className={`flex-row items-center gap-2 px-4 py-2.5 rounded-lg ${
-                  activeTab === tab.id ? "bg-primary" : "bg-gray-100"
+                  activeTab === tab.id ? "bg-blue-500" : "bg-gray-100"
                 }`}
               >
                 <Ionicons
                   name={tab.icon}
                   size={18}
-                  color={activeTab === tab.id ? "#fff" : "#666"}
+                  color={activeTab === tab.id ? "#ffffff" : "#666666"}
                 />
                 <Text
                   className={`text-sm font-medium ${

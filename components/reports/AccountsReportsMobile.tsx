@@ -1,17 +1,17 @@
+import { useLocationContext } from "@/contexts/LocationContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from "react-native";
-import { useAuth } from "@/hooks/useAuth";
-import { useLocationContext } from "@/contexts/LocationContext";
-import { supabase } from "@/lib/supabase";
 
 interface Account {
   id: string;
@@ -57,7 +57,9 @@ const AccountCard: React.FC<AccountCardProps> = ({
 }) => {
   const isPositive = balance.currentBalance >= 0;
   const formatCurrency = (amount: number, currency: string) => {
-    return `${currency} ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    return `${currency} ${amount
+      .toFixed(2)
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
   return (
@@ -171,7 +173,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return `${currency} ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    return `${currency} ${amount
+      .toFixed(2)
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
   return (
@@ -206,7 +210,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
             <Text className="text-sm font-semibold text-gray-900 mb-1">
               {transaction.description}
             </Text>
-            <Text className="text-xs text-gray-600">{transaction.account_name}</Text>
+            <Text className="text-xs text-gray-600">
+              {transaction.account_name}
+            </Text>
             <Text className="text-xs text-gray-500 mt-1">
               {new Date(transaction.date).toLocaleDateString()}
             </Text>
@@ -214,7 +220,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
         </View>
         <View className="items-end">
           <Text className={`text-lg font-bold ${getTypeColor()}`}>
-            {transaction.type === "expense" || transaction.type === "transfer_out" ? "-" : "+"}
+            {transaction.type === "expense" ||
+            transaction.type === "transfer_out"
+              ? "-"
+              : "+"}
             {formatCurrency(transaction.amount, transaction.currency)}
           </Text>
         </View>
@@ -258,7 +267,9 @@ export default function AccountsReportsMobile() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("balances");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "active" | "inactive">("all");
+  const [filterType, setFilterType] = useState<"all" | "active" | "inactive">(
+    "all"
+  );
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountBalances, setAccountBalances] = useState<AccountBalance[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -279,7 +290,7 @@ export default function AccountsReportsMobile() {
 
   const fetchData = async () => {
     if (!tenant?.id || !selectedLocation?.id) return;
-    
+
     setLoading(true);
     try {
       const { data: accountsData, error } = await supabase
@@ -415,7 +426,8 @@ export default function AccountsReportsMobile() {
       const allTransactions: Transaction[] = [];
 
       for (const account of accounts) {
-        if (selectedAccount !== "all" && account.id !== selectedAccount) continue;
+        if (selectedAccount !== "all" && account.id !== selectedAccount)
+          continue;
 
         // Fetch income transactions
         let incomeQuery = supabase
@@ -496,8 +508,12 @@ export default function AccountsReportsMobile() {
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
-      transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.account_name.toLowerCase().includes(searchQuery.toLowerCase());
+      transaction.description
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      transaction.account_name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -515,13 +531,18 @@ export default function AccountsReportsMobile() {
   };
 
   const getTotalAssets = () => {
-    const total = accountBalances.reduce((sum, balance) => sum + balance.currentBalance, 0);
+    const total = accountBalances.reduce(
+      (sum, balance) => sum + balance.currentBalance,
+      0
+    );
     const currency = accounts[0]?.currency || "USD";
-    return `${currency} ${total.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    return `${currency} ${total
+      .toFixed(0)
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   };
 
   const getActiveAccountsCount = () => {
-    return accountBalances.filter(b => b.account.status === "active").length;
+    return accountBalances.filter((b) => b.account.status === "active").length;
   };
 
   if (loading) {
