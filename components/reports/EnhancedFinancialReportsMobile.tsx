@@ -1,13 +1,19 @@
 import { useLocationContext } from "@/contexts/LocationContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { supabase } from "@/lib/supabase";
-import { convertCurrency, formatCurrency, getAvailableCurrencies } from "@/utils/currency";
+import {
+  convertCurrency,
+  formatCurrency,
+  getAvailableCurrencies,
+} from "@/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -66,15 +72,23 @@ export default function EnhancedFinancialReportsMobile() {
     incomeTransactions: 0,
     expenseTransactions: 0,
   });
-  const [incomeCategories, setIncomeCategories] = useState<IncomeCategory[]>([]);
-  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
+  const [incomeCategories, setIncomeCategories] = useState<IncomeCategory[]>(
+    []
+  );
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>(
+    []
+  );
   const [expandedIncome, setExpandedIncome] = useState<Set<string>>(new Set());
-  const [expandedExpenses, setExpandedExpenses] = useState<Set<string>>(new Set());
+  const [expandedExpenses, setExpandedExpenses] = useState<Set<string>>(
+    new Set()
+  );
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [baseCurrency, setBaseCurrency] = useState<string>("LKR");
   const [availableCurrencies, setAvailableCurrencies] = useState<string[]>([]);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -139,7 +153,10 @@ export default function EnhancedFinancialReportsMobile() {
         .eq("tenant_id", profile.tenant_id);
 
       if (selectedLocationData?.id) {
-        paymentsQuery = paymentsQuery.eq("reservations.location_id", selectedLocationData.id);
+        paymentsQuery = paymentsQuery.eq(
+          "reservations.location_id",
+          selectedLocationData.id
+        );
         expenseQuery = expenseQuery.eq("location_id", selectedLocationData.id);
       }
 
@@ -172,7 +189,8 @@ export default function EnhancedFinancialReportsMobile() {
       }
 
       for (const expense of expenseResult.data || []) {
-        const accountCurrency = (expense as any).accounts?.currency || expense.currency;
+        const accountCurrency =
+          (expense as any).accounts?.currency || expense.currency;
         const convertedAmount = await convertCurrency(
           parseFloat(expense.amount.toString()),
           accountCurrency as any,
@@ -184,7 +202,8 @@ export default function EnhancedFinancialReportsMobile() {
       }
 
       const netProfit = totalIncome - totalExpenses;
-      const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0;
+      const profitMargin =
+        totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0;
 
       setSummary({
         totalIncome,
@@ -215,13 +234,18 @@ export default function EnhancedFinancialReportsMobile() {
         .eq("reservations.tenant_id", profile.tenant_id);
 
       if (selectedLocationData?.id) {
-        paymentsQuery = paymentsQuery.eq("reservations.location_id", selectedLocationData.id);
+        paymentsQuery = paymentsQuery.eq(
+          "reservations.location_id",
+          selectedLocationData.id
+        );
       }
 
       if (dateFrom) paymentsQuery = paymentsQuery.gte("created_at", dateFrom);
       if (dateTo) paymentsQuery = paymentsQuery.lte("created_at", dateTo);
 
-      const { data, error } = await paymentsQuery.order("created_at", { ascending: false });
+      const { data, error } = await paymentsQuery.order("created_at", {
+        ascending: false,
+      });
       if (error) throw error;
 
       const incomeMap = new Map<string, IncomeCategory>();
@@ -253,7 +277,11 @@ export default function EnhancedFinancialReportsMobile() {
           id: payment.id,
           date: payment.created_at,
           amount: convertedAmount,
-          description: `${payment.payment_type} - ${(payment as any).reservations?.guest_name} (${(payment as any).reservations?.reservation_number})${payment.notes ? ` - ${payment.notes}` : ""}`,
+          description: `${payment.payment_type} - ${
+            (payment as any).reservations?.guest_name
+          } (${(payment as any).reservations?.reservation_number})${
+            payment.notes ? ` - ${payment.notes}` : ""
+          }`,
           account: (payment as any).accounts?.name || "Unknown",
           currency: baseCurrency,
         });
@@ -262,7 +290,10 @@ export default function EnhancedFinancialReportsMobile() {
       const categories = Array.from(incomeMap.values())
         .map((cat) => ({
           ...cat,
-          percentage: totalIncomeForPercentage > 0 ? (cat.amount / totalIncomeForPercentage) * 100 : 0,
+          percentage:
+            totalIncomeForPercentage > 0
+              ? (cat.amount / totalIncomeForPercentage) * 100
+              : 0,
         }))
         .sort((a, b) => b.amount - a.amount);
 
@@ -278,10 +309,12 @@ export default function EnhancedFinancialReportsMobile() {
     try {
       let query = supabase
         .from("expenses")
-        .select(`
+        .select(
+          `
           id, date, amount, main_type, sub_type, note, currency,
           accounts!inner(name, currency, tenant_id)
-        `)
+        `
+        )
         .eq("accounts.tenant_id", profile.tenant_id);
 
       if (selectedLocationData?.id) {
@@ -297,7 +330,8 @@ export default function EnhancedFinancialReportsMobile() {
       let totalExpenseForPercentage = 0;
 
       for (const expense of data || []) {
-        const accountCurrency = (expense as any).accounts?.currency || expense.currency;
+        const accountCurrency =
+          (expense as any).accounts?.currency || expense.currency;
         const convertedAmount = await convertCurrency(
           parseFloat(expense.amount.toString()),
           accountCurrency as any,
@@ -323,7 +357,9 @@ export default function EnhancedFinancialReportsMobile() {
           id: expense.id,
           date: expense.date,
           amount: convertedAmount,
-          description: `${expense.main_type} - ${expense.sub_type}${expense.note ? ` (${expense.note})` : ""}`,
+          description: `${expense.main_type} - ${expense.sub_type}${
+            expense.note ? ` (${expense.note})` : ""
+          }`,
           account: (expense as any).accounts?.name || "Unknown",
           currency: baseCurrency,
         });
@@ -332,7 +368,10 @@ export default function EnhancedFinancialReportsMobile() {
       const categories = Array.from(expenseMap.values())
         .map((cat) => ({
           ...cat,
-          percentage: totalExpenseForPercentage > 0 ? (cat.amount / totalExpenseForPercentage) * 100 : 0,
+          percentage:
+            totalExpenseForPercentage > 0
+              ? (cat.amount / totalExpenseForPercentage) * 100
+              : 0,
         }))
         .sort((a, b) => b.amount - a.amount);
 
@@ -366,93 +405,142 @@ export default function EnhancedFinancialReportsMobile() {
     return (
       <View className="flex-1 items-center justify-center py-20">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-gray-600 mt-4">Loading detailed reports...</Text>
+        <Text className="text-sm text-gray-600 mt-4">
+          Loading detailed reports...
+        </Text>
       </View>
     );
   }
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
-      {/* Currency Selector */}
+      {/* Filters: Currency and Date Range */}
       <View className="bg-white p-3 mx-4 mt-3 rounded-lg border border-gray-200">
-        <Text className="text-xs text-gray-600 mb-1">Currency</Text>
-        <TouchableOpacity
-          onPress={() => setShowCurrencyDropdown(true)}
-          className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 flex-row items-center justify-between"
-        >
-          <Text className="text-sm">{baseCurrency}</Text>
-          <Ionicons name="chevron-down" size={16} color="#6b7280" />
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-2 mb-2">
+          {/* Currency Selector */}
+          <View className="flex-1">
+            <Text className="text-xs text-gray-600 mb-1">Currency</Text>
+            <TouchableOpacity
+              onPress={() => setShowCurrencyDropdown(true)}
+              className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 flex-row items-center justify-between"
+            >
+              <Text className="text-sm">{baseCurrency}</Text>
+              <Ionicons name="chevron-down" size={16} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          {/* From Date */}
+          <View className="flex-1">
+            <Text className="text-xs text-gray-600 mb-1">From</Text>
+            <TouchableOpacity
+              onPress={() => setShowFromDatePicker(true)}
+              className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 flex-row items-center justify-between"
+            >
+              <Text className="text-sm">
+                {dateFrom
+                  ? new Date(dateFrom).toLocaleDateString()
+                  : "Select"}
+              </Text>
+              <Ionicons name="calendar" size={16} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          {/* To Date */}
+          <View className="flex-1">
+            <Text className="text-xs text-gray-600 mb-1">To</Text>
+            <TouchableOpacity
+              onPress={() => setShowToDatePicker(true)}
+              className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 flex-row items-center justify-between"
+            >
+              <Text className="text-sm">
+                {dateTo ? new Date(dateTo).toLocaleDateString() : "Select"}
+              </Text>
+              <Ionicons name="calendar" size={16} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
-      {/* Summary Cards */}
-      <View className="px-4 py-3 gap-3">
-        <View className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <View className="flex-row justify-between items-start">
-            <View className="flex-1">
-              <Text className="text-xs font-medium text-green-600">Total Income</Text>
-              <Text className="text-xl font-bold text-green-900 mt-1">
-                {formatCurrency(summary.totalIncome, baseCurrency)}
-              </Text>
-              <Text className="text-xs text-green-600 mt-1">
-                {summary.incomeTransactions} transactions
-              </Text>
+      {/* Summary Cards - New Layout */}
+      <View className="px-4 py-3 flex-row gap-3">
+        {/* Left Column: Total Income + Total Expenses */}
+        <View className="flex-1 gap-3">
+          {/* Total Income */}
+          <View className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <View className="flex-row justify-between items-start">
+              <View className="flex-1">
+                <Text className="text-xs font-medium text-green-600">
+                  Total Income
+                </Text>
+                <Text className="text-xl font-bold text-green-900 mt-1">
+                  {formatCurrency(summary.totalIncome, baseCurrency)}
+                </Text>
+                <Text className="text-xs text-green-600 mt-1">
+                  {summary.incomeTransactions} transactions
+                </Text>
+              </View>
+              <Ionicons name="trending-up" size={32} color="#10b981" />
             </View>
-            <Ionicons name="trending-up" size={32} color="#10b981" />
+          </View>
+
+          {/* Total Expenses */}
+          <View className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <View className="flex-row justify-between items-start">
+              <View className="flex-1">
+                <Text className="text-xs font-medium text-red-600">
+                  Total Expenses
+                </Text>
+                <Text className="text-xl font-bold text-red-900 mt-1">
+                  {formatCurrency(summary.totalExpenses, baseCurrency)}
+                </Text>
+                <Text className="text-xs text-red-600 mt-1">
+                  {summary.expenseTransactions} transactions
+                </Text>
+              </View>
+              <Ionicons name="trending-down" size={32} color="#ef4444" />
+            </View>
           </View>
         </View>
 
-        <View className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <View className="flex-row justify-between items-start">
-            <View className="flex-1">
-              <Text className="text-xs font-medium text-red-600">Total Expenses</Text>
-              <Text className="text-xl font-bold text-red-900 mt-1">
-                {formatCurrency(summary.totalExpenses, baseCurrency)}
-              </Text>
-              <Text className="text-xs text-red-600 mt-1">
-                {summary.expenseTransactions} transactions
-              </Text>
+        {/* Right Column: Net Profit (Full Height) */}
+        <View className="flex-1">
+          <View
+            className={`${
+              summary.netProfit >= 0
+                ? "bg-blue-50 border-blue-200"
+                : "bg-red-50 border-red-200"
+            } border rounded-lg p-4 h-full justify-center`}
+          >
+            <View className="flex-row justify-between items-start">
+              <View className="flex-1">
+                <Text
+                  className={`text-xs font-medium ${
+                    summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
+                  }`}
+                >
+                  Net Profit
+                </Text>
+                <Text
+                  className={`text-xl font-bold mt-1 ${
+                    summary.netProfit >= 0 ? "text-blue-900" : "text-red-900"
+                  }`}
+                >
+                  {formatCurrency(summary.netProfit, baseCurrency)}
+                </Text>
+                <Text
+                  className={`text-xs mt-1 ${
+                    summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
+                  }`}
+                >
+                  {summary.profitMargin.toFixed(1)}% profit margin
+                </Text>
+              </View>
+              <Ionicons
+                name="cash"
+                size={32}
+                color={summary.netProfit >= 0 ? "#3b82f6" : "#ef4444"}
+              />
             </View>
-            <Ionicons name="trending-down" size={32} color="#ef4444" />
-          </View>
-        </View>
-
-        <View
-          className={`${
-            summary.netProfit >= 0
-              ? "bg-blue-50 border-blue-200"
-              : "bg-red-50 border-red-200"
-          } border rounded-lg p-4`}
-        >
-          <View className="flex-row justify-between items-start">
-            <View className="flex-1">
-              <Text
-                className={`text-xs font-medium ${
-                  summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
-                }`}
-              >
-                Net Profit
-              </Text>
-              <Text
-                className={`text-xl font-bold mt-1 ${
-                  summary.netProfit >= 0 ? "text-blue-900" : "text-red-900"
-                }`}
-              >
-                {formatCurrency(summary.netProfit, baseCurrency)}
-              </Text>
-              <Text
-                className={`text-xs mt-1 ${
-                  summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
-                }`}
-              >
-                {summary.profitMargin.toFixed(1)}% profit margin
-              </Text>
-            </View>
-            <Ionicons
-              name="cash"
-              size={32}
-              color={summary.netProfit >= 0 ? "#3b82f6" : "#ef4444"}
-            />
           </View>
         </View>
       </View>
@@ -480,12 +568,18 @@ export default function EnhancedFinancialReportsMobile() {
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center flex-1">
                     <Ionicons
-                      name={expandedIncome.has(category.type) ? "chevron-down" : "chevron-forward"}
+                      name={
+                        expandedIncome.has(category.type)
+                          ? "chevron-down"
+                          : "chevron-forward"
+                      }
                       size={16}
                       color="#6b7280"
                     />
                     <View className="ml-2 flex-1">
-                      <Text className="text-sm font-semibold">{category.type}</Text>
+                      <Text className="text-sm font-semibold">
+                        {category.type}
+                      </Text>
                       <Text className="text-xs text-gray-600">
                         {category.percentage.toFixed(1)}%
                       </Text>
@@ -506,9 +600,13 @@ export default function EnhancedFinancialReportsMobile() {
                       <View className="flex-row justify-between">
                         <View className="flex-1">
                           <Text className="text-xs font-medium">
-                            {new Date(txn.date).toLocaleDateString()} - {txn.account}
+                            {new Date(txn.date).toLocaleDateString()} -{" "}
+                            {txn.account}
                           </Text>
-                          <Text className="text-xs text-gray-600" numberOfLines={2}>
+                          <Text
+                            className="text-xs text-gray-600"
+                            numberOfLines={2}
+                          >
                             {txn.description}
                           </Text>
                         </View>
@@ -542,7 +640,9 @@ export default function EnhancedFinancialReportsMobile() {
           </Text>
         </View>
         {expenseCategories.length === 0 ? (
-          <Text className="text-center text-gray-500 py-8">No expense data</Text>
+          <Text className="text-center text-gray-500 py-8">
+            No expense data
+          </Text>
         ) : (
           expenseCategories.map((category) => (
             <View key={category.type} className="mb-2">
@@ -553,12 +653,18 @@ export default function EnhancedFinancialReportsMobile() {
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center flex-1">
                     <Ionicons
-                      name={expandedExpenses.has(category.type) ? "chevron-down" : "chevron-forward"}
+                      name={
+                        expandedExpenses.has(category.type)
+                          ? "chevron-down"
+                          : "chevron-forward"
+                      }
                       size={16}
                       color="#6b7280"
                     />
                     <View className="ml-2 flex-1">
-                      <Text className="text-sm font-semibold">{category.type}</Text>
+                      <Text className="text-sm font-semibold">
+                        {category.type}
+                      </Text>
                       <Text className="text-xs text-gray-600">
                         {category.percentage.toFixed(1)}%
                       </Text>
@@ -579,9 +685,13 @@ export default function EnhancedFinancialReportsMobile() {
                       <View className="flex-row justify-between">
                         <View className="flex-1">
                           <Text className="text-xs font-medium">
-                            {new Date(txn.date).toLocaleDateString()} - {txn.account}
+                            {new Date(txn.date).toLocaleDateString()} -{" "}
+                            {txn.account}
                           </Text>
-                          <Text className="text-xs text-gray-600" numberOfLines={2}>
+                          <Text
+                            className="text-xs text-gray-600"
+                            numberOfLines={2}
+                          >
                             {txn.description}
                           </Text>
                         </View>
@@ -634,7 +744,9 @@ export default function EnhancedFinancialReportsMobile() {
                 >
                   <Text
                     className={`text-sm ${
-                      baseCurrency === currency ? "font-semibold text-blue-600" : "text-gray-700"
+                      baseCurrency === currency
+                        ? "font-semibold text-blue-600"
+                        : "text-gray-700"
                     }`}
                   >
                     {currency}
@@ -648,6 +760,106 @@ export default function EnhancedFinancialReportsMobile() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* From Date Picker */}
+      {showFromDatePicker && (
+        <Modal
+          visible={showFromDatePicker}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowFromDatePicker(false)}
+        >
+          <View className="flex-1 bg-black/50 justify-center items-center">
+            <View className="bg-white rounded-lg p-4 mx-4">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-base font-semibold">Select From Date</Text>
+                <TouchableOpacity onPress={() => setShowFromDatePicker(false)}>
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={dateFrom ? new Date(dateFrom) : new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "calendar"}
+                onChange={(event, selectedDate) => {
+                  if (event.type === "set" && selectedDate) {
+                    setDateFrom(selectedDate.toISOString().split("T")[0]);
+                    setShowFromDatePicker(false);
+                    fetchData();
+                  } else if (event.type === "dismissed") {
+                    setShowFromDatePicker(false);
+                  }
+                }}
+              />
+              {dateFrom && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setDateFrom("");
+                    setShowFromDatePicker(false);
+                    fetchData();
+                  }}
+                  className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex-row items-center justify-center"
+                >
+                  <Ionicons name="close-circle" size={20} color="#ef4444" />
+                  <Text className="text-sm font-medium text-red-600 ml-2">
+                    Clear Date
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* To Date Picker */}
+      {showToDatePicker && (
+        <Modal
+          visible={showToDatePicker}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowToDatePicker(false)}
+        >
+          <View className="flex-1 bg-black/50 justify-center items-center">
+            <View className="bg-white rounded-lg p-4 mx-4">
+              <View className="flex-row justify-between items-center mb-3">
+                <Text className="text-base font-semibold">Select To Date</Text>
+                <TouchableOpacity onPress={() => setShowToDatePicker(false)}>
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={dateTo ? new Date(dateTo) : new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "calendar"}
+                onChange={(event, selectedDate) => {
+                  if (event.type === "set" && selectedDate) {
+                    setDateTo(selectedDate.toISOString().split("T")[0]);
+                    setShowToDatePicker(false);
+                    fetchData();
+                  } else if (event.type === "dismissed") {
+                    setShowToDatePicker(false);
+                  }
+                }}
+              />
+              {dateTo && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setDateTo("");
+                    setShowToDatePicker(false);
+                    fetchData();
+                  }}
+                  className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex-row items-center justify-center"
+                >
+                  <Ionicons name="close-circle" size={20} color="#ef4444" />
+                  <Text className="text-sm font-medium text-red-600 ml-2">
+                    Clear Date
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+      )}
     </ScrollView>
   );
 }
