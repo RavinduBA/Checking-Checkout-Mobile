@@ -437,9 +437,7 @@ export default function EnhancedFinancialReportsMobile() {
               className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-2 flex-row items-center justify-between"
             >
               <Text className="text-sm">
-                {dateFrom
-                  ? new Date(dateFrom).toLocaleDateString()
-                  : "Select"}
+                {dateFrom ? new Date(dateFrom).toLocaleDateString() : "Select"}
               </Text>
               <Ionicons name="calendar" size={16} color="#6b7280" />
             </TouchableOpacity>
@@ -502,14 +500,14 @@ export default function EnhancedFinancialReportsMobile() {
           </View>
         </View>
 
-        {/* Right Column: Net Profit (Full Height) */}
+        {/* Right Column: Net Profit */}
         <View className="flex-1">
           <View
             className={`${
               summary.netProfit >= 0
                 ? "bg-blue-50 border-blue-200"
                 : "bg-red-50 border-red-200"
-            } border rounded-lg p-4 h-full justify-center`}
+            } border rounded-lg p-4`}
           >
             <View className="flex-row justify-between items-start">
               <View className="flex-1">
@@ -772,7 +770,9 @@ export default function EnhancedFinancialReportsMobile() {
           <View className="flex-1 bg-black/50 justify-center items-center">
             <View className="bg-white rounded-lg p-4 mx-4">
               <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-base font-semibold">Select From Date</Text>
+                <Text className="text-base font-semibold">
+                  Select From Date
+                </Text>
                 <TouchableOpacity onPress={() => setShowFromDatePicker(false)}>
                   <Ionicons name="close" size={24} color="#6b7280" />
                 </TouchableOpacity>
