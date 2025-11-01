@@ -103,9 +103,9 @@ function MainTabs() {
         tabBarActiveTintColor: "#3b82f6",
         tabBarInactiveTintColor: "#4b5563",
         tabBarLabelStyle: {
-          fontSize: 9,
-          marginTop: 2,
-          marginBottom: 2,
+          fontSize: 8,
+          marginTop: 1,
+          marginBottom: 1,
         },
         tabBarIconStyle: {
           marginTop: 2,
@@ -127,12 +127,13 @@ function MainTabs() {
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
+              numberOfLines={1}
               style={{
-                fontSize: 9,
+                fontSize: 8,
                 color: focused ? "#3b82f6" : "#4b5563",
                 fontWeight: focused ? "700" : "500",
-                marginTop: 2,
-                marginBottom: 2,
+                marginTop: 1,
+                marginBottom: 1,
               }}
             >
               Dashboard
@@ -154,12 +155,13 @@ function MainTabs() {
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
+              numberOfLines={1}
               style={{
-                fontSize: 9,
+                fontSize: 8,
                 color: focused ? "#3b82f6" : "#4b5563",
                 fontWeight: focused ? "700" : "500",
-                marginTop: 2,
-                marginBottom: 2,
+                marginTop: 1,
+                marginBottom: 1,
               }}
             >
               Calendar
@@ -181,12 +183,13 @@ function MainTabs() {
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
+              numberOfLines={1}
               style={{
-                fontSize: 9,
+                fontSize: 8,
                 color: focused ? "#3b82f6" : "#4b5563",
                 fontWeight: focused ? "700" : "500",
-                marginTop: 2,
-                marginBottom: 2,
+                marginTop: 1,
+                marginBottom: 1,
               }}
             >
               Reservations
@@ -208,12 +211,13 @@ function MainTabs() {
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
+              numberOfLines={1}
               style={{
-                fontSize: 9,
+                fontSize: 8,
                 color: focused ? "#3b82f6" : "#4b5563",
                 fontWeight: focused ? "700" : "500",
-                marginTop: 2,
-                marginBottom: 2,
+                marginTop: 1,
+                marginBottom: 1,
               }}
             >
               Expenses
@@ -235,12 +239,13 @@ function MainTabs() {
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
+              numberOfLines={1}
               style={{
-                fontSize: 9,
+                fontSize: 8,
                 color: focused ? "#3b82f6" : "#4b5563",
                 fontWeight: focused ? "700" : "500",
-                marginTop: 2,
-                marginBottom: 2,
+                marginTop: 1,
+                marginBottom: 1,
               }}
             >
               Accounts
@@ -263,12 +268,13 @@ function MainTabs() {
           ),
           tabBarLabel: ({ focused, color }) => (
             <Text
+              numberOfLines={1}
               style={{
-                fontSize: 9,
+                fontSize: 8,
                 color: focused ? "#3b82f6" : "#4b5563",
                 fontWeight: focused ? "700" : "500",
-                marginTop: 2,
-                marginBottom: 2,
+                marginTop: 1,
+                marginBottom: 1,
               }}
             >
               Reports
