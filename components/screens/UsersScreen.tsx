@@ -1,29 +1,35 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Platform,
-} from "react-native";
-import { UsersSkeleton } from "@/components/skeleton/users-skeleton";
-import { useAuth } from "@/context/auth-context";
-import { useLocationContext } from "@/context/location-context";
-import { usePermissions } from "@/hooks/use-permissions";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useLocationContext } from "@/contexts/LocationContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   type User as UsersDataUser,
   useUsersData,
-} from "@/hooks/use-users-data";
+} from "@/hooks/useUsersData";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // Import mobile-friendly components from users folder
-import { UsersList, EditUserDialogMobile, InviteMemberDialogMobile } from "@/components/users";
+import {
+  EditUserDialogMobile,
+  InviteMemberDialogMobile,
+  UsersList,
+} from "@/components/users";
 
 export default function UsersScreen() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<any | null>(null);
   const [showEditUser, setShowEditUser] = useState(false);
-  const { user: currentUser, tenant } = useAuth();
+  const { user: currentUser } = useAuthContext();
+  const { profile } = useUserProfile();
   const { hasPermission } = usePermissions();
   const { locations } = useLocationContext();
   const { loading } = useUsersData();
@@ -54,7 +60,14 @@ export default function UsersScreen() {
     setEditingUser(null);
   };
 
-  if (loading) return <UsersSkeleton />;
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="text-sm text-gray-600 mt-3">Loading users...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 p-4">
@@ -75,25 +88,33 @@ export default function UsersScreen() {
       {/* PermissionMatrix is heavy web component; skip on mobile or add later */}
 
       {/* Invite dialog (mobile) */}
-      <Modal visible={showInviteDialog} animationType="slide" transparent={Platform.OS !== "web"}>
+      <Modal
+        visible={showInviteDialog}
+        animationType="slide"
+        transparent={Platform.OS !== "web"}
+      >
         <InviteMemberDialogMobile
           open={showInviteDialog}
           onOpenChange={setShowInviteDialog}
           locations={locations}
-          tenant={tenant}
+          tenant={profile?.tenant_id ? { id: profile.tenant_id } : null}
           currentUserId={currentUser?.id}
           onInviteSuccess={handleInviteSuccess}
         />
       </Modal>
 
       {/* Edit dialog (mobile) */}
-      <Modal visible={showEditUser} animationType="slide" transparent={Platform.OS !== "web"}>
+      <Modal
+        visible={showEditUser}
+        animationType="slide"
+        transparent={Platform.OS !== "web"}
+      >
         <EditUserDialogMobile
           open={showEditUser}
           onOpenChange={setShowEditUser}
           user={editingUser}
           locations={locations}
-          tenant={tenant}
+          tenant={profile?.tenant_id ? { id: profile.tenant_id } : null}
           onEditSuccess={handleEditSuccess}
         />
       </Modal>

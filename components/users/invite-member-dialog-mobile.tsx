@@ -1,15 +1,14 @@
+import { supabase } from "@/lib/supabase";
 import React, { useState } from "react";
 import {
-  View,
+  Alert,
+  ScrollView,
+  Switch,
   Text,
   TextInput,
-  ScrollView,
   TouchableOpacity,
-  Switch,
-  Alert,
-  Platform,
+  View,
 } from "react-native";
-import { supabase } from "@/integrations/supabase/client";
 
 type Location = any;
 type InvitePermissions = Record<string, boolean>;
@@ -49,14 +48,17 @@ export default function InviteMemberDialogMobile({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLocationId, setInviteLocationId] = useState("");
   const [invitePermissions, setInvitePermissions] = useState<InvitePermissions>(
-    defaultInvitePermissions,
+    defaultInvitePermissions
   );
   const [inviteLoading, setInviteLoading] = useState(false);
 
   const handleInvite = async () => {
     if (!tenant?.id || !inviteEmail.trim() || !currentUserId) return;
     if (!inviteLocationId) {
-      Alert.alert("Location Required", "Please select a location to invite the user to");
+      Alert.alert(
+        "Location Required",
+        "Please select a location to invite the user to"
+      );
       return;
     }
 
@@ -87,13 +89,15 @@ export default function InviteMemberDialogMobile({
         if (profileError) throw profileError;
 
         // Insert user_permissions
-        const { error: permError } = await supabase.from("user_permissions").insert({
-          user_id: profileData.id,
-          location_id: inviteLocationId,
-          tenant_id: tenant.id,
-          tenant_role: "tenant_staff",
-          ...invitePermissions,
-        });
+        const { error: permError } = await supabase
+          .from("user_permissions")
+          .insert({
+            user_id: profileData.id,
+            location_id: inviteLocationId,
+            tenant_id: tenant.id,
+            tenant_role: "tenant_staff",
+            ...invitePermissions,
+          });
         if (permError) throw permError;
 
         Alert.alert("Invitation Sent", "User added to location");
@@ -136,7 +140,9 @@ export default function InviteMemberDialogMobile({
               <TouchableOpacity
                 key={loc.id}
                 onPress={() => setInviteLocationId(loc.id)}
-                className={`py-2 px-2 rounded ${inviteLocationId === loc.id ? 'bg-blue-100' : ''}`}
+                className={`py-2 px-2 rounded ${
+                  inviteLocationId === loc.id ? "bg-blue-100" : ""
+                }`}
               >
                 <Text>{loc.name}</Text>
               </TouchableOpacity>
@@ -146,22 +152,39 @@ export default function InviteMemberDialogMobile({
           <View className="mb-3">
             <Text className="text-base font-semibold mb-2">Permissions</Text>
             {Object.entries(invitePermissions).map(([key, val]) => (
-              <View key={key} className="flex-row items-center justify-between mb-2">
-                <Text>{key.replace('access_', '').replace('_', ' ')}</Text>
+              <View
+                key={key}
+                className="flex-row items-center justify-between mb-2"
+              >
+                <Text>{key.replace("access_", "").replace("_", " ")}</Text>
                 <Switch
                   value={!!val}
-                  onValueChange={(v) => setInvitePermissions((p) => ({ ...p, [key]: v }))}
+                  onValueChange={(v) =>
+                    setInvitePermissions((p) => ({ ...p, [key]: v }))
+                  }
                 />
               </View>
             ))}
           </View>
 
           <View className="flex-row gap-2 mt-3">
-            <TouchableOpacity onPress={() => onOpenChange(false)} className="flex-1 border rounded px-3 py-2">
+            <TouchableOpacity
+              onPress={() => onOpenChange(false)}
+              className="flex-1 border rounded px-3 py-2"
+            >
               <Text className="text-center">Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleInvite} className="flex-1 bg-blue-500 rounded px-3 py-2">
-              <Text className="text-center text-white">{inviteLoading ? 'Sending...' : (!inviteLocationId ? 'Select Location' : 'Send Invitation')}</Text>
+            <TouchableOpacity
+              onPress={handleInvite}
+              className="flex-1 bg-blue-500 rounded px-3 py-2"
+            >
+              <Text className="text-center text-white">
+                {inviteLoading
+                  ? "Sending..."
+                  : !inviteLocationId
+                  ? "Select Location"
+                  : "Send Invitation"}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

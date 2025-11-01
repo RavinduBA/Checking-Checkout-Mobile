@@ -440,9 +440,7 @@ export default function AccountsReportsMobile() {
 
       {/* Filters */}
       <View className="bg-white mx-4 my-4 rounded-lg border border-gray-200">
-        <View className="p-4 border-b border-gray-200">
-          <Text className="text-base font-semibold text-gray-900">Filters</Text>
-        </View>
+       
         <View className="p-4">
           {/* All Filters in One Row */}
           <View className="flex-row gap-2 mb-3">
@@ -498,13 +496,7 @@ export default function AccountsReportsMobile() {
                 <Text className="text-gray-700 font-medium text-xs">Clear</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              onPress={fetchData}
-              className="flex-1 bg-blue-500 py-2.5 rounded-lg items-center flex-row justify-center gap-1"
-            >
-              <Ionicons name="refresh" size={16} color="white" />
-              <Text className="text-white font-medium text-xs">Refresh</Text>
-            </TouchableOpacity>
+        
           </View>
         </View>
       </View>

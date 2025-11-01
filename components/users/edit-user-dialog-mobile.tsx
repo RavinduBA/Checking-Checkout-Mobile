@@ -1,16 +1,15 @@
+import { usePermissions } from "@/hooks/usePermissions";
+import { supabase } from "@/lib/supabase";
 import React, { useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  ScrollView,
+  Switch,
   Text,
   TextInput,
-  ScrollView,
   TouchableOpacity,
-  Switch,
-  Alert,
-  Platform,
+  View,
 } from "react-native";
-import { supabase } from "@/integrations/supabase/client";
-import { usePermissions } from "@/hooks/use-permissions";
 
 type User = any;
 type Location = any;
@@ -43,7 +42,7 @@ export default function EditUserDialogMobile({
   const updateEditUserPermission = (
     locationName: string,
     permissionKey: string,
-    value: boolean,
+    value: boolean
   ) => {
     if (!editingUser) return;
     setEditingUser({
@@ -73,7 +72,7 @@ export default function EditUserDialogMobile({
       if (profileError) throw profileError;
 
       for (const [locationName, permissions] of Object.entries(
-        editingUser.permissions || {},
+        editingUser.permissions || {}
       )) {
         const location = locations.find((l) => l.name === locationName);
         if (!location) continue;
@@ -114,20 +113,26 @@ export default function EditUserDialogMobile({
   return (
     <View className="flex-1 bg-black/40 justify-center items-center p-4">
       <View className="bg-white w-full max-h-[90%] rounded-lg p-4">
-        <Text className="text-lg font-semibold mb-2">Edit User Permissions</Text>
+        <Text className="text-lg font-semibold mb-2">
+          Edit User Permissions
+        </Text>
         {editingUser && (
           <ScrollView>
             <View className="mb-3">
               <Text className="text-sm">Full Name</Text>
               <TextInput
                 value={editingUser.name}
-                onChangeText={(t) => setEditingUser({ ...editingUser, name: t })}
+                onChangeText={(t) =>
+                  setEditingUser({ ...editingUser, name: t })
+                }
                 className="border rounded px-2 py-2 mt-1"
               />
             </View>
 
             <View>
-              <Text className="text-base font-semibold mb-2">Location Permissions</Text>
+              <Text className="text-base font-semibold mb-2">
+                Location Permissions
+              </Text>
               {locations.map((location) => (
                 <View key={location.id} className="mb-3 border rounded p-3">
                   <Text className="font-medium mb-2">{location.name}</Text>
@@ -146,14 +151,23 @@ export default function EditUserDialogMobile({
                       ["settings", "Settings"],
                       ["booking_channels", "Booking Channels"],
                     ].map(([key, label]) => (
-                      <View key={String(key)} className="flex-row items-center justify-between w-1/2 mb-2">
+                      <View
+                        key={String(key)}
+                        className="flex-row items-center justify-between w-1/2 mb-2"
+                      >
                         <Text>{label}</Text>
                         <Switch
                           value={
-                            editingUser.permissions?.[location.name]?.[key as string] || false
+                            editingUser.permissions?.[location.name]?.[
+                              key as string
+                            ] || false
                           }
                           onValueChange={(val) =>
-                            updateEditUserPermission(location.name, key as string, val)
+                            updateEditUserPermission(
+                              location.name,
+                              key as string,
+                              val
+                            )
                           }
                         />
                       </View>
@@ -170,7 +184,10 @@ export default function EditUserDialogMobile({
               >
                 <Text className="text-center">Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleSave} className="flex-1 bg-blue-500 rounded px-3 py-2">
+              <TouchableOpacity
+                onPress={handleSave}
+                className="flex-1 bg-blue-500 rounded px-3 py-2"
+              >
                 <Text className="text-center text-white">Save Changes</Text>
               </TouchableOpacity>
             </View>

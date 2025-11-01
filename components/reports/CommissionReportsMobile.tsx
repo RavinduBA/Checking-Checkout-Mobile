@@ -11,7 +11,6 @@ import {
   ScrollView,
   Share,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -379,7 +378,9 @@ export default function CommissionReportsMobile() {
 
       await Share.share({
         message: csvContent,
-        title: `Commission Report - ${new Date().toISOString().split("T")[0]}.csv`,
+        title: `Commission Report - ${
+          new Date().toISOString().split("T")[0]
+        }.csv`,
       });
     } catch (error) {
       Alert.alert("Error", "Failed to export data");
@@ -466,8 +467,10 @@ export default function CommissionReportsMobile() {
 
       {/* Filters - All in One Row */}
       <View className="bg-white rounded-lg p-3 border border-gray-200 mb-4">
-        <Text className="text-sm font-semibold text-gray-900 mb-3">Filters</Text>
-        
+        <Text className="text-sm font-semibold text-gray-900 mb-3">
+          Filters
+        </Text>
+
         {/* First Row: Date From, Date To, Type */}
         <View className="flex-row gap-2 mb-3">
           {/* From Date */}
@@ -521,7 +524,11 @@ export default function CommissionReportsMobile() {
             }`}
           >
             <View className="flex-row items-center justify-between">
-              <Text className={`text-xs ${filterType === "all" ? "text-gray-400" : "text-gray-900"}`}>
+              <Text
+                className={`text-xs ${
+                  filterType === "all" ? "text-gray-400" : "text-gray-900"
+                }`}
+              >
                 {selectedPerson
                   ? (filterType === "guide" ? guides : agents).find(
                       (p) => p.id === selectedPerson
@@ -543,7 +550,11 @@ export default function CommissionReportsMobile() {
               className="border border-gray-300 rounded-lg px-3 py-2.5 bg-white"
             >
               <View className="flex-row items-center gap-1">
-                <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
+                <Ionicons
+                  name="close-circle-outline"
+                  size={16}
+                  color="#ef4444"
+                />
                 <Text className="text-xs text-red-500 font-medium">Clear</Text>
               </View>
             </TouchableOpacity>
