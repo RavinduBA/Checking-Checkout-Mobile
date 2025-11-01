@@ -283,7 +283,7 @@ export default function AccountsReportsMobile() {
   }, [accounts, selectedAccount, dateFrom, dateTo]);
 
   const fetchData = async () => {
-    if (!profile?.tenant_id || !selectedLocationData?.id) return;
+    if (!profile?.tenant_id) return;
 
     setLoading(true);
     try {
@@ -291,7 +291,6 @@ export default function AccountsReportsMobile() {
         .from("accounts")
         .select("*")
         .eq("tenant_id", profile.tenant_id)
-        .eq("location_id", selectedLocationData.id)
         .order("name");
 
       if (error) throw error;
@@ -305,53 +304,45 @@ export default function AccountsReportsMobile() {
   };
 
   const fetchAccountBalances = async () => {
-    if (!profile?.tenant_id || !selectedLocationData?.id) return;
+    if (!profile?.tenant_id) return;
 
     try {
       const balances: AccountBalance[] = [];
 
       for (const account of accounts) {
-        // Fetch income for this account (from payments table with reservations filter)
+        // Fetch income for this account (from payments table)
         let incomeQuery = supabase
           .from("payments")
-          .select("amount, reservations!inner(tenant_id, location_id)")
-          .eq("account_id", account.id)
-          .eq("reservations.tenant_id", profile.tenant_id)
-          .eq("reservations.location_id", selectedLocationData.id);
+          .select("amount")
+          .eq("account_id", account.id);
 
         // Fetch expenses for this account
         let expenseQuery = supabase
           .from("expenses")
           .select("amount")
-          .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id)
-          .eq("location_id", selectedLocationData.id);
+          .eq("account_id", account.id);
 
         // Fetch transfers from this account
         let transfersFromQuery = supabase
           .from("account_transfers")
           .select("amount")
-          .eq("from_account_id", account.id)
-          .eq("tenant_id", profile.tenant_id)
-          .eq("location_id", selectedLocationData.id);
+          .eq("from_account_id", account.id);
 
         // Fetch transfers to this account
         let transfersToQuery = supabase
           .from("account_transfers")
           .select("amount, conversion_rate")
-          .eq("to_account_id", account.id)
-          .eq("tenant_id", profile.tenant_id)
-          .eq("location_id", selectedLocationData.id);
+          .eq("to_account_id", account.id);
 
         // Apply date filters if specified
         if (dateFrom) {
-          incomeQuery = incomeQuery.gte("created_at", dateFrom);
+          incomeQuery = incomeQuery.gte("date", dateFrom);
           expenseQuery = expenseQuery.gte("date", dateFrom);
           transfersFromQuery = transfersFromQuery.gte("created_at", dateFrom);
           transfersToQuery = transfersToQuery.gte("created_at", dateFrom);
         }
         if (dateTo) {
-          incomeQuery = incomeQuery.lte("created_at", dateTo);
+          incomeQuery = incomeQuery.lte("date", dateTo);
           expenseQuery = expenseQuery.lte("date", dateTo);
           transfersFromQuery = transfersFromQuery.lte("created_at", dateTo);
           transfersToQuery = transfersToQuery.lte("created_at", dateTo);
@@ -418,7 +409,7 @@ export default function AccountsReportsMobile() {
   };
 
   const fetchTransactions = async () => {
-    if (!profile?.tenant_id || !selectedLocationData?.id) return;
+    if (!profile?.tenant_id) return;
 
     try {
       const allTransactions: Transaction[] = [];
@@ -431,17 +422,13 @@ export default function AccountsReportsMobile() {
         let incomeQuery = supabase
           .from("income")
           .select("id, date, amount, type, note")
-          .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id)
-          .eq("location_id", selectedLocationData.id);
+          .eq("account_id", account.id);
 
         // Fetch expense transactions
         let expenseQuery = supabase
           .from("expenses")
           .select("id, date, amount, main_type, sub_type, note")
-          .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id)
-          .eq("location_id", selectedLocationData.id);
+          .eq("account_id", account.id);
 
         // Apply date filters
         if (dateFrom) {
