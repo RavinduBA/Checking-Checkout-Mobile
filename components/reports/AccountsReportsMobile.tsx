@@ -1,40 +1,43 @@
-import { useLocationContext } from "@/contexts/LocationContext";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { supabase } from "@/lib/supabase";
-import { formatCurrency } from "@/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ScrollView,
-  Text,
+  Modal,
   TextInput,
-  TouchableOpacity,
-  View,
+  Share,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { supabase } from "../../lib/supabase";
+import { formatCurrency } from "../../utils/currency";
+import { useUserProfile } from "../../hooks/useUserProfile";
 
 interface Account {
   id: string;
   name: string;
   currency: string;
   current_balance: number;
-  status: string;
-  type: string;
+  initial_balance: number;
+  location_access: string[];
   tenant_id: string;
-  location_id: string;
+  created_at: string;
+  updated_at?: string | null;
 }
 
-interface AccountBalance {
+type AccountBalance = {
   account: Account;
   currentBalance: number;
   totalIncome: number;
   totalExpenses: number;
   totalTransfers: number;
   transactionCount: number;
-}
+};
 
-interface Transaction {
+type Transaction = {
   id: string;
   date: string;
   type: "income" | "expense" | "transfer_in" | "transfer_out";
@@ -43,237 +46,28 @@ interface Transaction {
   account_name: string;
   currency: string;
   note?: string;
-}
-
-interface AccountCardProps {
-  account: Account;
-  balance: AccountBalance;
-  onPress: () => void;
-}
-
-const AccountCard: React.FC<AccountCardProps> = ({
-  account,
-  balance,
-  onPress,
-}) => {
-  const isPositive = balance.currentBalance >= 0;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      className="bg-white rounded-lg p-4 border border-gray-200 mb-3"
-    >
-      <View className="flex-row justify-between items-start mb-2">
-        <View className="flex-1">
-          <Text className="text-base font-semibold text-gray-900 mb-1">
-            {account.name}
-          </Text>
-          <Text className="text-xs text-gray-600">{account.type}</Text>
-        </View>
-        <View
-          className={`px-2 py-1 rounded-md ${
-            account.status === "active" ? "bg-green-100" : "bg-gray-100"
-          }`}
-        >
-          <Text
-            className={`text-xs font-medium ${
-              account.status === "active" ? "text-green-600" : "text-gray-600"
-            }`}
-          >
-            {account.status}
-          </Text>
-        </View>
-      </View>
-
-      <View className="border-t border-gray-200 pt-3 mt-2">
-        <View className="flex-row justify-between items-center mb-3">
-          <View>
-            <Text className="text-xs text-gray-600 mb-1">Current Balance</Text>
-            <Text
-              className={`text-xl font-bold ${
-                isPositive ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {formatCurrency(balance.currentBalance, account.currency)}
-            </Text>
-          </View>
-          <View className="items-end">
-            <Text className="text-xs text-gray-600 mb-1">Transactions</Text>
-            <Text className="text-sm font-semibold text-gray-900">
-              {balance.transactionCount}
-            </Text>
-          </View>
-        </View>
-
-        <View className="flex-row justify-between items-center">
-          <View className="flex-1">
-            <Text className="text-xs text-gray-600">Income</Text>
-            <Text className="text-sm font-semibold text-green-600">
-              {formatCurrency(balance.totalIncome, account.currency)}
-            </Text>
-          </View>
-          <View className="flex-1 items-end">
-            <Text className="text-xs text-gray-600">Expenses</Text>
-            <Text className="text-sm font-semibold text-red-600">
-              {formatCurrency(balance.totalExpenses, account.currency)}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View className="flex-row items-center justify-end gap-1 mt-3">
-        <Text className="text-xs text-blue-500 font-medium">View Details</Text>
-        <Ionicons name="chevron-forward" size={14} color="#3b82f6" />
-      </View>
-    </TouchableOpacity>
-  );
 };
-
-interface TransactionCardProps {
-  transaction: Transaction;
-  onPress: () => void;
-}
-
-const TransactionCard: React.FC<TransactionCardProps> = ({
-  transaction,
-  onPress,
-}) => {
-  const getTypeColor = () => {
-    switch (transaction.type) {
-      case "income":
-        return "text-green-600";
-      case "expense":
-        return "text-red-600";
-      case "transfer_in":
-        return "text-blue-600";
-      case "transfer_out":
-        return "text-orange-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
-  const getTypeIcon = () => {
-    switch (transaction.type) {
-      case "income":
-        return "arrow-down-circle";
-      case "expense":
-        return "arrow-up-circle";
-      case "transfer_in":
-        return "arrow-forward-circle";
-      case "transfer_out":
-        return "arrow-back-circle";
-      default:
-        return "cash";
-    }
-  };
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      className="bg-white rounded-lg p-4 border border-gray-200 mb-3"
-    >
-      <View className="flex-row items-start justify-between mb-2">
-        <View className="flex-row items-start flex-1">
-          <View
-            className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${
-              transaction.type === "income"
-                ? "bg-green-100"
-                : transaction.type === "expense"
-                ? "bg-red-100"
-                : "bg-blue-100"
-            }`}
-          >
-            <Ionicons
-              name={getTypeIcon() as any}
-              size={18}
-              color={
-                transaction.type === "income"
-                  ? "#16a34a"
-                  : transaction.type === "expense"
-                  ? "#dc2626"
-                  : "#3b82f6"
-              }
-            />
-          </View>
-          <View className="flex-1">
-            <Text className="text-sm font-semibold text-gray-900 mb-1">
-              {transaction.description}
-            </Text>
-            <Text className="text-xs text-gray-600">
-              {transaction.account_name}
-            </Text>
-            <Text className="text-xs text-gray-500 mt-1">
-              {new Date(transaction.date).toLocaleDateString()}
-            </Text>
-          </View>
-        </View>
-        <View className="items-end">
-          <Text className={`text-lg font-bold ${getTypeColor()}`}>
-            {transaction.type === "expense" ||
-            transaction.type === "transfer_out"
-              ? "-"
-              : "+"}
-            {formatCurrency(transaction.amount, transaction.currency)}
-          </Text>
-        </View>
-      </View>
-      {transaction.note && (
-        <View className="mt-2 p-2 bg-gray-50 rounded">
-          <Text className="text-xs text-gray-600">{transaction.note}</Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-};
-
-interface StatCardProps {
-  title: string;
-  value: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
-  return (
-    <View className="flex-1 bg-white rounded-lg p-3 border border-gray-200">
-      <View
-        className="w-8 h-8 rounded-full items-center justify-center mb-2"
-        style={{ backgroundColor: `${color}20` }}
-      >
-        <Ionicons name={icon} size={16} color={color} />
-      </View>
-      <Text className="text-xs text-gray-600 mb-1">{title}</Text>
-      <Text className="text-lg font-bold text-gray-900">{value}</Text>
-    </View>
-  );
-};
-
-type TabType = "balances" | "transactions";
 
 export default function AccountsReportsMobile() {
   const { profile } = useUserProfile();
-  const { getSelectedLocationData } = useLocationContext();
-  const selectedLocationData = getSelectedLocationData?.();
-
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabType>("balances");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "active" | "inactive">(
-    "all"
-  );
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountBalances, setAccountBalances] = useState<AccountBalance[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedAccount, setSelectedAccount] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState<"balances" | "transactions">("balances");
+  
+  // Modal states
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    if (profile?.tenant_id) {
-      fetchData();
-    }
-  }, [profile?.tenant_id, selectedLocationData?.id]);
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (accounts.length > 0) {
@@ -284,7 +78,7 @@ export default function AccountsReportsMobile() {
 
   const fetchData = async () => {
     if (!profile?.tenant_id) return;
-
+    
     setLoading(true);
     try {
       const { data: accountsData, error } = await supabase
@@ -310,7 +104,7 @@ export default function AccountsReportsMobile() {
       const balances: AccountBalance[] = [];
 
       for (const account of accounts) {
-        // Fetch income for this account (from payments table)
+        // Fetch income for this account
         let incomeQuery = supabase
           .from("payments")
           .select("amount")
@@ -336,16 +130,18 @@ export default function AccountsReportsMobile() {
 
         // Apply date filters if specified
         if (dateFrom) {
-          incomeQuery = incomeQuery.gte("date", dateFrom);
-          expenseQuery = expenseQuery.gte("date", dateFrom);
-          transfersFromQuery = transfersFromQuery.gte("created_at", dateFrom);
-          transfersToQuery = transfersToQuery.gte("created_at", dateFrom);
+          const fromStr = dateFrom.toISOString().split("T")[0];
+          incomeQuery = incomeQuery.gte("date", fromStr);
+          expenseQuery = expenseQuery.gte("date", fromStr);
+          transfersFromQuery = transfersFromQuery.gte("created_at", fromStr);
+          transfersToQuery = transfersToQuery.gte("created_at", fromStr);
         }
         if (dateTo) {
-          incomeQuery = incomeQuery.lte("date", dateTo);
-          expenseQuery = expenseQuery.lte("date", dateTo);
-          transfersFromQuery = transfersFromQuery.lte("created_at", dateTo);
-          transfersToQuery = transfersToQuery.lte("created_at", dateTo);
+          const toStr = dateTo.toISOString().split("T")[0];
+          incomeQuery = incomeQuery.lte("date", toStr);
+          expenseQuery = expenseQuery.lte("date", toStr);
+          transfersFromQuery = transfersFromQuery.lte("created_at", toStr);
+          transfersToQuery = transfersToQuery.lte("created_at", toStr);
         }
 
         const [
@@ -366,25 +162,27 @@ export default function AccountsReportsMobile() {
         const transfersToData = transfersToResult.data || [];
 
         const totalIncome = incomeData.reduce(
-          (sum, item) => sum + parseFloat(item.amount.toString()),
-          0
+          (sum: number, item: any) => sum + parseFloat(item.amount.toString()),
+          0,
         );
         const totalExpenses = expenseData.reduce(
-          (sum, item) => sum + parseFloat(item.amount.toString()),
-          0
+          (sum: number, item: any) => sum + parseFloat(item.amount.toString()),
+          0,
         );
         const transfersOut = transfersFromData.reduce(
-          (sum, item) => sum + parseFloat(item.amount.toString()),
-          0
+          (sum: number, item: any) => sum + parseFloat(item.amount.toString()),
+          0,
         );
         const transfersIn = transfersToData.reduce(
-          (sum, item) =>
+          (sum: number, item: any) =>
             sum +
             parseFloat(item.amount.toString()) *
               parseFloat(item.conversion_rate.toString()),
-          0
+          0,
         );
 
+        // Use current_balance from database instead of manual calculation
+        // The database automatically calculates this with triggers
         const currentBalance = account.current_balance;
         const transactionCount =
           incomeData.length +
@@ -432,12 +230,14 @@ export default function AccountsReportsMobile() {
 
         // Apply date filters
         if (dateFrom) {
-          incomeQuery = incomeQuery.gte("date", dateFrom);
-          expenseQuery = expenseQuery.gte("date", dateFrom);
+          const fromStr = dateFrom.toISOString().split("T")[0];
+          incomeQuery = incomeQuery.gte("date", fromStr);
+          expenseQuery = expenseQuery.gte("date", fromStr);
         }
         if (dateTo) {
-          incomeQuery = incomeQuery.lte("date", dateTo);
-          expenseQuery = expenseQuery.lte("date", dateTo);
+          const toStr = dateTo.toISOString().split("T")[0];
+          incomeQuery = incomeQuery.lte("date", toStr);
+          expenseQuery = expenseQuery.lte("date", toStr);
         }
 
         const [incomeResult, expenseResult] = await Promise.all([
@@ -446,7 +246,7 @@ export default function AccountsReportsMobile() {
         ]);
 
         // Process income transactions
-        (incomeResult.data || []).forEach((item) => {
+        (incomeResult.data || []).forEach((item: any) => {
           allTransactions.push({
             id: item.id,
             date: item.date,
@@ -460,7 +260,7 @@ export default function AccountsReportsMobile() {
         });
 
         // Process expense transactions
-        (expenseResult.data || []).forEach((item) => {
+        (expenseResult.data || []).forEach((item: any) => {
           allTransactions.push({
             id: item.id,
             date: item.date,
@@ -476,7 +276,7 @@ export default function AccountsReportsMobile() {
 
       // Sort all transactions by date (newest first)
       allTransactions.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
       setTransactions(allTransactions);
     } catch (error) {
@@ -484,229 +284,426 @@ export default function AccountsReportsMobile() {
     }
   };
 
-  const filteredBalances = accountBalances.filter((balance) => {
-    const matchesSearch = balance.account.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesFilter =
-      filterType === "all" || balance.account.status === filterType;
-    return matchesSearch && matchesFilter;
-  });
-
-  const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch =
-      transaction.description
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      transaction.account_name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
-
-  const handleAccountPress = (accountId: string) => {
-    console.log("View account:", accountId);
+  const getTransactionIcon = (type: string) => {
+    switch (type) {
+      case "income":
+        return <Ionicons name="arrow-up-circle" size={20} color="#10b981" />;
+      case "expense":
+        return <Ionicons name="arrow-down-circle" size={20} color="#ef4444" />;
+      case "transfer_in":
+        return <Ionicons name="arrow-forward-circle" size={20} color="#3b82f6" />;
+      case "transfer_out":
+        return <Ionicons name="arrow-back-circle" size={20} color="#f97316" />;
+      default:
+        return <Ionicons name="cash" size={20} color="#6b7280" />;
+    }
   };
 
-  const handleTransactionPress = (transactionId: string) => {
-    console.log("View transaction:", transactionId);
+  const exportData = async () => {
+    try {
+      const csvContent = [
+        ["Account", "Date", "Type", "Description", "Amount", "Currency", "Note"],
+        ...transactions.map((txn) => [
+          txn.account_name,
+          txn.date,
+          txn.type,
+          txn.description,
+          txn.amount.toString(),
+          txn.currency,
+          txn.note || "",
+        ]),
+      ]
+        .map((row) => row.join(","))
+        .join("\n");
+
+      await Share.share({
+        message: csvContent,
+        title: `Account Report - ${new Date().toISOString().split("T")[0]}`,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Failed to export data");
+      console.error("Export error:", error);
+    }
   };
 
-  const handleExport = () => {
-    // TODO: Implement CSV export for mobile
-    Alert.alert("Export", "Export functionality will be implemented soon");
-  };
-
-  const getTotalAssets = () => {
-    const total = accountBalances.reduce(
-      (sum, balance) => sum + balance.currentBalance,
-      0
-    );
-    const currency = accounts[0]?.currency || "USD";
-    return `${currency} ${total
-      .toFixed(0)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-  };
-
-  const getActiveAccountsCount = () => {
-    return accountBalances.filter((b) => b.account.status === "active").length;
-  };
+  const filteredTransactions = transactions.filter((txn) =>
+    txn.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    txn.account_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center py-20">
+      <View className="flex-1 items-center justify-center bg-gray-50">
         <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-gray-600 mt-4">Loading accounts...</Text>
+        <Text className="mt-4 text-gray-600">Loading accounts...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 p-4">
-      {/* Header Actions */}
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-base font-semibold text-gray-900">
-          Account Reports
-        </Text>
-        <TouchableOpacity
-          onPress={handleExport}
-          className="flex-row items-center gap-1 bg-blue-500 px-3 py-2 rounded-lg"
-        >
-          <Ionicons name="download-outline" size={16} color="#fff" />
-          <Text className="text-white text-xs font-medium">Export</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Summary Stats */}
-      <View className="flex-row gap-3 mb-4">
-        <StatCard
-          title="Total Assets"
-          value={getTotalAssets()}
-          icon="wallet"
-          color="#10b981"
-        />
-        <StatCard
-          title="Active"
-          value={getActiveAccountsCount().toString()}
-          icon="checkmark-circle"
-          color="#3b82f6"
-        />
-      </View>
-
-      {/* Search Bar */}
-      <View className="bg-gray-100 rounded-lg px-3 py-2 mb-3 flex-row items-center">
-        <Ionicons name="search" size={18} color="#666" />
-        <TextInput
-          placeholder={`Search ${activeTab}...`}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          className="flex-1 ml-2 text-sm text-gray-900"
-          placeholderTextColor="#999"
-        />
-        {searchQuery !== "" && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons name="close-circle" size={18} color="#666" />
+    <ScrollView className="flex-1 bg-gray-50">
+      {/* Header */}
+      <View className="bg-white px-4 py-4 border-b border-gray-200">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1">
+            <View className="flex-row items-center gap-2 mb-1">
+              <Ionicons name="card" size={24} color="#3b82f6" />
+              <Text className="text-xl font-bold text-gray-900">
+                Account Reports
+              </Text>
+            </View>
+            <Text className="text-sm text-gray-600">
+              View account balances and transactions
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={exportData}
+            className="bg-blue-500 px-4 py-2 rounded-lg flex-row items-center gap-2"
+          >
+            <Ionicons name="download" size={16} color="white" />
+            <Text className="text-white font-medium">Export</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Filters */}
+      <View className="bg-white mx-4 my-4 rounded-lg border border-gray-200">
+        <View className="p-4 border-b border-gray-200">
+          <Text className="text-base font-semibold text-gray-900">Filters</Text>
+        </View>
+        <View className="p-4 gap-4">
+          {/* Account Filter */}
+          <View>
+            <Text className="text-sm font-medium text-gray-700 mb-2">Account</Text>
+            <TouchableOpacity
+              onPress={() => setShowAccountPicker(true)}
+              className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
+            >
+              <Text className="text-gray-900">
+                {selectedAccount === "all" 
+                  ? "All Accounts" 
+                  : accounts.find(a => a.id === selectedAccount)?.name || "Select Account"
+                }
+              </Text>
+              <Ionicons name="chevron-down" size={20} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Date Filters */}
+          <View className="flex-row gap-4">
+            <View className="flex-1">
+              <Text className="text-sm font-medium text-gray-700 mb-2">From Date</Text>
+              <TouchableOpacity
+                onPress={() => setShowFromDatePicker(true)}
+                className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
+              >
+                <Text className="text-gray-900">
+                  {dateFrom ? dateFrom.toLocaleDateString() : "Select Date"}
+                </Text>
+                <Ionicons name="calendar" size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm font-medium text-gray-700 mb-2">To Date</Text>
+              <TouchableOpacity
+                onPress={() => setShowToDatePicker(true)}
+                className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
+              >
+                <Text className="text-gray-900">
+                  {dateTo ? dateTo.toLocaleDateString() : "Select Date"}
+                </Text>
+                <Ionicons name="calendar" size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Refresh Button */}
+          <TouchableOpacity
+            onPress={fetchData}
+            className="bg-blue-500 py-3 rounded-lg items-center"
+          >
+            <Text className="text-white font-medium">Refresh Data</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Tabs */}
+      <View className="bg-white mx-4 mb-4 rounded-lg border border-gray-200 overflow-hidden">
+        <View className="flex-row border-b border-gray-200">
+          <TouchableOpacity
+            onPress={() => setActiveTab("balances")}
+            className={`flex-1 py-3 items-center ${
+              activeTab === "balances" ? "bg-blue-50 border-b-2 border-blue-500" : ""
+            }`}
+          >
+            <Text
+              className={`font-medium ${
+                activeTab === "balances" ? "text-blue-600" : "text-gray-600"
+              }`}
+            >
+              Balances
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setActiveTab("transactions")}
+            className={`flex-1 py-3 items-center ${
+              activeTab === "transactions" ? "bg-blue-50 border-b-2 border-blue-500" : ""
+            }`}
+          >
+            <Text
+              className={`font-medium ${
+                activeTab === "transactions" ? "text-blue-600" : "text-gray-600"
+              }`}
+            >
+              Transactions
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Balances Tab Content */}
+        {activeTab === "balances" && (
+          <View className="p-4">
+            <Text className="text-base font-semibold text-gray-900 mb-3">
+              Account Balances
+            </Text>
+            <Text className="text-sm text-gray-600 mb-4">
+              View current balances and transaction summaries
+            </Text>
+            
+            {accountBalances.map((balance) => (
+              <View
+                key={balance.account.id}
+                className="bg-gray-50 rounded-lg p-4 mb-3 border border-gray-200"
+              >
+                <View className="flex-row items-center justify-between mb-3">
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-gray-900">
+                      {balance.account.name}
+                    </Text>
+                    <View className="flex-row items-center gap-2 mt-1">
+                      <View className="bg-blue-100 px-2 py-0.5 rounded">
+                        <Text className="text-xs font-medium text-blue-700">
+                          {balance.account.currency}
+                        </Text>
+                      </View>
+                      <Text className="text-xs text-gray-600">
+                        {balance.transactionCount} transactions
+                      </Text>
+                    </View>
+                  </View>
+                  <View className="items-end">
+                    <Text className="text-xs text-gray-600">Current Balance</Text>
+                    <Text className="text-lg font-bold text-gray-900">
+                      {formatCurrency(balance.currentBalance, balance.account.currency)}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row gap-2">
+                  <View className="flex-1 bg-green-50 rounded p-2 border border-green-200">
+                    <Text className="text-xs text-gray-600 mb-1">Income</Text>
+                    <Text className="text-sm font-semibold text-green-600">
+                      +{formatCurrency(balance.totalIncome, balance.account.currency)}
+                    </Text>
+                  </View>
+                  <View className="flex-1 bg-red-50 rounded p-2 border border-red-200">
+                    <Text className="text-xs text-gray-600 mb-1">Expenses</Text>
+                    <Text className="text-sm font-semibold text-red-600">
+                      -{formatCurrency(balance.totalExpenses, balance.account.currency)}
+                    </Text>
+                  </View>
+                  <View className="flex-1 bg-blue-50 rounded p-2 border border-blue-200">
+                    <Text className="text-xs text-gray-600 mb-1">Transfers</Text>
+                    <Text
+                      className={`text-sm font-semibold ${
+                        balance.totalTransfers >= 0 ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {balance.totalTransfers >= 0 ? "+" : ""}
+                      {formatCurrency(Math.abs(balance.totalTransfers), balance.account.currency)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Transactions Tab Content */}
+        {activeTab === "transactions" && (
+          <View className="p-4">
+            <View className="mb-4">
+              <Text className="text-base font-semibold text-gray-900 mb-3">
+                Transaction History
+              </Text>
+              <Text className="text-sm text-gray-600 mb-3">
+                View detailed transaction records
+              </Text>
+              
+              {/* Search */}
+              <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-3">
+                <Ionicons name="search" size={20} color="#6b7280" />
+                <TextInput
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Search transactions..."
+                  placeholderTextColor="#9ca3af"
+                  className="flex-1 ml-2 text-gray-900"
+                />
+              </View>
+            </View>
+
+            {filteredTransactions.slice(0, 50).map((transaction) => (
+              <View
+                key={transaction.id}
+                className="bg-white rounded-lg p-3 mb-3 border border-gray-200"
+              >
+                <View className="flex-row items-center justify-between mb-2">
+                  <View className="flex-row items-center gap-2 flex-1">
+                    {getTransactionIcon(transaction.type)}
+                    <View className="flex-1">
+                      <Text className="text-sm font-medium text-gray-900">
+                        {transaction.account_name}
+                      </Text>
+                      <Text className="text-xs text-gray-600">
+                        {new Date(transaction.date).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  </View>
+                  <View className="items-end">
+                    <Text
+                      className={`text-base font-semibold ${
+                        transaction.type === "income" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}
+                      {formatCurrency(transaction.amount, transaction.currency)}
+                    </Text>
+                    <View className="bg-gray-100 px-2 py-0.5 rounded mt-1">
+                      <Text className="text-xs text-gray-600">{transaction.currency}</Text>
+                    </View>
+                  </View>
+                </View>
+                
+                <View className="flex-row items-center justify-between">
+                  <View
+                    className={`px-2 py-1 rounded ${
+                      transaction.type === "income"
+                        ? "bg-green-100"
+                        : "bg-red-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-medium ${
+                        transaction.type === "income" ? "text-green-700" : "text-red-700"
+                      }`}
+                    >
+                      {transaction.type.toUpperCase()}
+                    </Text>
+                  </View>
+                  <Text className="text-xs text-gray-600 flex-1 ml-2" numberOfLines={1}>
+                    {transaction.description}
+                  </Text>
+                </View>
+                
+                {transaction.note && (
+                  <Text className="text-xs text-gray-500 mt-2">
+                    Note: {transaction.note}
+                  </Text>
+                )}
+              </View>
+            ))}
+
+            {filteredTransactions.length > 50 && (
+              <Text className="text-center text-gray-600 text-sm mt-3">
+                Showing first 50 transactions
+              </Text>
+            )}
+
+            {filteredTransactions.length === 0 && (
+              <View className="py-8 items-center">
+                <Ionicons name="document-text-outline" size={48} color="#9ca3af" />
+                <Text className="text-gray-600 mt-3">No transactions found</Text>
+              </View>
+            )}
+          </View>
         )}
       </View>
 
-      {/* Tab Navigation */}
-      <View className="flex-row gap-2 mb-4">
-        <TouchableOpacity
-          onPress={() => setActiveTab("balances")}
-          className={`flex-1 flex-row items-center justify-center gap-2 px-4 py-3 rounded-lg ${
-            activeTab === "balances" ? "bg-blue-500" : "bg-gray-100"
-          }`}
-        >
-          <Ionicons
-            name="wallet-outline"
-            size={18}
-            color={activeTab === "balances" ? "#ffffff" : "#666666"}
-          />
-          <Text
-            className={`text-sm font-medium ${
-              activeTab === "balances" ? "text-white" : "text-gray-600"
-            }`}
-          >
-            Balances
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setActiveTab("transactions")}
-          className={`flex-1 flex-row items-center justify-center gap-2 px-4 py-3 rounded-lg ${
-            activeTab === "transactions" ? "bg-blue-500" : "bg-gray-100"
-          }`}
-        >
-          <Ionicons
-            name="list-outline"
-            size={18}
-            color={activeTab === "transactions" ? "#ffffff" : "#666666"}
-          />
-          <Text
-            className={`text-sm font-medium ${
-              activeTab === "transactions" ? "text-white" : "text-gray-600"
-            }`}
-          >
-            Transactions
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Filter Chips (only for balances tab) */}
-      {activeTab === "balances" && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mb-4"
-        >
-          <View className="flex-row gap-2">
-            {["all", "active", "inactive"].map((filter) => (
-              <TouchableOpacity
-                key={filter}
-                onPress={() => setFilterType(filter as any)}
-                className={`px-4 py-2 rounded-full ${
-                  filterType === filter ? "bg-blue-500" : "bg-gray-200"
-                }`}
-              >
-                <Text
-                  className={`text-sm font-medium ${
-                    filterType === filter ? "text-white" : "text-gray-700"
-                  }`}
-                >
-                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </Text>
+      {/* Account Picker Modal */}
+      <Modal
+        visible={showAccountPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAccountPicker(false)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl max-h-[70%]">
+            <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
+              <Text className="text-lg font-semibold text-gray-900">Select Account</Text>
+              <TouchableOpacity onPress={() => setShowAccountPicker(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
-            ))}
+            </View>
+            <ScrollView className="p-4">
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedAccount("all");
+                  setShowAccountPicker(false);
+                }}
+                className="py-3 border-b border-gray-200 flex-row items-center justify-between"
+              >
+                <Text className="text-gray-900 font-medium">All Accounts</Text>
+                {selectedAccount === "all" && (
+                  <Ionicons name="checkmark" size={24} color="#3b82f6" />
+                )}
+              </TouchableOpacity>
+              {accounts.map((account) => (
+                <TouchableOpacity
+                  key={account.id}
+                  onPress={() => {
+                    setSelectedAccount(account.id);
+                    setShowAccountPicker(false);
+                  }}
+                  className="py-3 border-b border-gray-200 flex-row items-center justify-between"
+                >
+                  <View>
+                    <Text className="text-gray-900 font-medium">{account.name}</Text>
+                    <Text className="text-xs text-gray-600">({account.currency})</Text>
+                  </View>
+                  {selectedAccount === account.id && (
+                    <Ionicons name="checkmark" size={24} color="#3b82f6" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-        </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Date Pickers */}
+      {showFromDatePicker && (
+        <DateTimePicker
+          value={dateFrom || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowFromDatePicker(false);
+            if (selectedDate) setDateFrom(selectedDate);
+          }}
+        />
       )}
 
-      {/* Content based on active tab */}
-      {activeTab === "balances" ? (
-        <View>
-          <Text className="text-base font-semibold text-gray-900 mb-3">
-            Accounts ({filteredBalances.length})
-          </Text>
-          {filteredBalances.map((balance) => (
-            <AccountCard
-              key={balance.account.id}
-              account={balance.account}
-              balance={balance}
-              onPress={() => handleAccountPress(balance.account.id)}
-            />
-          ))}
-
-          {filteredBalances.length === 0 && (
-            <View className="items-center py-10">
-              <Ionicons name="folder-open-outline" size={48} color="#ccc" />
-              <Text className="text-sm text-gray-600 mt-3">
-                No accounts found
-              </Text>
-            </View>
-          )}
-        </View>
-      ) : (
-        <View>
-          <Text className="text-base font-semibold text-gray-900 mb-3">
-            Recent Transactions ({filteredTransactions.length})
-          </Text>
-          {filteredTransactions.map((transaction) => (
-            <TransactionCard
-              key={transaction.id}
-              transaction={transaction}
-              onPress={() => handleTransactionPress(transaction.id)}
-            />
-          ))}
-
-          {filteredTransactions.length === 0 && (
-            <View className="items-center py-10">
-              <Ionicons name="receipt-outline" size={48} color="#ccc" />
-              <Text className="text-sm text-gray-600 mt-3">
-                No transactions found
-              </Text>
-            </View>
-          )}
-        </View>
+      {showToDatePicker && (
+        <DateTimePicker
+          value={dateTo || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowToDatePicker(false);
+            if (selectedDate) setDateTo(selectedDate);
+          }}
+        />
       )}
     </ScrollView>
   );
