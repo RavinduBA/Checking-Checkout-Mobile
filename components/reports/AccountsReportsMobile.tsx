@@ -1,20 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Modal,
-  TextInput,
+  ScrollView,
   Share,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { useUserProfile } from "../../hooks/useUserProfile";
 import { supabase } from "../../lib/supabase";
 import { formatCurrency } from "../../utils/currency";
-import { useUserProfile } from "../../hooks/useUserProfile";
 
 interface Account {
   id: string;
@@ -57,8 +57,10 @@ export default function AccountsReportsMobile() {
   const [selectedAccount, setSelectedAccount] = useState("all");
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
-  const [activeTab, setActiveTab] = useState<"balances" | "transactions">("balances");
-  
+  const [activeTab, setActiveTab] = useState<"balances" | "transactions">(
+    "balances"
+  );
+
   // Modal states
   const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
@@ -66,8 +68,10 @@ export default function AccountsReportsMobile() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (profile?.tenant_id) {
+      fetchData();
+    }
+  }, [profile?.tenant_id]);
 
   useEffect(() => {
     if (accounts.length > 0) {
@@ -77,8 +81,13 @@ export default function AccountsReportsMobile() {
   }, [accounts, selectedAccount, dateFrom, dateTo]);
 
   const fetchData = async () => {
-    if (!profile?.tenant_id) return;
-    
+    if (!profile?.tenant_id) {
+      console.log("No tenant_id found in profile:", profile);
+      setLoading(false);
+      return;
+    }
+
+    console.log("Fetching accounts for tenant:", profile.tenant_id);
     setLoading(true);
     try {
       const { data: accountsData, error } = await supabase
@@ -87,7 +96,12 @@ export default function AccountsReportsMobile() {
         .eq("tenant_id", profile.tenant_id)
         .order("name");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      
+      console.log("Accounts fetched:", accountsData?.length || 0);
       setAccounts(accountsData || []);
     } catch (error) {
       Alert.alert("Error", "Failed to fetch accounts");
@@ -163,22 +177,22 @@ export default function AccountsReportsMobile() {
 
         const totalIncome = incomeData.reduce(
           (sum: number, item: any) => sum + parseFloat(item.amount.toString()),
-          0,
+          0
         );
         const totalExpenses = expenseData.reduce(
           (sum: number, item: any) => sum + parseFloat(item.amount.toString()),
-          0,
+          0
         );
         const transfersOut = transfersFromData.reduce(
           (sum: number, item: any) => sum + parseFloat(item.amount.toString()),
-          0,
+          0
         );
         const transfersIn = transfersToData.reduce(
           (sum: number, item: any) =>
             sum +
             parseFloat(item.amount.toString()) *
               parseFloat(item.conversion_rate.toString()),
-          0,
+          0
         );
 
         // Use current_balance from database instead of manual calculation
@@ -276,7 +290,7 @@ export default function AccountsReportsMobile() {
 
       // Sort all transactions by date (newest first)
       allTransactions.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
       setTransactions(allTransactions);
     } catch (error) {
@@ -291,7 +305,9 @@ export default function AccountsReportsMobile() {
       case "expense":
         return <Ionicons name="arrow-down-circle" size={20} color="#ef4444" />;
       case "transfer_in":
-        return <Ionicons name="arrow-forward-circle" size={20} color="#3b82f6" />;
+        return (
+          <Ionicons name="arrow-forward-circle" size={20} color="#3b82f6" />
+        );
       case "transfer_out":
         return <Ionicons name="arrow-back-circle" size={20} color="#f97316" />;
       default:
@@ -302,7 +318,15 @@ export default function AccountsReportsMobile() {
   const exportData = async () => {
     try {
       const csvContent = [
-        ["Account", "Date", "Type", "Description", "Amount", "Currency", "Note"],
+        [
+          "Account",
+          "Date",
+          "Type",
+          "Description",
+          "Amount",
+          "Currency",
+          "Note",
+        ],
         ...transactions.map((txn) => [
           txn.account_name,
           txn.date,
@@ -326,9 +350,10 @@ export default function AccountsReportsMobile() {
     }
   };
 
-  const filteredTransactions = transactions.filter((txn) =>
-    txn.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    txn.account_name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTransactions = transactions.filter(
+    (txn) =>
+      txn.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      txn.account_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -337,6 +362,53 @@ export default function AccountsReportsMobile() {
         <ActivityIndicator size="large" color="#3b82f6" />
         <Text className="mt-4 text-gray-600">Loading accounts...</Text>
       </View>
+    );
+  }
+
+  if (!profile?.tenant_id) {
+    return (
+      <View className="flex-1 items-center justify-center bg-gray-50 p-4">
+        <Ionicons name="alert-circle" size={64} color="#ef4444" />
+        <Text className="mt-4 text-lg font-semibold text-gray-900">
+          No Profile Found
+        </Text>
+        <Text className="mt-2 text-gray-600 text-center">
+          Please make sure you're logged in with a valid account.
+        </Text>
+      </View>
+    );
+  }
+
+  if (!loading && accounts.length === 0) {
+    return (
+      <ScrollView className="flex-1 bg-gray-50">
+        <View className="bg-white px-4 py-4 border-b border-gray-200">
+          <View className="flex-row items-center gap-2 mb-1">
+            <Ionicons name="card" size={24} color="#3b82f6" />
+            <Text className="text-xl font-bold text-gray-900">
+              Account Reports
+            </Text>
+          </View>
+          <Text className="text-sm text-gray-600">
+            View account balances and transactions
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center p-8 mt-20">
+          <Ionicons name="wallet-outline" size={64} color="#9ca3af" />
+          <Text className="mt-4 text-lg font-semibold text-gray-900">
+            No Accounts Found
+          </Text>
+          <Text className="mt-2 text-gray-600 text-center">
+            Create an account in the Master Files section to get started.
+          </Text>
+          <TouchableOpacity
+            onPress={fetchData}
+            className="mt-6 bg-blue-500 px-6 py-3 rounded-lg"
+          >
+            <Text className="text-white font-medium">Refresh</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     );
   }
 
@@ -374,16 +446,18 @@ export default function AccountsReportsMobile() {
         <View className="p-4 gap-4">
           {/* Account Filter */}
           <View>
-            <Text className="text-sm font-medium text-gray-700 mb-2">Account</Text>
+            <Text className="text-sm font-medium text-gray-700 mb-2">
+              Account
+            </Text>
             <TouchableOpacity
               onPress={() => setShowAccountPicker(true)}
               className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
             >
               <Text className="text-gray-900">
-                {selectedAccount === "all" 
-                  ? "All Accounts" 
-                  : accounts.find(a => a.id === selectedAccount)?.name || "Select Account"
-                }
+                {selectedAccount === "all"
+                  ? "All Accounts"
+                  : accounts.find((a) => a.id === selectedAccount)?.name ||
+                    "Select Account"}
               </Text>
               <Ionicons name="chevron-down" size={20} color="#6b7280" />
             </TouchableOpacity>
@@ -392,7 +466,9 @@ export default function AccountsReportsMobile() {
           {/* Date Filters */}
           <View className="flex-row gap-4">
             <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">From Date</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                From Date
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowFromDatePicker(true)}
                 className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
@@ -404,7 +480,9 @@ export default function AccountsReportsMobile() {
               </TouchableOpacity>
             </View>
             <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">To Date</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                To Date
+              </Text>
               <TouchableOpacity
                 onPress={() => setShowToDatePicker(true)}
                 className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
@@ -433,7 +511,9 @@ export default function AccountsReportsMobile() {
           <TouchableOpacity
             onPress={() => setActiveTab("balances")}
             className={`flex-1 py-3 items-center ${
-              activeTab === "balances" ? "bg-blue-50 border-b-2 border-blue-500" : ""
+              activeTab === "balances"
+                ? "bg-blue-50 border-b-2 border-blue-500"
+                : ""
             }`}
           >
             <Text
@@ -447,7 +527,9 @@ export default function AccountsReportsMobile() {
           <TouchableOpacity
             onPress={() => setActiveTab("transactions")}
             className={`flex-1 py-3 items-center ${
-              activeTab === "transactions" ? "bg-blue-50 border-b-2 border-blue-500" : ""
+              activeTab === "transactions"
+                ? "bg-blue-50 border-b-2 border-blue-500"
+                : ""
             }`}
           >
             <Text
@@ -469,7 +551,7 @@ export default function AccountsReportsMobile() {
             <Text className="text-sm text-gray-600 mb-4">
               View current balances and transaction summaries
             </Text>
-            
+
             {accountBalances.map((balance) => (
               <View
                 key={balance.account.id}
@@ -492,9 +574,14 @@ export default function AccountsReportsMobile() {
                     </View>
                   </View>
                   <View className="items-end">
-                    <Text className="text-xs text-gray-600">Current Balance</Text>
+                    <Text className="text-xs text-gray-600">
+                      Current Balance
+                    </Text>
                     <Text className="text-lg font-bold text-gray-900">
-                      {formatCurrency(balance.currentBalance, balance.account.currency)}
+                      {formatCurrency(
+                        balance.currentBalance,
+                        balance.account.currency
+                      )}
                     </Text>
                   </View>
                 </View>
@@ -503,24 +590,39 @@ export default function AccountsReportsMobile() {
                   <View className="flex-1 bg-green-50 rounded p-2 border border-green-200">
                     <Text className="text-xs text-gray-600 mb-1">Income</Text>
                     <Text className="text-sm font-semibold text-green-600">
-                      +{formatCurrency(balance.totalIncome, balance.account.currency)}
+                      +
+                      {formatCurrency(
+                        balance.totalIncome,
+                        balance.account.currency
+                      )}
                     </Text>
                   </View>
                   <View className="flex-1 bg-red-50 rounded p-2 border border-red-200">
                     <Text className="text-xs text-gray-600 mb-1">Expenses</Text>
                     <Text className="text-sm font-semibold text-red-600">
-                      -{formatCurrency(balance.totalExpenses, balance.account.currency)}
+                      -
+                      {formatCurrency(
+                        balance.totalExpenses,
+                        balance.account.currency
+                      )}
                     </Text>
                   </View>
                   <View className="flex-1 bg-blue-50 rounded p-2 border border-blue-200">
-                    <Text className="text-xs text-gray-600 mb-1">Transfers</Text>
+                    <Text className="text-xs text-gray-600 mb-1">
+                      Transfers
+                    </Text>
                     <Text
                       className={`text-sm font-semibold ${
-                        balance.totalTransfers >= 0 ? "text-green-600" : "text-red-600"
+                        balance.totalTransfers >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                     >
                       {balance.totalTransfers >= 0 ? "+" : ""}
-                      {formatCurrency(Math.abs(balance.totalTransfers), balance.account.currency)}
+                      {formatCurrency(
+                        Math.abs(balance.totalTransfers),
+                        balance.account.currency
+                      )}
                     </Text>
                   </View>
                 </View>
@@ -539,7 +641,7 @@ export default function AccountsReportsMobile() {
               <Text className="text-sm text-gray-600 mb-3">
                 View detailed transaction records
               </Text>
-              
+
               {/* Search */}
               <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-3">
                 <Ionicons name="search" size={20} color="#6b7280" />
@@ -573,18 +675,22 @@ export default function AccountsReportsMobile() {
                   <View className="items-end">
                     <Text
                       className={`text-base font-semibold ${
-                        transaction.type === "income" ? "text-green-600" : "text-red-600"
+                        transaction.type === "income"
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                     >
                       {transaction.type === "income" ? "+" : "-"}
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </Text>
                     <View className="bg-gray-100 px-2 py-0.5 rounded mt-1">
-                      <Text className="text-xs text-gray-600">{transaction.currency}</Text>
+                      <Text className="text-xs text-gray-600">
+                        {transaction.currency}
+                      </Text>
                     </View>
                   </View>
                 </View>
-                
+
                 <View className="flex-row items-center justify-between">
                   <View
                     className={`px-2 py-1 rounded ${
@@ -595,17 +701,22 @@ export default function AccountsReportsMobile() {
                   >
                     <Text
                       className={`text-xs font-medium ${
-                        transaction.type === "income" ? "text-green-700" : "text-red-700"
+                        transaction.type === "income"
+                          ? "text-green-700"
+                          : "text-red-700"
                       }`}
                     >
                       {transaction.type.toUpperCase()}
                     </Text>
                   </View>
-                  <Text className="text-xs text-gray-600 flex-1 ml-2" numberOfLines={1}>
+                  <Text
+                    className="text-xs text-gray-600 flex-1 ml-2"
+                    numberOfLines={1}
+                  >
                     {transaction.description}
                   </Text>
                 </View>
-                
+
                 {transaction.note && (
                   <Text className="text-xs text-gray-500 mt-2">
                     Note: {transaction.note}
@@ -622,8 +733,14 @@ export default function AccountsReportsMobile() {
 
             {filteredTransactions.length === 0 && (
               <View className="py-8 items-center">
-                <Ionicons name="document-text-outline" size={48} color="#9ca3af" />
-                <Text className="text-gray-600 mt-3">No transactions found</Text>
+                <Ionicons
+                  name="document-text-outline"
+                  size={48}
+                  color="#9ca3af"
+                />
+                <Text className="text-gray-600 mt-3">
+                  No transactions found
+                </Text>
               </View>
             )}
           </View>
@@ -640,7 +757,9 @@ export default function AccountsReportsMobile() {
         <View className="flex-1 justify-end bg-black/50">
           <View className="bg-white rounded-t-3xl max-h-[70%]">
             <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-              <Text className="text-lg font-semibold text-gray-900">Select Account</Text>
+              <Text className="text-lg font-semibold text-gray-900">
+                Select Account
+              </Text>
               <TouchableOpacity onPress={() => setShowAccountPicker(false)}>
                 <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
@@ -668,8 +787,12 @@ export default function AccountsReportsMobile() {
                   className="py-3 border-b border-gray-200 flex-row items-center justify-between"
                 >
                   <View>
-                    <Text className="text-gray-900 font-medium">{account.name}</Text>
-                    <Text className="text-xs text-gray-600">({account.currency})</Text>
+                    <Text className="text-gray-900 font-medium">
+                      {account.name}
+                    </Text>
+                    <Text className="text-xs text-gray-600">
+                      ({account.currency})
+                    </Text>
                   </View>
                   {selectedAccount === account.id && (
                     <Ionicons name="checkmark" size={24} color="#3b82f6" />
