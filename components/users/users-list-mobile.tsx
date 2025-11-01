@@ -1,15 +1,15 @@
-import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { useUsersData, type User } from "@/hooks/useUsersData";
 import { Ionicons } from "@expo/vector-icons";
 import { formatDistanceToNow } from "date-fns";
-import { useUsersData, type User } from "@/hooks/useUsersData";
+import React from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface UsersListProps {
   onEditUser: (user: User) => void;
@@ -147,9 +147,7 @@ export function UsersList({ onEditUser }: UsersListProps) {
               {user.tenant_role && (
                 <View className="px-2 py-1 rounded bg-gray-100">
                   <Text className="text-xs text-gray-600">
-                    {user.tenant_role
-                      .replace("tenant_", "")
-                      .replace("_", " ")}
+                    {user.tenant_role.replace("tenant_", "").replace("_", " ")}
                   </Text>
                 </View>
               )}

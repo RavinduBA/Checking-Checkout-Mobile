@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
-import { useUserProfile } from "./useUserProfile";
 import { useLocationContext } from "../contexts/LocationContext";
 import { supabase } from "../lib/supabase";
+import { useUserProfile } from "./useUserProfile";
 
 interface UserPermissions {
   access_dashboard: boolean;

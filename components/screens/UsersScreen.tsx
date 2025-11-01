@@ -2,10 +2,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useLocationContext } from "@/contexts/LocationContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import {
-  type User as UsersDataUser,
-  useUsersData,
-} from "@/hooks/useUsersData";
+import { type User as UsersDataUser, useUsersData } from "@/hooks/useUsersData";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,9 +16,11 @@ import {
 
 // Import mobile-friendly components from users folder
 import {
-  EditUserDialogMobile,
-  InviteMemberDialogMobile,
-  UsersList,
+	EditUserDialogMobile,
+	InviteMemberDialogMobile,
+	UsersList,
+	UserStats,
+	PermissionMatrix,
 } from "@/components/users";
 
 export default function UsersScreen() {
@@ -70,22 +69,27 @@ export default function UsersScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 p-4">
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-xl font-bold">Users</Text>
-        {hasPermission("access_users") && (
-          <TouchableOpacity
-            onPress={() => setShowInviteDialog(true)}
-            className="bg-blue-500 px-3 py-2 rounded-lg"
-          >
-            <Text className="text-white">Invite Member</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+		<ScrollView className="flex-1 p-4">
+			<View className="flex-row justify-between items-center mb-4">
+				<Text className="text-xl font-bold">Users</Text>
+				{hasPermission("access_users") && (
+					<TouchableOpacity
+						onPress={() => setShowInviteDialog(true)}
+						className="bg-blue-500 px-3 py-2 rounded-lg"
+					>
+						<Text className="text-white">Invite Member</Text>
+					</TouchableOpacity>
+				)}
+			</View>
 
-      <UsersList onEditUser={handleEditUser} />
+			{/* User Statistics */}
+			<UserStats />
 
-      {/* PermissionMatrix is heavy web component; skip on mobile or add later */}
+			{/* Permission Overview */}
+			<PermissionMatrix />
+
+			{/* Users List */}
+			<UsersList onEditUser={handleEditUser} />
 
       {/* Invite dialog (mobile) */}
       <Modal

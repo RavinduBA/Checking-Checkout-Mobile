@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { useAuthContext } from "../contexts/AuthContext";
 import { useLocationContext } from "../contexts/LocationContext";
-import { useUserProfile } from "./useUserProfile";
 import { supabase } from "../lib/supabase";
+import { useUserProfile } from "./useUserProfile";
 
 export interface User {
   id: string;
