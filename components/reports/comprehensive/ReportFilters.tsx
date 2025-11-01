@@ -120,19 +120,19 @@ export function ReportFilters({
           {loading ? (
             <ActivityIndicator size="small" color="#3b82f6" />
           ) : (
-            <View className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+            <View className="border border-gray-300 rounded-lg bg-gray-50" style={{ height: Platform.OS === "ios" ? 38 : 40 }}>
               <Picker
                 selectedValue={baseCurrency}
                 onValueChange={(itemValue) => {
-                  if (itemValue) {
-                    setBaseCurrency(String(itemValue));
-                  }
+                  console.log("Currency selected:", itemValue);
+                  setBaseCurrency(String(itemValue));
                 }}
-                style={{ 
+                enabled={true}
+                mode="dropdown"
+                style={{
                   height: Platform.OS === "ios" ? 38 : 40,
-                  width: "100%"
+                  width: "100%",
                 }}
-                itemStyle={{ height: Platform.OS === "ios" ? 38 : 40 }}
               >
                 {availableCurrencies.map((c) => (
                   <Picker.Item key={c} label={c} value={c} />
