@@ -1,1 +1,66 @@
-import { Ionicons } from "@expo/vector-icons";import React, { useState } from "react";import {  ActivityIndicator,  Alert,  ScrollView,  Text,  TextInput,  TouchableOpacity,  View,} from "react-native";import { useUserProfile } from "@/hooks/useUserProfile";import { FinancialSummaryCards } from "./comprehensive/FinancialSummaryCards";import { AccountDetails } from "./comprehensive/AccountDetails";interface ReportFiltersProps {  dateFrom: string;  setDateFrom: (date: string) => void;  dateTo: string;  setDateTo: (date: string) => void;  baseCurrency: string;  setBaseCurrency: (currency: string) => void;  onRefresh: () => void;  onExport: () => void;}const ReportFilters: React.FC<ReportFiltersProps> = ({  dateFrom,  setDateFrom,  dateTo,  setDateTo,  baseCurrency,  setBaseCurrency,  onRefresh,  onExport,}) => {  const currencies = ["LKR", "USD", "EUR", "GBP"];  return (    <View className="bg-white rounded-lg p-4 border border-gray-200 mb-4">      <Text className="text-sm font-semibold text-gray-900 mb-3">Filters</Text>      {/* Date Range */}      <View className="gap-3 mb-3">        <View>          <Text className="text-xs text-gray-600 mb-1">From Date</Text>          <TextInput            value={dateFrom}            onChangeText={setDateFrom}            placeholder="YYYY-MM-DD"            className="bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200"            placeholderTextColor="#999"          />        </View>        <View>          <Text className="text-xs text-gray-600 mb-1">To Date</Text>          <TextInput            value={dateTo}            onChangeText={setDateTo}            placeholder="YYYY-MM-DD"            className="bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200"            placeholderTextColor="#999"          />        </View>      </View>      {/* Currency Selector */}      <View className="mb-3">        <Text className="text-xs text-gray-600 mb-2">Base Currency</Text>        <ScrollView horizontal showsHorizontalScrollIndicator={false}>          <View className="flex-row gap-2">            {currencies.map((currency) => (              <TouchableOpacity                key={currency}                onPress={() => setBaseCurrency(currency)}                className={`px-4 py-2 rounded-full ${                  baseCurrency === currency ? "bg-blue-500" : "bg-gray-200"                }`}              >                <Text                  className={`text-sm font-medium ${                    baseCurrency === currency ? "text-white" : "text-gray-700"                  }`}                >                  {currency}                </Text>              </TouchableOpacity>            ))}          </View>        </ScrollView>      </View>      {/* Action Buttons */}      <View className="flex-row gap-2">        <TouchableOpacity          onPress={onRefresh}          className="flex-1 bg-gray-200 rounded-lg py-2 flex-row items-center justify-center gap-1"        >          <Ionicons name="refresh" size={16} color="#374151" />          <Text className="text-sm font-medium text-gray-700">Refresh</Text>        </TouchableOpacity>        <TouchableOpacity          onPress={onExport}          className="flex-1 bg-blue-500 rounded-lg py-2 flex-row items-center justify-center gap-1"        >          <Ionicons name="download-outline" size={16} color="#fff" />          <Text className="text-sm font-medium text-white">Export</Text>        </TouchableOpacity>      </View>    </View>  );};export default function ComprehensiveReportsMobile() {  const { profile } = useUserProfile();  const [dateFrom, setDateFrom] = useState("");  const [dateTo, setDateTo] = useState("");  const [baseCurrency, setBaseCurrency] = useState<string>("LKR");  const handleExport = () => {    Alert.alert("Export", "Export functionality will be implemented soon");  };  const handleRefresh = () => {    Alert.alert("Refresh", "Data refreshed successfully");  };  if (!profile?.tenant_id) {    return (      <View className="flex-1 items-center justify-center py-20">        <ActivityIndicator size="large" color="#3b82f6" />        <Text className="text-sm text-gray-600 mt-4">          Loading comprehensive reports...        </Text>      </View>    );  }  return (    <ScrollView className="flex-1 p-4 bg-gray-50">      {/* Filters */}      <ReportFilters        dateFrom={dateFrom}        setDateFrom={setDateFrom}        dateTo={dateTo}        setDateTo={setDateTo}        baseCurrency={baseCurrency}        setBaseCurrency={setBaseCurrency}        onRefresh={handleRefresh}        onExport={handleExport}      />      {/* Financial Summary */}      <FinancialSummaryCards        baseCurrency={baseCurrency}        dateFrom={dateFrom}        dateTo={dateTo}      />      {/* Account Details */}      <View className="mt-4">        <AccountDetails          baseCurrency={baseCurrency}          dateFrom={dateFrom}          dateTo={dateTo}        />      </View>    </ScrollView>  );}
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import { AccountDetails } from "./comprehensive/AccountDetails";
+import { FinancialSummaryCards } from "./comprehensive/FinancialSummaryCards";
+import { ReportFilters } from "./comprehensive/ReportFilters";
+
+export default function ComprehensiveReportsMobile() {
+  const { profile } = useUserProfile();
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [baseCurrency, setBaseCurrency] = useState<string>("LKR");
+  const handleExport = () => {
+    Alert.alert("Export", "Export functionality will be implemented soon");
+  };
+  const handleRefresh = () => {
+    Alert.alert("Refresh", "Data refreshed successfully");
+  };
+  if (!profile?.tenant_id) {
+    return (
+      <View className="flex-1 items-center justify-center py-20">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="text-sm text-gray-600 mt-4">
+          Loading comprehensive reports...
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView className="flex-1 bg-gray-50">
+      {/* Filters */}
+      <ReportFilters
+        dateFrom={dateFrom}
+        setDateFrom={setDateFrom}
+        dateTo={dateTo}
+        setDateTo={setDateTo}
+        baseCurrency={baseCurrency}
+        setBaseCurrency={setBaseCurrency}
+        onRefresh={handleRefresh}
+        onExport={handleExport}
+      />
+
+      {/* Financial Summary */}
+      <FinancialSummaryCards
+        baseCurrency={baseCurrency}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+      />
+
+      {/* Account Details */}
+      <AccountDetails
+        baseCurrency={baseCurrency}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+      />
+    </ScrollView>
+  );
+}
