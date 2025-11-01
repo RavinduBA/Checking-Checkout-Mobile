@@ -1,6 +1,7 @@
 import { useLocationContext } from "@/contexts/LocationContext";
-import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { supabase } from "@/lib/supabase";
+import { formatCurrency } from "@/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
@@ -56,11 +57,6 @@ const AccountCard: React.FC<AccountCardProps> = ({
   onPress,
 }) => {
   const isPositive = balance.currentBalance >= 0;
-  const formatCurrency = (amount: number, currency: string) => {
-    return `${currency} ${amount
-      .toFixed(2)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-  };
 
   return (
     <TouchableOpacity
@@ -172,12 +168,6 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return `${currency} ${amount
-      .toFixed(2)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-  };
-
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -262,8 +252,10 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
 type TabType = "balances" | "transactions";
 
 export default function AccountsReportsMobile() {
-  const { tenant } = useAuth();
-  const { selectedLocation } = useLocationContext();
+  const { profile } = useUserProfile();
+  const { getSelectedLocationData } = useLocationContext();
+  const selectedLocationData = getSelectedLocationData?.();
+
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("balances");
   const [searchQuery, setSearchQuery] = useState("");
@@ -278,8 +270,10 @@ export default function AccountsReportsMobile() {
   const [dateTo, setDateTo] = useState("");
 
   useEffect(() => {
-    fetchData();
-  }, [tenant, selectedLocation]);
+    if (profile?.tenant_id) {
+      fetchData();
+    }
+  }, [profile?.tenant_id, selectedLocationData?.id]);
 
   useEffect(() => {
     if (accounts.length > 0) {
@@ -289,15 +283,15 @@ export default function AccountsReportsMobile() {
   }, [accounts, selectedAccount, dateFrom, dateTo]);
 
   const fetchData = async () => {
-    if (!tenant?.id || !selectedLocation?.id) return;
+    if (!profile?.tenant_id || !selectedLocationData?.id) return;
 
     setLoading(true);
     try {
       const { data: accountsData, error } = await supabase
         .from("accounts")
         .select("*")
-        .eq("tenant_id", tenant.id)
-        .eq("location_id", selectedLocation.id)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("location_id", selectedLocationData.id)
         .order("name");
 
       if (error) throw error;
@@ -311,7 +305,7 @@ export default function AccountsReportsMobile() {
   };
 
   const fetchAccountBalances = async () => {
-    if (!tenant?.id || !selectedLocation?.id) return;
+    if (!profile?.tenant_id || !selectedLocationData?.id) return;
 
     try {
       const balances: AccountBalance[] = [];
@@ -322,28 +316,28 @@ export default function AccountsReportsMobile() {
           .from("payments")
           .select("amount")
           .eq("account_id", account.id)
-          .eq("tenant_id", tenant.id);
+          .eq("tenant_id", profile.tenant_id);
 
         // Fetch expenses for this account
         let expenseQuery = supabase
           .from("expenses")
           .select("amount")
           .eq("account_id", account.id)
-          .eq("tenant_id", tenant.id);
+          .eq("tenant_id", profile.tenant_id);
 
         // Fetch transfers from this account
         let transfersFromQuery = supabase
           .from("account_transfers")
           .select("amount")
           .eq("from_account_id", account.id)
-          .eq("tenant_id", tenant.id);
+          .eq("tenant_id", profile.tenant_id);
 
         // Fetch transfers to this account
         let transfersToQuery = supabase
           .from("account_transfers")
           .select("amount, conversion_rate")
           .eq("to_account_id", account.id)
-          .eq("tenant_id", tenant.id);
+          .eq("tenant_id", profile.tenant_id);
 
         // Apply date filters if specified
         if (dateFrom) {
@@ -420,7 +414,7 @@ export default function AccountsReportsMobile() {
   };
 
   const fetchTransactions = async () => {
-    if (!tenant?.id || !selectedLocation?.id) return;
+    if (!profile?.tenant_id || !selectedLocationData?.id) return;
 
     try {
       const allTransactions: Transaction[] = [];
@@ -434,14 +428,14 @@ export default function AccountsReportsMobile() {
           .from("income")
           .select("id, date, amount, type, note")
           .eq("account_id", account.id)
-          .eq("tenant_id", tenant.id);
+          .eq("tenant_id", profile.tenant_id);
 
         // Fetch expense transactions
         let expenseQuery = supabase
           .from("expenses")
           .select("id, date, amount, main_type, sub_type, note")
           .eq("account_id", account.id)
-          .eq("tenant_id", tenant.id);
+          .eq("tenant_id", profile.tenant_id);
 
         // Apply date filters
         if (dateFrom) {
