@@ -507,7 +507,7 @@ export default function EnhancedFinancialReportsMobile() {
               summary.netProfit >= 0
                 ? "bg-blue-50 border-blue-200"
                 : "bg-red-50 border-red-200"
-            } border rounded-lg p-3 h-full justify-center`}
+            } border rounded-lg p-3`}
           >
             <View className="flex-row justify-between items-start">
               <View className="flex-1">
