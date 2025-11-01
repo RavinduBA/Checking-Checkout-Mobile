@@ -100,7 +100,7 @@ export default function AccountsReportsMobile() {
         console.error("Supabase error:", error);
         throw error;
       }
-      
+
       console.log("Accounts fetched:", accountsData?.length || 0);
       setAccounts(accountsData || []);
     } catch (error) {
@@ -443,65 +443,69 @@ export default function AccountsReportsMobile() {
         <View className="p-4 border-b border-gray-200">
           <Text className="text-base font-semibold text-gray-900">Filters</Text>
         </View>
-        <View className="p-4 gap-4">
-          {/* Account Filter */}
-          <View>
-            <Text className="text-sm font-medium text-gray-700 mb-2">
-              Account
-            </Text>
+        <View className="p-4">
+          {/* All Filters in One Row */}
+          <View className="flex-row gap-2 mb-3">
+            {/* Account Filter */}
             <TouchableOpacity
               onPress={() => setShowAccountPicker(true)}
-              className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
+              className="flex-1 border border-gray-300 rounded-lg px-2 py-2.5 flex-row items-center justify-between"
             >
-              <Text className="text-gray-900">
+              <Text className="text-xs text-gray-900" numberOfLines={1}>
                 {selectedAccount === "all"
                   ? "All Accounts"
                   : accounts.find((a) => a.id === selectedAccount)?.name ||
-                    "Select Account"}
+                    "Account"}
               </Text>
-              <Ionicons name="chevron-down" size={20} color="#6b7280" />
+              <Ionicons name="chevron-down" size={16} color="#6b7280" />
+            </TouchableOpacity>
+
+            {/* From Date */}
+            <TouchableOpacity
+              onPress={() => setShowFromDatePicker(true)}
+              className="flex-1 border border-gray-300 rounded-lg px-2 py-2.5 flex-row items-center justify-between"
+            >
+              <Text className="text-xs text-gray-900" numberOfLines={1}>
+                {dateFrom ? dateFrom.toLocaleDateString() : "From"}
+              </Text>
+              <Ionicons name="calendar" size={16} color="#6b7280" />
+            </TouchableOpacity>
+
+            {/* To Date */}
+            <TouchableOpacity
+              onPress={() => setShowToDatePicker(true)}
+              className="flex-1 border border-gray-300 rounded-lg px-2 py-2.5 flex-row items-center justify-between"
+            >
+              <Text className="text-xs text-gray-900" numberOfLines={1}>
+                {dateTo ? dateTo.toLocaleDateString() : "To"}
+              </Text>
+              <Ionicons name="calendar" size={16} color="#6b7280" />
             </TouchableOpacity>
           </View>
 
-          {/* Date Filters */}
-          <View className="flex-row gap-4">
-            <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
-                From Date
-              </Text>
+          {/* Clear Filters & Refresh Row */}
+          <View className="flex-row gap-2">
+            {(dateFrom || dateTo || selectedAccount !== "all") && (
               <TouchableOpacity
-                onPress={() => setShowFromDatePicker(true)}
-                className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
+                onPress={() => {
+                  setDateFrom(null);
+                  setDateTo(null);
+                  setSelectedAccount("all");
+                }}
+                className="flex-1 bg-gray-100 py-2.5 rounded-lg items-center flex-row justify-center gap-1"
               >
-                <Text className="text-gray-900">
-                  {dateFrom ? dateFrom.toLocaleDateString() : "Select Date"}
-                </Text>
-                <Ionicons name="calendar" size={20} color="#6b7280" />
+                <Ionicons name="close-circle" size={16} color="#6b7280" />
+                <Text className="text-gray-700 font-medium text-xs">Clear</Text>
               </TouchableOpacity>
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
-                To Date
-              </Text>
-              <TouchableOpacity
-                onPress={() => setShowToDatePicker(true)}
-                className="border border-gray-300 rounded-lg px-3 py-3 flex-row items-center justify-between"
-              >
-                <Text className="text-gray-900">
-                  {dateTo ? dateTo.toLocaleDateString() : "Select Date"}
-                </Text>
-                <Ionicons name="calendar" size={20} color="#6b7280" />
-              </TouchableOpacity>
-            </View>
+            )}
+            <TouchableOpacity
+              onPress={fetchData}
+              className="flex-1 bg-blue-500 py-2.5 rounded-lg items-center flex-row justify-center gap-1"
+            >
+              <Ionicons name="refresh" size={16} color="white" />
+              <Text className="text-white font-medium text-xs">Refresh</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Refresh Button */}
-          <TouchableOpacity
-            onPress={fetchData}
-            className="bg-blue-500 py-3 rounded-lg items-center"
-          >
-            <Text className="text-white font-medium">Refresh Data</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -806,27 +810,69 @@ export default function AccountsReportsMobile() {
 
       {/* Date Pickers */}
       {showFromDatePicker && (
-        <DateTimePicker
-          value={dateFrom || new Date()}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowFromDatePicker(false);
-            if (selectedDate) setDateFrom(selectedDate);
-          }}
-        />
+        <Modal
+          visible={showFromDatePicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowFromDatePicker(false)}
+        >
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-xl p-4 m-4 w-[90%]">
+              <View className="flex-row items-center justify-between mb-3">
+                <Text className="text-lg font-semibold text-gray-900">
+                  Select From Date
+                </Text>
+                <TouchableOpacity onPress={() => setShowFromDatePicker(false)}>
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={dateFrom || new Date()}
+                mode="date"
+                display="inline"
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) {
+                    setDateFrom(selectedDate);
+                  }
+                  setShowFromDatePicker(false);
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
       )}
 
       {showToDatePicker && (
-        <DateTimePicker
-          value={dateTo || new Date()}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowToDatePicker(false);
-            if (selectedDate) setDateTo(selectedDate);
-          }}
-        />
+        <Modal
+          visible={showToDatePicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowToDatePicker(false)}
+        >
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-xl p-4 m-4 w-[90%]">
+              <View className="flex-row items-center justify-between mb-3">
+                <Text className="text-lg font-semibold text-gray-900">
+                  Select To Date
+                </Text>
+                <TouchableOpacity onPress={() => setShowToDatePicker(false)}>
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={dateTo || new Date()}
+                mode="date"
+                display="inline"
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) {
+                    setDateTo(selectedDate);
+                  }
+                  setShowToDatePicker(false);
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
       )}
     </ScrollView>
   );
