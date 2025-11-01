@@ -3,11 +3,12 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { getAvailableCurrencies } from "@/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Platform,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -54,6 +55,7 @@ export function ReportFilters({
 
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -120,25 +122,14 @@ export function ReportFilters({
           {loading ? (
             <ActivityIndicator size="small" color="#3b82f6" />
           ) : (
-            <View className="border border-gray-300 rounded-lg bg-gray-50" style={{ height: Platform.OS === "ios" ? 38 : 40 }}>
-              <Picker
-                selectedValue={baseCurrency}
-                onValueChange={(itemValue) => {
-                  console.log("Currency selected:", itemValue);
-                  setBaseCurrency(String(itemValue));
-                }}
-                enabled={true}
-                mode="dropdown"
-                style={{
-                  height: Platform.OS === "ios" ? 38 : 40,
-                  width: "100%",
-                }}
-              >
-                {availableCurrencies.map((c) => (
-                  <Picker.Item key={c} label={c} value={c} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              onPress={() => setShowCurrencyDropdown(true)}
+              className="border border-gray-300 rounded-lg bg-gray-50 px-2 py-2 flex-row items-center justify-between"
+              style={{ height: Platform.OS === "ios" ? 38 : 40 }}
+            >
+              <Text className="text-xs flex-1">{baseCurrency}</Text>
+              <Ionicons name="chevron-down" size={16} color="#6b7280" />
+            </TouchableOpacity>
           )}
         </View>
 
@@ -212,6 +203,53 @@ export function ReportFilters({
           onChange={handleToDateChange}
         />
       )}
+
+      {/* Currency Dropdown Modal */}
+      <Modal
+        visible={showCurrencyDropdown}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowCurrencyDropdown(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowCurrencyDropdown(false)}
+          className="flex-1 bg-black/50 justify-center items-center"
+        >
+          <View className="bg-white rounded-lg mx-8 max-h-96 w-64">
+            <View className="border-b border-gray-200 p-3">
+              <Text className="text-sm font-semibold">Select Currency</Text>
+            </View>
+            <ScrollView className="max-h-80">
+              {availableCurrencies.map((currency) => (
+                <TouchableOpacity
+                  key={currency}
+                  onPress={() => {
+                    setBaseCurrency(currency);
+                    setShowCurrencyDropdown(false);
+                  }}
+                  className={`p-3 border-b border-gray-100 flex-row items-center justify-between ${
+                    baseCurrency === currency ? "bg-blue-50" : ""
+                  }`}
+                >
+                  <Text
+                    className={`text-sm ${
+                      baseCurrency === currency
+                        ? "font-semibold text-blue-600"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {currency}
+                  </Text>
+                  {baseCurrency === currency && (
+                    <Ionicons name="checkmark" size={20} color="#2563eb" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
