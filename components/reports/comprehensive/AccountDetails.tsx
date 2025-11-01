@@ -1,30 +1,9 @@
-import {
-	ArrowDownLeft,
-	ArrowUpRight,
-	Building2,
-	ChevronDown,
-	ChevronRight,
-	DollarSign,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useLocationContext } from "@/context/location-context";
-import { useTenant } from "@/hooks/use-tenant";
-import { supabase } from "@/integrations/supabase/client";
-import { convertCurrency, formatCurrency } from "@/utils/currency";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useLocationContext } from "@/contexts/LocationContext";
+import { supabase } from "@/lib/supabase";
 
 type TransactionDetail = {
 	id: string;
@@ -60,9 +39,10 @@ export function AccountDetails({
 	dateFrom,
 	dateTo,
 }: AccountDetailsProps) {
-	const { t } = useTranslation();
-	const { tenant } = useTenant();
-	const { selectedLocation } = useLocationContext();
+	const { profile } = useUserProfile();
+	const { getSelectedLocationData } = useLocationContext();
+	const selectedLocationData = getSelectedLocationData();
+
 	const [accounts, setAccounts] = useState<AccountBalance[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [expandedAccounts, setExpandedAccounts] = useState<Set<string>>(
@@ -71,7 +51,7 @@ export function AccountDetails({
 
 	const calculateAccountBalance = useCallback(
 		async (account: any): Promise<AccountBalance> => {
-			if (!tenant?.id) {
+			if (!profile?.tenant_id) {
 				throw new Error("Tenant not found");
 			}
 
@@ -87,7 +67,7 @@ export function AccountDetails({
 						"id, created_at, amount, payment_type, notes, currency, reservations!inner(guest_name, reservation_number, tenant_id)",
 					)
 					.eq("account_id", account.id)
-					.eq("reservations.tenant_id", tenant.id);
+					.eq("reservations.tenant_id", profile.tenant_id);
 
 				let transfersFromQuery = supabase
 					.from("account_transfers")
@@ -95,19 +75,22 @@ export function AccountDetails({
 						"id, created_at, amount, note, accounts!to_account_id(tenant_id)",
 					)
 					.eq("from_account_id", account.id)
-					.eq("accounts.tenant_id", tenant.id);
+					.eq("accounts.tenant_id", profile.tenant_id);
+
 				let transfersToQuery = supabase
 					.from("account_transfers")
 					.select(
 						"id, created_at, amount, conversion_rate, note, accounts!from_account_id(tenant_id)",
 					)
 					.eq("to_account_id", account.id)
-					.eq("accounts.tenant_id", tenant.id); // Apply location filters
-				if (selectedLocation) {
-					expenseQuery = expenseQuery.eq("location_id", selectedLocation);
+					.eq("accounts.tenant_id", profile.tenant_id);
+
+				// Apply location filters
+				if (selectedLocationData?.id) {
+					expenseQuery = expenseQuery.eq("location_id", selectedLocationData.id);
 					paymentsQuery = paymentsQuery.eq(
 						"reservations.location_id",
-						selectedLocation,
+						selectedLocationData.id,
 					);
 				}
 
@@ -260,11 +243,11 @@ export function AccountDetails({
 				};
 			}
 		},
-		[tenant?.id, selectedLocation, dateFrom, dateTo],
+		[profile?.tenant_id, selectedLocationData?.id, dateFrom, dateTo],
 	);
 
 	const fetchAccountsData = useCallback(async () => {
-		if (!tenant?.id) return;
+		if (!profile?.tenant_id) return;
 
 		setLoading(true);
 		try {
@@ -272,7 +255,7 @@ export function AccountDetails({
 			const { data: accountsData, error: accountsError } = await supabase
 				.from("accounts")
 				.select("*")
-				.eq("tenant_id", tenant.id)
+				.eq("tenant_id", profile.tenant_id)
 				.order("name");
 
 			if (accountsError) throw accountsError;
@@ -289,7 +272,7 @@ export function AccountDetails({
 		} finally {
 			setLoading(false);
 		}
-	}, [tenant?.id, calculateAccountBalance]);
+	}, [profile?.tenant_id, calculateAccountBalance]);
 
 	const toggleAccountExpansion = (accountId: string) => {
 		const newExpanded = new Set(expandedAccounts);
@@ -306,13 +289,21 @@ export function AccountDetails({
 			case "income":
 			case "payment":
 			case "transfer_in":
-				return <ArrowUpRight className="size-4 text-green-600" />;
+				return <Ionicons name="arrow-up-circle" size={16} color="#059669" />;
 			case "expense":
 			case "transfer_out":
-				return <ArrowDownLeft className="size-4 text-red-600" />;
+				return <Ionicons name="arrow-down-circle" size={16} color="#dc2626" />;
 			default:
-				return <DollarSign className="size-4 text-gray-600" />;
+				return <Ionicons name="cash" size={16} color="#6b7280" />;
 		}
+	};
+
+	const formatCurrency = (amount: number, currency: string) => {
+		return new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: currency,
+			minimumFractionDigits: 2,
+		}).format(amount);
 	};
 
 	useEffect(() => {
@@ -321,159 +312,126 @@ export function AccountDetails({
 
 	if (loading) {
 		return (
-			<Card>
-				<CardHeader>
-					<div className="animate-pulse">
-						<div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
-						<div className="h-4 bg-gray-200 rounded w-1/2"></div>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<div className="space-y-4">
-						{[...Array(3)].map((_, i) => (
-							<div key={i} className="animate-pulse">
-								<div className="h-20 bg-gray-200 rounded"></div>
-							</div>
-						))}
-					</div>
-				</CardContent>
-			</Card>
+			<View className="bg-white rounded-lg p-4 mx-4 mb-4">
+				<View className="flex-row items-center mb-3">
+					<Ionicons name="business" size={20} color="#1f2937" />
+					<Text className="text-base font-semibold ml-2">Account Details</Text>
+				</View>
+				<ActivityIndicator size="large" color="#3b82f6" />
+			</View>
 		);
 	}
 
 	return (
-		<Card>
-			<CardHeader className="px-2 sm:px-4">
-				<CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
-					<Building2 className="size-6" />
-					{t("reports.comprehensive.accounts.title")}
-				</CardTitle>
-				<CardDescription>
-					{t("reports.comprehensive.accounts.subtitle")}
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="px-2 sm:px-4 md:px-6">
-				<div className="space-y-4">
-					{accounts.map((account) => (
-						<Card
-							key={account.id}
-							className="px-0 border-l-2 sm:border-l-4 border-l-primary"
+		<View className="bg-white rounded-lg p-4 mx-4 mb-4">
+			<View className="flex-row items-center mb-3">
+				<Ionicons name="business" size={20} color="#1f2937" />
+				<Text className="text-base font-semibold ml-2">Account Details</Text>
+			</View>
+			<Text className="text-xs text-gray-500 mb-4">
+				Detailed breakdown of account balances and transactions
+			</Text>
+
+			<View className="space-y-3">
+				{accounts.map((account) => (
+					<View
+						key={account.id}
+						className="border-l-4 border-l-blue-500 bg-gray-50 rounded-lg overflow-hidden"
+					>
+						<TouchableOpacity
+							onPress={() => toggleAccountExpansion(account.id)}
+							className="p-3"
 						>
-							<Collapsible
-								open={expandedAccounts.has(account.id)}
-								onOpenChange={() => toggleAccountExpansion(account.id)}
-							>
-								<CollapsibleTrigger asChild>
-									<CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
-										<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-											<div className="flex items-start sm:items-center gap-3">
-												<div className="flex flex-col">
-													<CardTitle className="text-base md:text-lg lg:text-xl">
-														{account.name}
-													</CardTitle>
-													<div className="flex items-center gap-2 text-sm text-muted-foreground">
-														<Badge variant="outline">{account.currency}</Badge>
-														<span>
-															{account.transaction_count}{" "}
-															{t("reports.comprehensive.accounts.transactions")}
-														</span>
-													</div>
-												</div>
-												{expandedAccounts.has(account.id) ? (
-													<ChevronDown className="size-4" />
-												) : (
-													<ChevronRight className="size-4" />
-												)}
-											</div>
-											<div className="text-left sm:text-right flex flex-col items-start sm:items-end">
-												<p className="text-lg sm:text-2xl font-bold">
-													{formatCurrency(
-														account.current_balance,
-														account.currency as any,
-													)}
-												</p>
-												<div className="flex pt-4 sm:pt-0 flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-muted-foreground">
-													<span className="text-green-600">
-														{t("reports.comprehensive.accounts.income")}:{" "}
-														{formatCurrency(
-															account.total_payments,
-															account.currency as any,
-														)}
-													</span>
-													<span className="text-red-600">
-														{t("reports.comprehensive.accounts.expenses")}:{" "}
-														{formatCurrency(
-															account.total_expenses,
-															account.currency as any,
-														)}
-													</span>
-												</div>
-											</div>
-										</div>
-									</CardHeader>
-								</CollapsibleTrigger>
-								<CollapsibleContent>
-									<CardContent className="pt-0">
-										<div className="space-y-2 max-h-96 overflow-y-auto">
-											{account.transactions.length === 0 ? (
-												<p className="text-start sm:text-center text-muted-foreground py-8">
-													{t("reports.comprehensive.accounts.noTransactions")}
-												</p>
-											) : (
-												account.transactions.map((txn, index) => (
-													<div
-														key={`${txn.id}-${index}`}
-														className="flex items-center justify-between p-1 sm:p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+							<View className="flex-row items-start justify-between">
+								<View className="flex-1">
+									<View className="flex-row items-center mb-1">
+										<Text className="text-sm font-semibold">{account.name}</Text>
+										{expandedAccounts.has(account.id) ? (
+											<Ionicons name="chevron-down" size={16} color="#6b7280" style={{ marginLeft: 4 }} />
+										) : (
+											<Ionicons name="chevron-forward" size={16} color="#6b7280" style={{ marginLeft: 4 }} />
+										)}
+									</View>
+									<View className="flex-row items-center gap-2">
+										<View className="bg-white px-2 py-1 rounded border border-gray-300">
+											<Text className="text-xs">{account.currency}</Text>
+										</View>
+										<Text className="text-xs text-gray-500">
+											{account.transaction_count} transactions
+										</Text>
+									</View>
+								</View>
+								<View className="items-end">
+									<Text className="text-base font-bold">
+										{formatCurrency(account.current_balance, account.currency)}
+									</Text>
+									<View className="flex-row gap-2 mt-1">
+										<Text className="text-xs text-green-600">
+											+{formatCurrency(account.total_payments, account.currency)}
+										</Text>
+										<Text className="text-xs text-red-600">
+											-{formatCurrency(account.total_expenses, account.currency)}
+										</Text>
+									</View>
+								</View>
+							</View>
+						</TouchableOpacity>
+
+						{expandedAccounts.has(account.id) && (
+							<View className="bg-white p-2 border-t border-gray-200">
+								<ScrollView className="max-h-80">
+									{account.transactions.length === 0 ? (
+										<Text className="text-center text-gray-500 py-6">
+											No transactions found
+										</Text>
+									) : (
+										account.transactions.map((txn, index) => (
+											<View
+												key={`${txn.id}-${index}`}
+												className="flex-row items-center justify-between p-2 border border-gray-200 rounded-lg mb-2"
+											>
+												<View className="flex-row items-start flex-1">
+													<View className="mr-2 mt-1">
+														{getTransactionIcon(txn.type)}
+													</View>
+													<View className="flex-1">
+														<Text className="text-xs font-medium">
+															{txn.description}
+														</Text>
+														<Text className="text-xs text-gray-500">
+															{new Date(txn.date).toLocaleDateString()}
+															{txn.note && ` • ${txn.note}`}
+														</Text>
+													</View>
+												</View>
+												<View className="items-end ml-2">
+													<Text
+														className={`text-xs font-semibold ${
+															txn.type === "payment" ||
+															txn.type === "transfer_in"
+																? "text-green-600"
+																: "text-red-600"
+														}`}
 													>
-														<div className="flex items-center gap-3">
-															{getTransactionIcon(txn.type)}
-															<div>
-																<div className="font-medium">
-																	{txn.description}
-																</div>
-																<div className="text-sm text-muted-foreground">
-																	{new Date(txn.date).toLocaleDateString()}
-																	{txn.note && <span> • {txn.note}</span>}
-																</div>
-															</div>
-														</div>
-														<div className="text-left sm:text-right">
-															<p
-																className={`font-semibold ${
-																	txn.type === "payment" ||
-																	txn.type === "transfer_in"
-																		? "text-green-600"
-																		: "text-red-600"
-																}`}
-															>
-																{txn.type === "payment" ||
-																txn.type === "transfer_in"
-																	? "+"
-																	: "-"}
-																{formatCurrency(
-																	txn.amount,
-																	txn.currency as any,
-																)}
-															</p>
-															<div className="text-sm text-muted-foreground">
-																{t("reports.comprehensive.accounts.balance")}:{" "}
-																{formatCurrency(
-																	txn.running_balance,
-																	txn.currency as any,
-																)}
-															</div>
-														</div>
-													</div>
-												))
-											)}
-										</div>
-									</CardContent>
-								</CollapsibleContent>
-							</Collapsible>
-						</Card>
-					))}
-				</div>
-			</CardContent>
-		</Card>
+														{txn.type === "payment" ||
+														txn.type === "transfer_in"
+															? "+"
+															: "-"}
+														{formatCurrency(txn.amount, txn.currency)}
+													</Text>
+													<Text className="text-xs text-gray-500">
+														Bal: {formatCurrency(txn.running_balance, txn.currency)}
+													</Text>
+												</View>
+											</View>
+										))
+									)}
+								</ScrollView>
+							</View>
+						)}
+					</View>
+				))}
+			</View>
+		</View>
 	);
 }
