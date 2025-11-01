@@ -69,7 +69,11 @@ export function ReportFilters({
         if (mounted) {
           setAvailableCurrencies(list || ["LKR"]);
           // Set default currency if not already set or if current is not in list
-          if (list && list.length > 0 && (!baseCurrency || !list.includes(baseCurrency))) {
+          if (
+            list &&
+            list.length > 0 &&
+            (!baseCurrency || !list.includes(baseCurrency))
+          ) {
             setBaseCurrency(list.includes("LKR") ? "LKR" : list[0]);
           }
         }
@@ -108,17 +112,27 @@ export function ReportFilters({
 
   return (
     <View className="bg-white rounded-lg p-2 mx-4 mb-3 border border-gray-200">
-      <View className="flex-row items-center gap-2">
-        <View className="w-28">
-          <Text className="text-xs text-gray-600">Currency</Text>
+      {/* Single row with all controls */}
+      <View className="flex-row items-end gap-2">
+        {/* Currency Selector */}
+        <View style={{ width: 90 }}>
+          <Text className="text-xs text-gray-600 mb-1">Currency</Text>
           {loading ? (
             <ActivityIndicator size="small" color="#3b82f6" />
           ) : (
             <View className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
               <Picker
                 selectedValue={baseCurrency}
-                onValueChange={(v) => setBaseCurrency(String(v))}
-                style={{ height: 38 }}
+                onValueChange={(itemValue) => {
+                  if (itemValue) {
+                    setBaseCurrency(String(itemValue));
+                  }
+                }}
+                style={{ 
+                  height: Platform.OS === "ios" ? 38 : 40,
+                  width: "100%"
+                }}
+                itemStyle={{ height: Platform.OS === "ios" ? 38 : 40 }}
               >
                 {availableCurrencies.map((c) => (
                   <Picker.Item key={c} label={c} value={c} />
@@ -128,60 +142,57 @@ export function ReportFilters({
           )}
         </View>
 
+        {/* From Date */}
         <View className="flex-1">
-          <Text className="text-xs text-gray-600">From</Text>
+          <Text className="text-xs text-gray-600 mb-1">From</Text>
           <View className="flex-row items-center gap-1">
             <TouchableOpacity
               onPress={() => setShowFromDatePicker(true)}
               className="flex-1 flex-row items-center bg-gray-50 border border-gray-300 rounded-lg px-2 py-2"
             >
-              <Ionicons name="calendar-outline" size={16} color="#6b7280" />
-              <Text className="text-xs ml-2 flex-1">
+              <Ionicons name="calendar-outline" size={14} color="#6b7280" />
+              <Text className="text-xs ml-1 flex-1" numberOfLines={1}>
                 {formatDateLabel(dateFrom)}
               </Text>
             </TouchableOpacity>
             {dateFrom && (
-              <TouchableOpacity onPress={clearFromDate} className="p-1">
-                <Ionicons name="close-circle" size={20} color="#ef4444" />
+              <TouchableOpacity onPress={clearFromDate}>
+                <Ionicons name="close-circle" size={18} color="#ef4444" />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
+        {/* To Date */}
         <View className="flex-1">
-          <Text className="text-xs text-gray-600">To</Text>
+          <Text className="text-xs text-gray-600 mb-1">To</Text>
           <View className="flex-row items-center gap-1">
             <TouchableOpacity
               onPress={() => setShowToDatePicker(true)}
               className="flex-1 flex-row items-center bg-gray-50 border border-gray-300 rounded-lg px-2 py-2"
             >
-              <Ionicons name="calendar-outline" size={16} color="#6b7280" />
-              <Text className="text-xs ml-2 flex-1">
+              <Ionicons name="calendar-outline" size={14} color="#6b7280" />
+              <Text className="text-xs ml-1 flex-1" numberOfLines={1}>
                 {formatDateLabel(dateTo)}
               </Text>
             </TouchableOpacity>
             {dateTo && (
-              <TouchableOpacity onPress={clearToDate} className="p-1">
-                <Ionicons name="close-circle" size={20} color="#ef4444" />
+              <TouchableOpacity onPress={clearToDate}>
+                <Ionicons name="close-circle" size={18} color="#ef4444" />
               </TouchableOpacity>
             )}
           </View>
         </View>
-      </View>
 
-      <View className="flex-row items-center justify-end gap-2 mt-2">
-        <TouchableOpacity
-          onPress={onRefresh}
-          className="px-3 py-2 bg-gray-200 rounded-lg"
-        >
-          <Ionicons name="refresh" size={14} color="#374151" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={onExport}
-          className="px-3 py-2 bg-blue-500 rounded-lg"
-        >
-          <Ionicons name="download-outline" size={14} color="#fff" />
-        </TouchableOpacity>
+        {/* Export Button */}
+        <View style={{ marginBottom: Platform.OS === "ios" ? 0 : 2 }}>
+          <TouchableOpacity
+            onPress={onExport}
+            className="px-3 py-2 bg-blue-500 rounded-lg flex-row items-center"
+          >
+            <Ionicons name="download-outline" size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {showFromDatePicker && (
