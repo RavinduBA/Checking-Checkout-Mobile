@@ -311,43 +311,47 @@ export default function AccountsReportsMobile() {
       const balances: AccountBalance[] = [];
 
       for (const account of accounts) {
-        // Fetch income for this account (from payments table)
+        // Fetch income for this account (from payments table with reservations filter)
         let incomeQuery = supabase
           .from("payments")
-          .select("amount")
+          .select("amount, reservations!inner(tenant_id, location_id)")
           .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id);
+          .eq("reservations.tenant_id", profile.tenant_id)
+          .eq("reservations.location_id", selectedLocationData.id);
 
         // Fetch expenses for this account
         let expenseQuery = supabase
           .from("expenses")
           .select("amount")
           .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id);
+          .eq("tenant_id", profile.tenant_id)
+          .eq("location_id", selectedLocationData.id);
 
         // Fetch transfers from this account
         let transfersFromQuery = supabase
           .from("account_transfers")
           .select("amount")
           .eq("from_account_id", account.id)
-          .eq("tenant_id", profile.tenant_id);
+          .eq("tenant_id", profile.tenant_id)
+          .eq("location_id", selectedLocationData.id);
 
         // Fetch transfers to this account
         let transfersToQuery = supabase
           .from("account_transfers")
           .select("amount, conversion_rate")
           .eq("to_account_id", account.id)
-          .eq("tenant_id", profile.tenant_id);
+          .eq("tenant_id", profile.tenant_id)
+          .eq("location_id", selectedLocationData.id);
 
         // Apply date filters if specified
         if (dateFrom) {
-          incomeQuery = incomeQuery.gte("date", dateFrom);
+          incomeQuery = incomeQuery.gte("created_at", dateFrom);
           expenseQuery = expenseQuery.gte("date", dateFrom);
           transfersFromQuery = transfersFromQuery.gte("created_at", dateFrom);
           transfersToQuery = transfersToQuery.gte("created_at", dateFrom);
         }
         if (dateTo) {
-          incomeQuery = incomeQuery.lte("date", dateTo);
+          incomeQuery = incomeQuery.lte("created_at", dateTo);
           expenseQuery = expenseQuery.lte("date", dateTo);
           transfersFromQuery = transfersFromQuery.lte("created_at", dateTo);
           transfersToQuery = transfersToQuery.lte("created_at", dateTo);
@@ -428,14 +432,16 @@ export default function AccountsReportsMobile() {
           .from("income")
           .select("id, date, amount, type, note")
           .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id);
+          .eq("tenant_id", profile.tenant_id)
+          .eq("location_id", selectedLocationData.id);
 
         // Fetch expense transactions
         let expenseQuery = supabase
           .from("expenses")
           .select("id, date, amount, main_type, sub_type, note")
           .eq("account_id", account.id)
-          .eq("tenant_id", profile.tenant_id);
+          .eq("tenant_id", profile.tenant_id)
+          .eq("location_id", selectedLocationData.id);
 
         // Apply date filters
         if (dateFrom) {
