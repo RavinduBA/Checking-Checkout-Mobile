@@ -459,86 +459,75 @@ export default function EnhancedFinancialReportsMobile() {
         </View>
       </View>
 
-      {/* Summary Cards - New Layout */}
-      <View className="px-4 py-2 flex-row gap-2">
-        {/* Left Column: Total Income + Total Expenses */}
-        <View className="flex-1 gap-2">
-          {/* Total Income */}
-          <View className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <View className="flex-row justify-between items-start">
-              <View className="flex-1">
-                <Text className="text-xs font-medium text-green-600">
-                  Total Income
-                </Text>
-                <Text className="text-base font-bold text-green-900 mt-0.5">
-                  {formatCurrency(summary.totalIncome, baseCurrency)}
-                </Text>
-                <Text className="text-xs text-green-600 mt-0.5">
-                  {summary.incomeTransactions} transactions
-                </Text>
-              </View>
-              <Ionicons name="trending-up" size={24} color="#10b981" />
-            </View>
-          </View>
-
-          {/* Total Expenses */}
-          <View className="bg-red-50 border border-red-200 rounded-lg p-3 w-full  ">
-            <View className="flex-row justify-between items-start">
-              <View className="flex-1">
-                <Text className="text-xs font-medium text-red-600">
-                  Total Expenses
-                </Text>
-                <Text className="text-base font-bold text-red-900 mt-0.5">
-                  {formatCurrency(summary.totalExpenses, baseCurrency)}
-                </Text>
-                <Text className="text-xs text-red-600 mt-0.5">
-                  {summary.expenseTransactions} transactions
-                </Text>
-              </View>
-              <Ionicons name="trending-down" size={24} color="#ef4444" />
-            </View>
+      {/* Summary Cards - Single Row Layout */}
+      <View className="px-4 py-2 flex-row gap-1.5">
+        {/* Total Income */}
+        <View className="flex-1 bg-green-50 border border-green-200 rounded-lg p-2">
+          <View className="items-center">
+            <Ionicons name="trending-up" size={18} color="#10b981" />
+            <Text className="text-xs font-medium text-green-600 mt-1">
+              Income
+            </Text>
+            <Text className="text-sm font-bold text-green-900 mt-0.5">
+              {formatCurrency(summary.totalIncome, baseCurrency)}
+            </Text>
+            <Text className="text-xs text-green-600 mt-0.5">
+              {summary.incomeTransactions} txn
+            </Text>
           </View>
         </View>
 
-        {/* Right Column: Net Profit */}
-        <View className="flex-1">
-          <View
-            className={`${
-              summary.netProfit >= 0
-                ? "bg-blue-50 border-blue-200"
-                : "bg-red-50 border-red-200"
-            } border rounded-lg p-3`}
-          >
-            <View className="flex-row justify-between items-start">
-              <View className="flex-1">
-                <Text
-                  className={`text-xs font-medium ${
-                    summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
-                  }`}
-                >
-                  Net Profit
-                </Text>
-                <Text
-                  className={`text-base font-bold mt-0.5 ${
-                    summary.netProfit >= 0 ? "text-blue-900" : "text-red-900"
-                  }`}
-                >
-                  {formatCurrency(summary.netProfit, baseCurrency)}
-                </Text>
-                <Text
-                  className={`text-xs mt-0.5 ${
-                    summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
-                  }`}
-                >
-                  {summary.profitMargin.toFixed(1)}% profit margin
-                </Text>
-              </View>
-              <Ionicons
-                name="cash"
-                size={24}
-                color={summary.netProfit >= 0 ? "#3b82f6" : "#ef4444"}
-              />
-            </View>
+        {/* Total Expenses */}
+        <View className="flex-1 bg-red-50 border border-red-200 rounded-lg p-2">
+          <View className="items-center">
+            <Ionicons name="trending-down" size={18} color="#ef4444" />
+            <Text className="text-xs font-medium text-red-600 mt-1">
+              Expenses
+            </Text>
+            <Text className="text-sm font-bold text-red-900 mt-0.5">
+              {formatCurrency(summary.totalExpenses, baseCurrency)}
+            </Text>
+            <Text className="text-xs text-red-600 mt-0.5">
+              {summary.expenseTransactions} txn
+            </Text>
+          </View>
+        </View>
+
+        {/* Net Profit */}
+        <View
+          className={`flex-1 ${
+            summary.netProfit >= 0
+              ? "bg-blue-50 border-blue-200"
+              : "bg-red-50 border-red-200"
+          } border rounded-lg p-2`}
+        >
+          <View className="items-center">
+            <Ionicons
+              name="cash"
+              size={18}
+              color={summary.netProfit >= 0 ? "#3b82f6" : "#ef4444"}
+            />
+            <Text
+              className={`text-xs font-medium mt-1 ${
+                summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
+              }`}
+            >
+              Net Profit
+            </Text>
+            <Text
+              className={`text-sm font-bold mt-0.5 ${
+                summary.netProfit >= 0 ? "text-blue-900" : "text-red-900"
+              }`}
+            >
+              {formatCurrency(summary.netProfit, baseCurrency)}
+            </Text>
+            <Text
+              className={`text-xs mt-0.5 ${
+                summary.netProfit >= 0 ? "text-blue-600" : "text-red-600"
+              }`}
+            >
+              {summary.profitMargin.toFixed(1)}%
+            </Text>
           </View>
         </View>
       </View>
