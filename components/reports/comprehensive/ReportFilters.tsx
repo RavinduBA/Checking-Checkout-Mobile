@@ -125,7 +125,7 @@ export function ReportFilters({
             <TouchableOpacity
               onPress={() => setShowCurrencyDropdown(true)}
               className="border border-gray-300 rounded-lg bg-gray-50 px-2 py-2 flex-row items-center justify-between"
-              style={{ height: Platform.OS === "ios" ? 38 : 40 }}
+              style={{ height: Platform.OS === "ios" ? 31 : 38 }}
             >
               <Text className="text-xs flex-1">{baseCurrency}</Text>
               <Ionicons name="chevron-down" size={16} color="#6b7280" />
