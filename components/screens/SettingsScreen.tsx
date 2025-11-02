@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 // Import settings components
+import AccessDenied from "@/components/AccessDenied";
+import { usePermissions, type UserPermissions } from "@/hooks/usePermissions";
 import BookingManagement from "../settings/BookingManagement";
 import CurrencySettings from "../settings/CurrencySettings";
 import ExpenseCategories from "../settings/ExpenseCategories";
@@ -15,13 +17,15 @@ export default function SettingsScreen() {
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("Profile");
 
-  const tabs = [
-    "Profile",
-    "Form Fields",
-    "Expense Categories",
-    "Income Types",
-    "Currency Settings",
-    "Booking Management",
+  const { hasPermission } = usePermissions();
+
+  const tabs: { key: string; permission: keyof UserPermissions | null }[] = [
+    { key: "Profile", permission: null },
+    { key: "Form Fields", permission: null },
+    { key: "Expense Categories", permission: "access_master_files" },
+    { key: "Income Types", permission: "access_accounts" },
+    { key: "Currency Settings", permission: null },
+    { key: "Booking Management", permission: "access_booking_channels" },
   ];
 
   const renderContent = () => {
@@ -31,13 +35,25 @@ export default function SettingsScreen() {
       case "Form Fields":
         return <FormFieldPreferences />;
       case "Expense Categories":
-        return <ExpenseCategories />;
+        return hasPermission("access_master_files") ? (
+          <ExpenseCategories />
+        ) : (
+          <AccessDenied />
+        );
       case "Income Types":
-        return <IncomeTypes />;
+        return hasPermission("access_accounts") ? (
+          <IncomeTypes />
+        ) : (
+          <AccessDenied />
+        );
       case "Currency Settings":
         return <CurrencySettings />;
       case "Booking Management":
-        return <BookingManagement />;
+        return hasPermission("access_booking_channels") ? (
+          <BookingManagement />
+        ) : (
+          <AccessDenied />
+        );
       default:
         return (
           <View className="flex-1 justify-center items-center">
@@ -72,23 +88,26 @@ export default function SettingsScreen() {
           className="px-2"
         >
           <View className="flex-row py-3">
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                className={`px-4 py-2 mx-1 rounded-full ${
-                  activeTab === tab ? "bg-blue-500" : "bg-gray-100"
-                }`}
-              >
-                <Text
-                  className={`text-sm font-medium ${
-                    activeTab === tab ? "text-white" : "text-gray-600"
-                  }`}
+            {tabs.map((t) => {
+              const allowed = t.permission ? hasPermission(t.permission) : true;
+              return (
+                <TouchableOpacity
+                  key={t.key}
+                  onPress={() => allowed && setActiveTab(t.key)}
+                  className={`px-4 py-2 mx-1 rounded-full ${
+                    activeTab === t.key ? "bg-blue-500" : "bg-gray-100"
+                  } ${!allowed ? "opacity-50" : ""}`}
                 >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    className={`text-sm font-medium ${
+                      activeTab === t.key ? "text-white" : "text-gray-600"
+                    }`}
+                  >
+                    {t.key}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </ScrollView>
       </View>

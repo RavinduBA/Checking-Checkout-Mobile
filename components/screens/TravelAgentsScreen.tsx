@@ -1,3 +1,4 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import { supabase } from "../../lib/supabase";
 
@@ -28,6 +30,7 @@ interface Agent {
 }
 
 export default function TravelAgentsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { profile } = useUserProfile();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -445,6 +448,22 @@ export default function TravelAgentsScreen() {
       </View>
     </Modal>
   );
+
+  // Permission check - AFTER all hooks are declared
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_master_files")) {
+    return (
+      <AccessDenied message="You don't have permission to access Travel Agents." />
+    );
+  }
 
   if (loading) {
     return (

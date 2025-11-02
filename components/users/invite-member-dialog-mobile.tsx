@@ -9,24 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type Location = any;
-type InvitePermissions = Record<string, boolean>;
-
-const defaultInvitePermissions: InvitePermissions = {
-  access_dashboard: false,
-  access_income: false,
-  access_expenses: false,
-  access_reports: false,
-  access_calendar: false,
-  access_bookings: false,
-  access_rooms: false,
-  access_master_files: false,
-  access_accounts: false,
-  access_users: false,
-  access_settings: false,
-  access_booking_channels: false,
-};
+import type { InvitePermissions, Location } from "./types";
+import { defaultInvitePermissions } from "./types";
 
 interface Props {
   open: boolean;

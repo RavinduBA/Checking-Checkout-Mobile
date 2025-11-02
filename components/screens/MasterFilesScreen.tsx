@@ -1,3 +1,5 @@
+import AccessDenied from "@/components/AccessDenied";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -24,7 +26,24 @@ interface MasterFilesScreenProps {
 export default function MasterFilesScreen({
   navigation,
 }: MasterFilesScreenProps) {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>("main");
+
+  // Permission check
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_master_files")) {
+    return (
+      <AccessDenied message="You don't have permission to access Master Files." />
+    );
+  }
+
   const masterFileOptions = [
     {
       title: "Hotel Locations",

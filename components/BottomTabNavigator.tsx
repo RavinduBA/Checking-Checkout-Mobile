@@ -6,6 +6,7 @@ import React from "react";
 import { Alert, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthContext } from "../contexts/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import { signOut } from "../lib/auth";
 import TopBar from "./TopBar";
 
@@ -75,6 +76,7 @@ function ScreenWithTopBar({
 
 function MainTabs() {
   const insets = useSafeAreaInsets();
+  const { hasPermission } = usePermissions();
 
   return (
     <Tab.Navigator
@@ -115,6 +117,7 @@ function MainTabs() {
         },
       }}
     >
+      {/* Dashboard - Always visible */}
       <Tab.Screen
         name="Dashboard"
         options={{
@@ -155,207 +158,226 @@ function MainTabs() {
       >
         {() => <ScreenWithTopBar component={DashboardScreen} />}
       </Tab.Screen>
-      <Tab.Screen
-        name="Calendar"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center", width: "100%" }}>
-              <View
-                style={{
-                  position: "absolute",
-                  top: -8,
-                  width: 30,
-                  height: 3,
-                  backgroundColor: focused ? "#3b82f6" : "transparent",
-                  borderRadius: 2,
-                }}
-              />
-              <Ionicons
-                name="calendar"
-                size={24}
-                color={focused ? "#3b82f6" : "#4b5563"}
-              />
-            </View>
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 8,
-                color: focused ? "#3b82f6" : "#4b5563",
-                fontWeight: focused ? "700" : "500",
-                marginTop: 1,
-                marginBottom: 1,
-              }}
-            >
-              Calendar
-            </Text>
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={CalendarScreen} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Reservations"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center", width: "100%" }}>
-              <View
-                style={{
-                  position: "absolute",
-                  top: -8,
-                  width: 30,
-                  height: 3,
-                  backgroundColor: focused ? "#3b82f6" : "transparent",
-                  borderRadius: 2,
-                }}
-              />
-              <Ionicons
-                name="bed"
-                size={24}
-                color={focused ? "#3b82f6" : "#4b5563"}
-              />
-            </View>
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 8,
-                color: focused ? "#3b82f6" : "#4b5563",
-                fontWeight: focused ? "700" : "500",
-                marginTop: 1,
-                marginBottom: 1,
-              }}
-            >
-              Reservations
-            </Text>
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={ReservationsScreen} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Expenses"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center", width: "100%" }}>
-              <View
-                style={{
-                  position: "absolute",
-                  top: -8,
-                  width: 30,
-                  height: 3,
-                  backgroundColor: focused ? "#3b82f6" : "transparent",
-                  borderRadius: 2,
-                }}
-              />
-              <MaterialIcons
-                name="attach-money"
-                size={24}
-                color={focused ? "#3b82f6" : "#4b5563"}
-              />
-            </View>
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 8,
-                color: focused ? "#3b82f6" : "#4b5563",
-                fontWeight: focused ? "700" : "500",
-                marginTop: 1,
-                marginBottom: 1,
-              }}
-            >
-              Expenses
-            </Text>
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={ExpensesScreen} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Accounts"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center", width: "100%" }}>
-              <View
-                style={{
-                  position: "absolute",
-                  top: -8,
-                  width: 30,
-                  height: 3,
-                  backgroundColor: focused ? "#3b82f6" : "transparent",
-                  borderRadius: 2,
-                }}
-              />
-              <MaterialIcons
-                name="account-balance"
-                size={24}
-                color={focused ? "#3b82f6" : "#4b5563"}
-              />
-            </View>
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 8,
-                color: focused ? "#3b82f6" : "#4b5563",
-                fontWeight: focused ? "700" : "500",
-                marginTop: 1,
-                marginBottom: 1,
-              }}
-            >
-              Accounts
-            </Text>
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={AccountsScreen} />}
-      </Tab.Screen>
 
-      <Tab.Screen
-        name="Reports"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: "center", width: "100%" }}>
-              <View
+      {/* Calendar - Requires access_calendar permission */}
+      {hasPermission("access_calendar") && (
+        <Tab.Screen
+          name="Calendar"
+          options={{
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center", width: "100%" }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    width: 30,
+                    height: 3,
+                    backgroundColor: focused ? "#3b82f6" : "transparent",
+                    borderRadius: 2,
+                  }}
+                />
+                <Ionicons
+                  name="calendar"
+                  size={24}
+                  color={focused ? "#3b82f6" : "#4b5563"}
+                />
+              </View>
+            ),
+            tabBarLabel: ({ focused, color }) => (
+              <Text
+                numberOfLines={1}
                 style={{
-                  position: "absolute",
-                  top: -8,
-                  width: 30,
-                  height: 3,
-                  backgroundColor: focused ? "#3b82f6" : "transparent",
-                  borderRadius: 2,
+                  fontSize: 8,
+                  color: focused ? "#3b82f6" : "#4b5563",
+                  fontWeight: focused ? "700" : "500",
+                  marginTop: 1,
+                  marginBottom: 1,
                 }}
-              />
-              <Ionicons
-                name="bar-chart"
-                size={24}
-                color={focused ? "#3b82f6" : "#4b5563"}
-              />
-            </View>
-          ),
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 8,
-                color: focused ? "#3b82f6" : "#4b5563",
-                fontWeight: focused ? "700" : "500",
-                marginTop: 1,
-                marginBottom: 1,
-              }}
-            >
-              Reports
-            </Text>
-          ),
-        }}
-      >
-        {() => <ScreenWithTopBar component={ReportsScreen} />}
-      </Tab.Screen>
+              >
+                Calendar
+              </Text>
+            ),
+          }}
+        >
+          {() => <ScreenWithTopBar component={CalendarScreen} />}
+        </Tab.Screen>
+      )}
+
+      {/* Reservations - Requires access_bookings permission */}
+      {hasPermission("access_bookings") && (
+        <Tab.Screen
+          name="Reservations"
+          options={{
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center", width: "100%" }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    width: 30,
+                    height: 3,
+                    backgroundColor: focused ? "#3b82f6" : "transparent",
+                    borderRadius: 2,
+                  }}
+                />
+                <Ionicons
+                  name="bed"
+                  size={24}
+                  color={focused ? "#3b82f6" : "#4b5563"}
+                />
+              </View>
+            ),
+            tabBarLabel: ({ focused, color }) => (
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 8,
+                  color: focused ? "#3b82f6" : "#4b5563",
+                  fontWeight: focused ? "700" : "500",
+                  marginTop: 1,
+                  marginBottom: 1,
+                }}
+              >
+                Reservations
+              </Text>
+            ),
+          }}
+        >
+          {() => <ScreenWithTopBar component={ReservationsScreen} />}
+        </Tab.Screen>
+      )}
+
+      {/* Expenses - Requires access_expenses permission */}
+      {hasPermission("access_expenses") && (
+        <Tab.Screen
+          name="Expenses"
+          options={{
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center", width: "100%" }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    width: 30,
+                    height: 3,
+                    backgroundColor: focused ? "#3b82f6" : "transparent",
+                    borderRadius: 2,
+                  }}
+                />
+                <MaterialIcons
+                  name="attach-money"
+                  size={24}
+                  color={focused ? "#3b82f6" : "#4b5563"}
+                />
+              </View>
+            ),
+            tabBarLabel: ({ focused, color }) => (
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 8,
+                  color: focused ? "#3b82f6" : "#4b5563",
+                  fontWeight: focused ? "700" : "500",
+                  marginTop: 1,
+                  marginBottom: 1,
+                }}
+              >
+                Expenses
+              </Text>
+            ),
+          }}
+        >
+          {() => <ScreenWithTopBar component={ExpensesScreen} />}
+        </Tab.Screen>
+      )}
+
+      {/* Accounts - Requires access_accounts permission */}
+      {hasPermission("access_accounts") && (
+        <Tab.Screen
+          name="Accounts"
+          options={{
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center", width: "100%" }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    width: 30,
+                    height: 3,
+                    backgroundColor: focused ? "#3b82f6" : "transparent",
+                    borderRadius: 2,
+                  }}
+                />
+                <MaterialIcons
+                  name="account-balance"
+                  size={24}
+                  color={focused ? "#3b82f6" : "#4b5563"}
+                />
+              </View>
+            ),
+            tabBarLabel: ({ focused, color }) => (
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 8,
+                  color: focused ? "#3b82f6" : "#4b5563",
+                  fontWeight: focused ? "700" : "500",
+                  marginTop: 1,
+                  marginBottom: 1,
+                }}
+              >
+                Accounts
+              </Text>
+            ),
+          }}
+        >
+          {() => <ScreenWithTopBar component={AccountsScreen} />}
+        </Tab.Screen>
+      )}
+
+      {/* Reports - Requires access_reports permission */}
+      {hasPermission("access_reports") && (
+        <Tab.Screen
+          name="Reports"
+          options={{
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: "center", width: "100%" }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    width: 30,
+                    height: 3,
+                    backgroundColor: focused ? "#3b82f6" : "transparent",
+                    borderRadius: 2,
+                  }}
+                />
+                <Ionicons
+                  name="bar-chart"
+                  size={24}
+                  color={focused ? "#3b82f6" : "#4b5563"}
+                />
+              </View>
+            ),
+            tabBarLabel: ({ focused, color }) => (
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 8,
+                  color: focused ? "#3b82f6" : "#4b5563",
+                  fontWeight: focused ? "700" : "500",
+                  marginTop: 1,
+                  marginBottom: 1,
+                }}
+              >
+                Reports
+              </Text>
+            ),
+          }}
+        >
+          {() => <ScreenWithTopBar component={ReportsScreen} />}
+        </Tab.Screen>
+      )}
     </Tab.Navigator>
   );
 }

@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useUsersData } from "@/hooks/useUsersData";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export function UserStats() {
   const { users, loading } = useUsersData();
@@ -22,8 +22,10 @@ export function UserStats() {
     averagePermissions:
       users.length > 0
         ? Math.round(
-            users.reduce((sum, user) => sum + (user.total_permissions || 0), 0) /
-              users.length
+            users.reduce(
+              (sum, user) => sum + (user.total_permissions || 0),
+              0
+            ) / users.length
           )
         : 0,
   };
@@ -58,9 +60,7 @@ export function UserStats() {
             <Text className="text-2xl font-bold text-blue-900">
               {stats.totalUsers}
             </Text>
-            <Text className="text-xs text-blue-600 mt-1">
-              All registered
-            </Text>
+            <Text className="text-xs text-blue-600 mt-1">All registered</Text>
           </View>
 
           <View className="flex-1 bg-purple-50 rounded-lg p-3 border border-purple-200">
@@ -94,9 +94,7 @@ export function UserStats() {
             <Text className="text-2xl font-bold text-green-900">
               {stats.totalRegularUsers}
             </Text>
-            <Text className="text-xs text-green-600 mt-1">
-              Standard access
-            </Text>
+            <Text className="text-xs text-green-600 mt-1">Standard access</Text>
           </View>
 
           <View className="flex-1 bg-orange-50 rounded-lg p-3 border border-orange-200">
@@ -109,9 +107,7 @@ export function UserStats() {
             <Text className="text-2xl font-bold text-orange-900">
               {stats.recentUsers}
             </Text>
-            <Text className="text-xs text-orange-600 mt-1">
-              Last 7 days
-            </Text>
+            <Text className="text-xs text-orange-600 mt-1">Last 7 days</Text>
           </View>
         </View>
 

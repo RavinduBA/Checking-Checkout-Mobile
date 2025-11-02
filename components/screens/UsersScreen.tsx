@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
+  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -16,11 +17,11 @@ import {
 
 // Import mobile-friendly components from users folder
 import {
-	EditUserDialogMobile,
-	InviteMemberDialogMobile,
-	UsersList,
-	UserStats,
-	PermissionMatrix,
+  EditUserDialogMobile,
+  InviteMemberDialogMobile,
+  PermissionMatrix,
+  UsersList,
+  UserStats,
 } from "@/components/users";
 
 export default function UsersScreen() {
@@ -61,35 +62,39 @@ export default function UsersScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center p-4">
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="text-sm text-gray-600 mt-3">Loading users...</Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <View className="flex-1 items-center justify-center p-4">
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text className="text-sm text-gray-600 mt-3">Loading users...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-		<ScrollView className="flex-1 p-4">
-			<View className="flex-row justify-between items-center mb-4">
-				<Text className="text-xl font-bold">Users</Text>
-				{hasPermission("access_users") && (
-					<TouchableOpacity
-						onPress={() => setShowInviteDialog(true)}
-						className="bg-blue-500 px-3 py-2 rounded-lg"
-					>
-						<Text className="text-white">Invite Member</Text>
-					</TouchableOpacity>
-				)}
-			</View>
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1 p-4">
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className="text-xl font-bold">Users</Text>
+          {hasPermission("access_users") && (
+            <TouchableOpacity
+              onPress={() => setShowInviteDialog(true)}
+              className="bg-blue-500 px-3 py-2 rounded-lg"
+            >
+              <Text className="text-white">Invite Member</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-			{/* User Statistics */}
-			<UserStats />
+        {/* User Statistics */}
+        <UserStats />
 
-			{/* Permission Overview */}
-			<PermissionMatrix />
+        {/* Permission Overview */}
+        <PermissionMatrix onEditUser={handleEditUser} />
 
-			{/* Users List */}
-			<UsersList onEditUser={handleEditUser} />
+        {/* Users List */}
+        <UsersList onEditUser={handleEditUser} />
+      </ScrollView>
 
       {/* Invite dialog (mobile) */}
       <Modal
@@ -122,6 +127,6 @@ export default function UsersScreen() {
           onEditSuccess={handleEditSuccess}
         />
       </Modal>
-    </ScrollView>
+    </SafeAreaView>
   );
 }

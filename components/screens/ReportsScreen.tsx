@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { usePermissions } from "../../hooks/usePermissions";
 import {
   AccountsReportsMobile,
   CommissionReportsMobile,
@@ -17,8 +18,27 @@ import {
 type TabType = "comprehensive" | "detailed" | "accounts" | "commission";
 
 export default function ReportsScreen() {
+  const { hasPermission } = usePermissions();
   const [activeTab, setActiveTab] = useState<TabType>("comprehensive");
   const [refreshing, setRefreshing] = useState(false);
+
+  // Permission check
+  if (!hasPermission("access_reports")) {
+    return (
+      <View className="flex-1 items-center justify-center p-6 bg-gray-50">
+        <View className="bg-red-50 border border-red-200 rounded-lg p-6 items-center">
+          <Ionicons name="alert-circle" size={48} color="#dc2626" />
+          <Text className="text-lg font-semibold text-red-900 mt-4">
+            Access Denied
+          </Text>
+          <Text className="text-sm text-red-700 text-center mt-2">
+            You don't have permission to access reports. Please contact your
+            administrator.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   const onRefresh = async () => {
     setRefreshing(true);

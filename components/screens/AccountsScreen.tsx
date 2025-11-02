@@ -1,8 +1,10 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useLocations } from "../../hooks/useLocations";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useTenant } from "../../hooks/useTenant";
 import { Account } from "../../lib/types";
 import {
@@ -17,6 +19,7 @@ import {
 type TabType = "accounts" | "transactions";
 
 export default function AccountsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { tenant } = useTenant();
   const { accounts, loading, error, refreshAccounts } = useAccounts();
   const { locations } = useLocations();
@@ -60,6 +63,17 @@ export default function AccountsScreen() {
     setEditingAccount(null);
     setShowAddDialog(true);
   };
+
+  // Permission check - AFTER all hooks are declared
+  if (permissionsLoading) {
+    return <AccountsSkeleton />;
+  }
+
+  if (!hasPermission("access_accounts")) {
+    return (
+      <AccessDenied message="You don't have permission to access Accounts." />
+    );
+  }
 
   if (loading) {
     return <AccountsSkeleton />;

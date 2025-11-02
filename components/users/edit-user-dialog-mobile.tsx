@@ -10,10 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type User = any;
-type Location = any;
-type UserPermissions = any;
+import type { Location, User, UserPermissions } from "./types";
 
 interface Props {
   open: boolean;
@@ -73,24 +70,25 @@ export default function EditUserDialogMobile({
 
       for (const [locationName, permissions] of Object.entries(
         editingUser.permissions || {}
-      )) {
+      ) as [string, UserPermissions][]) {
         const location = locations.find((l) => l.name === locationName);
         if (!location) continue;
         const { error: permissionError } = await supabase
           .from("user_permissions")
           .update({
-            access_dashboard: permissions.dashboard || false,
-            access_income: permissions.income || false,
-            access_expenses: permissions.expenses || false,
-            access_reports: permissions.reports || false,
-            access_calendar: permissions.calendar || false,
-            access_bookings: permissions.bookings || false,
-            access_rooms: permissions.rooms || false,
-            access_master_files: permissions.master_files || false,
-            access_accounts: permissions.accounts || false,
-            access_users: permissions.users || false,
-            access_settings: permissions.settings || false,
-            access_booking_channels: permissions.booking_channels || false,
+            access_dashboard: (permissions as any).dashboard || false,
+            access_income: (permissions as any).income || false,
+            access_expenses: (permissions as any).expenses || false,
+            access_reports: (permissions as any).reports || false,
+            access_calendar: (permissions as any).calendar || false,
+            access_bookings: (permissions as any).bookings || false,
+            access_rooms: (permissions as any).rooms || false,
+            access_master_files: (permissions as any).master_files || false,
+            access_accounts: (permissions as any).accounts || false,
+            access_users: (permissions as any).users || false,
+            access_settings: (permissions as any).settings || false,
+            access_booking_channels:
+              (permissions as any).booking_channels || false,
           })
           .eq("user_id", editingUser.id)
           .eq("location_id", location.id)

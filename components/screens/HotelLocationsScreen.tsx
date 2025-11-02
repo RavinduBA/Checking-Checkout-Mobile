@@ -1,6 +1,8 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -9,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import PullToRefresh from "../ui/PullToRefresh";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import {
   createLocation,
@@ -18,6 +20,7 @@ import {
   updateLocation,
   type Location,
 } from "../../lib/database/locations";
+import PullToRefresh from "../ui/PullToRefresh";
 
 interface LocationDisplay {
   id: string;
@@ -31,6 +34,7 @@ interface LocationDisplay {
 }
 
 export default function HotelLocationsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { profile, tenantId, loading: profileLoading } = useUserProfile();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +46,9 @@ export default function HotelLocationsScreen() {
   const [newLocationPhone, setNewLocationPhone] = useState("");
   const [newLocationEmail, setNewLocationEmail] = useState("");
   const [newLocationPropertyType, setNewLocationPropertyType] = useState("");
-  const [newLocationStatus, setNewLocationStatus] = useState<"Active" | "Inactive">("Active");
+  const [newLocationStatus, setNewLocationStatus] = useState<
+    "Active" | "Inactive"
+  >("Active");
 
   // Load locations when component mounts
   useEffect(() => {
@@ -362,6 +368,22 @@ export default function HotelLocationsScreen() {
     </Modal>
   );
 
+  // Permission check - AFTER all hooks are declared
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0066cc" />
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_master_files")) {
+    return (
+      <AccessDenied message="You don't have permission to access Hotel Locations." />
+    );
+  }
+
   return (
     <View className="flex-1 bg-gray-50 p-4">
       {/* Header with Add Button */}
@@ -403,7 +425,7 @@ export default function HotelLocationsScreen() {
         </View>
 
         {/* Table Content */}
-        <PullToRefresh 
+        <PullToRefresh
           onRefresh={loadLocations}
           refreshing={loading}
           style={{ flex: 1 }}

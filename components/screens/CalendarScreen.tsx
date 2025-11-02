@@ -1,3 +1,4 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -42,7 +43,7 @@ const formatMonthYear = (date: Date): string => {
 // ...existing code...
 
 export default function CalendarScreen() {
-  const { hasAnyPermission } = usePermissions();
+  const { hasAnyPermission, loading: permissionsLoading } = usePermissions();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showDirectBookings, setShowDirectBookings] = useState(true);
   const [showBookingCom, setShowBookingCom] = useState(true);
@@ -56,6 +57,20 @@ export default function CalendarScreen() {
 
   // Check permissions
   const hasCalendarPermission = hasAnyPermission("access_calendar");
+
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasCalendarPermission) {
+    return (
+      <AccessDenied message="You don't have permission to access the calendar." />
+    );
+  }
 
   // Status color helpers
   const getStatusColor = (status: string) => {
@@ -125,11 +140,9 @@ export default function CalendarScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-
-      
       {/* Header */}
       <View className="bg-white border-b border-gray-200 px-4 py-3">
-         <Text className="text-xl font-bold text-gray-900 mb-2">Calendar</Text>
+        <Text className="text-xl font-bold text-gray-900 mb-2">Calendar</Text>
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2 flex-1">
             <TouchableOpacity

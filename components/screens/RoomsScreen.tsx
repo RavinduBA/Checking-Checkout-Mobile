@@ -1,3 +1,4 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useLocationContext } from "../../contexts/LocationContext";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useRooms } from "../../hooks/useRooms";
 import { useUserProfile } from "../../hooks/useUserProfile";
 
@@ -45,10 +47,12 @@ const AMENITIES = [
 ];
 
 export default function RoomsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { locations } = useLocationContext();
-    const { rooms, loading, error, createRoom, updateRoom, deleteRoom } = useRooms(); // Remove selectedLocation to get ALL rooms
+  const { rooms, loading, error, createRoom, updateRoom, deleteRoom } =
+    useRooms(); // Remove selectedLocation to get ALL rooms
   const { profile } = useUserProfile();
-  
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState<any>(null);
@@ -67,17 +71,33 @@ export default function RoomsScreen() {
     status: "Active" as "Active" | "Inactive",
   });
 
-  // Set default location to first available location
-  React.useEffect(() => {
-    if (locations.length > 0 && !formData.location) {
-      setFormData(prev => ({ ...prev, location: locations[0].id }));
-    }
-  }, [locations, formData.location]);
-
   // Dropdown state
   const [openDropdowns, setOpenDropdowns] = useState<{
     [key: string]: boolean;
   }>({});
+
+  // Set default location to first available location
+  React.useEffect(() => {
+    if (locations.length > 0 && !formData.location) {
+      setFormData((prev) => ({ ...prev, location: locations[0].id }));
+    }
+  }, [locations, formData.location]);
+
+  // Permission check - AFTER all hooks are declared
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0066cc" />
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_rooms")) {
+    return (
+      <AccessDenied message="You don't have permission to access Rooms." />
+    );
+  }
 
   const toggleDropdown = (dropdownKey: string) => {
     setOpenDropdowns((prev) => ({
@@ -116,7 +136,10 @@ export default function RoomsScreen() {
 
     // Check if we have a valid profile with tenant_id
     if (!profile?.tenant_id) {
-      Alert.alert("Error", "User profile not loaded or missing tenant information");
+      Alert.alert(
+        "Error",
+        "User profile not loaded or missing tenant information"
+      );
       console.error("Profile state:", profile);
       return;
     }
@@ -159,13 +182,17 @@ export default function RoomsScreen() {
       const errorMessage = error?.message || "Unknown error occurred";
       Alert.alert("Error", `Failed to add room: ${errorMessage}`);
       console.error("Error adding room:", error);
-      
+
       // Additional debugging for RLS errors
       if (error?.code === "42501") {
-        console.error("RLS Policy Error - This indicates the Row Level Security policy is blocking the insert");
-        console.error("Make sure the RLS policies are correctly configured for the rooms table");
+        console.error(
+          "RLS Policy Error - This indicates the Row Level Security policy is blocking the insert"
+        );
+        console.error(
+          "Make sure the RLS policies are correctly configured for the rooms table"
+        );
         Alert.alert(
-          "Database Security Error", 
+          "Database Security Error",
           "Row Level Security policy is blocking this operation. Please check your database configuration."
         );
       }
@@ -269,14 +296,18 @@ export default function RoomsScreen() {
     const isOpen = openDropdowns[dropdownKey] || false;
 
     // Handle both string arrays and object arrays
-    const getOptionValue = (option: string | { value: string; label: string }) =>
-      typeof option === 'string' ? option : option.value;
-    const getOptionLabel = (option: string | { value: string; label: string }) =>
-      typeof option === 'string' ? option : option.label;
+    const getOptionValue = (
+      option: string | { value: string; label: string }
+    ) => (typeof option === "string" ? option : option.value);
+    const getOptionLabel = (
+      option: string | { value: string; label: string }
+    ) => (typeof option === "string" ? option : option.label);
 
     // Find current selection label
-    const currentOption = options.find(opt => getOptionValue(opt) === value);
-    const displayValue = currentOption ? getOptionLabel(currentOption) : `Select ${label}`;
+    const currentOption = options.find((opt) => getOptionValue(opt) === value);
+    const displayValue = currentOption
+      ? getOptionLabel(currentOption)
+      : `Select ${label}`;
 
     return (
       <View className="mb-4" style={{ zIndex: isOpen ? 1000 : 1 }}>
@@ -391,8 +422,11 @@ export default function RoomsScreen() {
             </View>
 
             {/* Location */}
-            {renderDropdown("Location", formData.location, locations.map(loc => ({ value: loc.id, label: loc.name })), (value) =>
-              setFormData((prev) => ({ ...prev, location: value }))
+            {renderDropdown(
+              "Location",
+              formData.location,
+              locations.map((loc) => ({ value: loc.id, label: loc.name })),
+              (value) => setFormData((prev) => ({ ...prev, location: value }))
             )}
 
             {/* Property Type */}
@@ -687,10 +721,10 @@ export default function RoomsScreen() {
         {/* Table Content */}
         <ScrollView className="flex-1">
           {rooms.map((room, index) => {
-            const statusColor =
-              room.is_active ? "text-green-700" : "text-red-700";
-            const statusBg =
-              room.is_active ? "bg-green-100" : "bg-red-100";
+            const statusColor = room.is_active
+              ? "text-green-700"
+              : "text-red-700";
+            const statusBg = room.is_active ? "bg-green-100" : "bg-red-100";
             const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50";
 
             return (
@@ -704,7 +738,7 @@ export default function RoomsScreen() {
                   </Text>
                   <Text className="flex-1 text-gray-800">{room.room_type}</Text>
                   <Text className="w-20 text-gray-600 text-xs">
-                    {room.location?.name || 'N/A'}
+                    {room.location?.name || "N/A"}
                   </Text>
                   <Text className="w-16 text-gray-600 text-center">
                     {room.max_occupancy}

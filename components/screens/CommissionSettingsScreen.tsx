@@ -1,7 +1,25 @@
+import AccessDenied from "@/components/AccessDenied";
 import React from "react";
 import { Text, View } from "react-native";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function CommissionSettingsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
+
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 p-4 justify-center items-center">
+        <Text className="text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_settings")) {
+    return (
+      <AccessDenied message="You don't have permission to access Commission Settings." />
+    );
+  }
+
   return (
     <View className="flex-1 bg-gray-50 p-4">
       <View className="mb-6">

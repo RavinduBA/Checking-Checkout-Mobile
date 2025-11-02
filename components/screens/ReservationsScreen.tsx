@@ -1,6 +1,8 @@
+import AccessDenied from "@/components/AccessDenied";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useAccountData } from "../../hooks/useAccountData";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useReservationFinancials } from "../../hooks/useReservationFinancials";
 import { useReservationsData } from "../../hooks/useReservationsData";
 import { useTenant } from "../../hooks/useTenant";
@@ -24,6 +26,7 @@ import { ReservationsMobileCards } from "../reservation/ReservationsMobileCards"
 type CurrencyType = Database["public"]["Enums"]["currency_type"];
 
 export default function ReservationsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { refetch } = useReservationsData();
   const { refetch: refetchFinancials } = useReservationFinancials();
   const { tenant } = useTenant();
@@ -177,6 +180,22 @@ export default function ReservationsScreen() {
       });
     }
   };
+
+  // Permission check - AFTER all hooks are declared
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0066cc" />
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_bookings")) {
+    return (
+      <AccessDenied message="You don't have permission to access Reservations." />
+    );
+  }
 
   if (loading) {
     return (

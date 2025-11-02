@@ -4,7 +4,7 @@ import { useLocationContext } from "../contexts/LocationContext";
 import { supabase } from "../lib/supabase";
 import { useUserProfile } from "./useUserProfile";
 
-interface UserPermissions {
+export interface UserPermissions {
   access_dashboard: boolean;
   access_income: boolean;
   access_expenses: boolean;
@@ -34,6 +34,12 @@ export function usePermissions() {
         return;
       }
 
+      // Only set loading to true if we don't have any permissions yet
+      // This prevents the loading flash when switching locations
+      if (!permissions) {
+        setLoading(true);
+      }
+
       try {
         const { data, error } = await supabase
           .from("user_permissions")
@@ -43,10 +49,15 @@ export function usePermissions() {
           .eq("location_id", selectedLocation)
           .single();
 
-        if (error) throw error;
-        setPermissions(data as UserPermissions);
-      } catch (error) {
-        console.error("Error fetching permissions:", error);
+        // PGRST116 = no rows returned (user has no permissions yet)
+        if (error && error.code !== "PGRST116") {
+          console.error("Error fetching permissions:", error);
+          setPermissions(null);
+        } else {
+          setPermissions(data as UserPermissions);
+        }
+      } catch (error: any) {
+        console.error("Exception fetching permissions:", error);
         setPermissions(null);
       } finally {
         setLoading(false);
@@ -56,15 +67,32 @@ export function usePermissions() {
     fetchPermissions();
   }, [user?.id, profile?.tenant_id, selectedLocation]);
 
-  const hasPermission = (permission: keyof UserPermissions) => {
+  const hasPermission = (permission: keyof UserPermissions): boolean => {
     if (!isAuthenticated || !permissions) return false;
     // Tenant admins have all permissions
     if (profile?.is_tenant_admin) return true;
     return permissions[permission] || false;
   };
 
-  const hasAnyPermission = (permissionsList: (keyof UserPermissions)[]) => {
-    return permissionsList.some((perm) => hasPermission(perm));
+  const hasAnyPermission = (
+    permissionsList?:
+      | (keyof UserPermissions)[]
+      | keyof UserPermissions
+  ): boolean => {
+    // Handle undefined or null
+    if (!permissionsList) return false;
+    
+    // Handle single permission string
+    if (typeof permissionsList === "string") {
+      return hasPermission(permissionsList);
+    }
+    
+    // Handle array of permissions
+    if (Array.isArray(permissionsList)) {
+      return permissionsList.some((perm) => hasPermission(perm));
+    }
+    
+    return false;
   };
 
   return {

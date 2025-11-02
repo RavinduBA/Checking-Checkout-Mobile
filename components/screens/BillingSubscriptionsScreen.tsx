@@ -1,10 +1,27 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function BillingSubscriptionsScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const navigation = useNavigation<any>();
+
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <Text className="text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_settings")) {
+    return (
+      <AccessDenied message="You don't have permission to access Billing & Subscriptions." />
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50">

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useLocationContext } from "../../contexts/LocationContext";
 import { useExpenseData } from "../../hooks/useExpenseData";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useUserProfile } from "../../hooks/useUserProfile";
 import { getCurrencySymbol } from "../../lib/currencies";
 import { ExpenseForm } from "../expense/ExpenseForm";
@@ -11,6 +12,7 @@ import { ExpenseHistoryTable } from "../expense/ExpenseHistoryTable";
 export default function ExpensesScreen() {
   const { selectedLocation } = useLocationContext();
   const { profile } = useUserProfile();
+  const { hasPermission, hasAnyPermission } = usePermissions();
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const {
@@ -22,6 +24,24 @@ export default function ExpensesScreen() {
   } = useExpenseData();
 
   const [refreshing, setRefreshing] = useState(false);
+
+  // Permission check
+  if (!hasPermission("access_expenses")) {
+    return (
+      <View className="flex-1 items-center justify-center p-6 bg-gray-50">
+        <View className="bg-red-50 border border-red-200 rounded-lg p-6 items-center">
+          <Ionicons name="alert-circle" size={48} color="#dc2626" />
+          <Text className="text-lg font-semibold text-red-900 mt-4">
+            Access Denied
+          </Text>
+          <Text className="text-sm text-red-700 text-center mt-2">
+            You don't have permission to access expenses. Please contact your
+            administrator.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   // Calculate total expenses by currency
   const totalExpenses = expenses.reduce(

@@ -1,23 +1,8 @@
+// Re-export User type from useUsersData to maintain consistency
+export type { User } from "@/hooks/useUsersData";
+
 export interface UserPermissions {
 	[key: string]: boolean;
-}
-
-export interface User {
-	id: string;
-	name: string;
-	email: string;
-	is_tenant_admin: boolean;
-	created_at?: string;
-	last_sign_in_at?: string;
-	phone?: string;
-	avatar_url?: string;
-	tenant_role?: string;
-	is_active?: boolean;
-	permissions: {
-		[locationName: string]: UserPermissions;
-	};
-	location_count?: number;
-	total_permissions?: number;
 }
 
 export interface Location {

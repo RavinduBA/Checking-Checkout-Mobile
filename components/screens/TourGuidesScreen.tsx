@@ -1,6 +1,8 @@
+import AccessDenied from "@/components/AccessDenied";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -10,9 +12,11 @@ import {
   View,
 } from "react-native";
 import { useGuides } from "../../hooks/useGuides";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useUserProfile } from "../../hooks/useUserProfile";
 
 export default function TourGuidesScreen() {
+  const { hasPermission, loading: permissionsLoading } = usePermissions();
   const { guides, loading, error, createGuide, updateGuide, deleteGuide } =
     useGuides();
   const { profile } = useUserProfile();
@@ -373,6 +377,22 @@ export default function TourGuidesScreen() {
       </View>
     </Modal>
   );
+
+  // Permission check - AFTER all hooks are declared
+  if (permissionsLoading) {
+    return (
+      <View className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#0066cc" />
+        <Text className="mt-2 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission("access_master_files")) {
+    return (
+      <AccessDenied message="You don't have permission to access Tour Guides." />
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50 p-4">

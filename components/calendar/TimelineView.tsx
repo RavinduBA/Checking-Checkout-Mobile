@@ -181,10 +181,20 @@ export function TimelineView({
           )
           .order("check_in", { ascending: true });
 
-        if (error) throw error;
-        setExternalBookings(data || []);
-      } catch (error) {
-        console.error("Error fetching external bookings:", error);
+        // PGRST205 = table not found (external_bookings may not exist)
+        if (error && error.code === "PGRST205") {
+          console.warn(
+            "External bookings table does not exist (OK for basic setup)"
+          );
+          setExternalBookings([]);
+        } else if (error) {
+          console.error("Error fetching external bookings:", error);
+          setExternalBookings([]);
+        } else {
+          setExternalBookings(data || []);
+        }
+      } catch (error: any) {
+        console.warn("External bookings error (may not exist):", error);
         setExternalBookings([]);
       } finally {
         setExternalBookingsLoading(false);
@@ -359,7 +369,10 @@ export function TimelineView({
       <CalendarLegend className="px-4 py-3 bg-white border-b border-gray-200" />
 
       {/* Calendar Grid - Days as Rows, Rooms as Columns */}
-      <ScrollView className="flex-1 pl-4 pr-4 " showsVerticalScrollIndicator={true} >
+      <ScrollView
+        className="flex-1 pl-4 pr-4 "
+        showsVerticalScrollIndicator={true}
+      >
         <View className="bg-white">
           {filteredRooms.length === 0 ? (
             <View className="p-8 items-center">
@@ -377,7 +390,12 @@ export function TimelineView({
               <View className="flex-row border-b-2 border-gray-300 bg-gradient-to-r from-blue-50 to-indigo-50">
                 {/* Date Column Header */}
                 <View className="w-24 px-2 py-3 border-r-2 border-gray-300 bg-blue-100">
-                  <Ionicons name="calendar" size={16} color="#3b82f6" style={{ alignSelf: 'center' }} />
+                  <Ionicons
+                    name="calendar"
+                    size={16}
+                    color="#3b82f6"
+                    style={{ alignSelf: "center" }}
+                  />
                   <Text className="text-[10px] font-bold text-blue-900 text-center mt-1">
                     DATE
                   </Text>
@@ -424,7 +442,11 @@ export function TimelineView({
                   <View
                     key={dayIndex}
                     className={`flex-row border-b border-gray-200 ${
-                      isTodayDate ? "bg-blue-50" : isWeekend ? "bg-gray-50" : "bg-white"
+                      isTodayDate
+                        ? "bg-blue-50"
+                        : isWeekend
+                        ? "bg-gray-50"
+                        : "bg-white"
                     }`}
                   >
                     {/* Date Cell */}
@@ -470,7 +492,10 @@ export function TimelineView({
                     </View>
 
                     {/* Room Cells - Horizontal Scroll */}
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                    >
                       <View className="flex-row">
                         {filteredRooms.map((room, roomIndex) => {
                           const { directBooking, externalBooking } =
@@ -523,7 +548,9 @@ export function TimelineView({
                                             color="#6b7280"
                                           />
                                           <Text className="text-[9px] text-gray-700">
-                                            {getCurrencySymbol(directBooking.currency)}{" "}
+                                            {getCurrencySymbol(
+                                              directBooking.currency
+                                            )}{" "}
                                             {directBooking.total_amount.toLocaleString()}
                                           </Text>
                                         </View>
@@ -573,7 +600,8 @@ export function TimelineView({
                                             />
                                             <Text className="text-[9px] text-gray-700">
                                               {getCurrencySymbol(
-                                                externalBooking.currency || "USD"
+                                                externalBooking.currency ||
+                                                  "USD"
                                               )}{" "}
                                               {externalBooking.total_amount.toLocaleString()}
                                             </Text>

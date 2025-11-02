@@ -264,9 +264,7 @@ Main App (Bottom Tabs)
       └── Commission
 ```
 
-## 📸 Screenshots
 
-> Add screenshots of your app here to showcase the UI
 
 ## 🤝 Contributing
 
